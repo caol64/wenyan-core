@@ -1,0 +1,44 @@
+{
+  "name": "@wenyan-md/core",
+  "version": "1.0.0",
+  "description": "Core library for Wenyan markdown rendering & publishing",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/core.js",
+  "module": "./dist/core.js",
+  "exports": {
+    ".": "./dist/core.js",
+    "./publish": "./dist/publish.js"
+  },
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build && tsc",
+    "testMain": "vitest run main.test.js",
+    "testPublish": "vitest run publish.test.js",
+    "prepublishOnly": "pnpm build"
+  },
+  "keywords": [],
+  "author": "",
+  "packageManager": "pnpm@10.7.1",
+  "devDependencies": {
+    "@types/css-tree": "^2.3.10",
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^24.3.0",
+    "ts-lib": "^0.0.5",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.4",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "css-tree": "^3.1.0",
+    "formdata-node": "^6.0.3",
+    "front-matter": "^4.0.2",
+    "highlight.js": "^11.11.1",
+    "jsdom": "^26.1.0",
+    "marked": "^15.0.12",
+    "marked-highlight": "^2.2.1",
+    "mathjax-full": "^3.2.2"
+  }
+}
