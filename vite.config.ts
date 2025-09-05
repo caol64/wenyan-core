@@ -12,6 +12,8 @@ export default defineConfig(({ mode }) => {
                     core: resolve(__dirname, "src/main.js"),
                     publish: resolve(__dirname, "src/publish.ts"),
                     wrapper: resolve(__dirname, "src/wrapper.ts"),
+                    theme: resolve(__dirname, "src/theme.ts"),
+                    hltheme: resolve(__dirname, "src/hltheme.ts"),
                 },
                 name: "WenyanCore", // 浏览器全局变量名
                 fileName: (format, entryName) => `${entryName}.js`,

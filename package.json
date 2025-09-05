@@ -1,6 +1,6 @@
 {
   "name": "@wenyan-md/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Core library for Wenyan markdown rendering & publishing",
   "author": "Lei <caol64@gmail.com> (https://github.com/caol64)",
   "license": "Apache-2.0",
@@ -14,7 +14,9 @@
   "exports": {
     ".": "./dist/core.js",
     "./publish": "./dist/publish.js",
-    "./wrapper": "./dist/wrapper.js"
+    "./wrapper": "./dist/wrapper.js",
+    "./theme": "./dist/theme.js",
+    "./hltheme": "./dist/hltheme.js"
   },
   "scripts": {
     "dev": "vite build --watch",
