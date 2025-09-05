@@ -9,7 +9,7 @@ import {
     configureMarked,
     renderMarkdown,
     getContentForGzh,
-} from "../dist/wenyan-core.js";
+} from "../dist/core.js";
 
 const frontmatter = `---
 title: 测试标题

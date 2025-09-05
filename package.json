@@ -1,7 +1,10 @@
 {
   "name": "@wenyan-md/core",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Core library for Wenyan markdown rendering & publishing",
+  "author": "Lei <caol64@gmail.com> (https://github.com/caol64)",
+  "license": "Apache-2.0",
+  "keywords": ["公众号", "markdown", "文颜", "wenyan", "wechat", "publishing", "renderer"],
   "type": "module",
   "files": [
     "dist"
@@ -10,17 +13,17 @@
   "module": "./dist/core.js",
   "exports": {
     ".": "./dist/core.js",
-    "./publish": "./dist/publish.js"
+    "./publish": "./dist/publish.js",
+    "./wrapper": "./dist/wrapper.js"
   },
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build && tsc",
     "testMain": "vitest run main.test.js",
+    "testWrapper": "vitest run wrapper.test.js",
     "testPublish": "vitest run publish.test.js",
     "prepublishOnly": "pnpm build"
   },
-  "keywords": [],
-  "author": "",
   "packageManager": "pnpm@10.7.1",
   "devDependencies": {
     "@types/css-tree": "^2.3.10",

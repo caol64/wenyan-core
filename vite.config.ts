@@ -11,12 +11,13 @@ export default defineConfig(({ mode }) => {
                 entry: {
                     core: resolve(__dirname, "src/main.js"),
                     publish: resolve(__dirname, "src/publish.ts"),
+                    wrapper: resolve(__dirname, "src/wrapper.ts"),
                 },
                 name: "WenyanCore", // 浏览器全局变量名
                 fileName: (format, entryName) => `${entryName}.js`,
                 formats: ["es"],
             },
-            sourcemap: true,
+            sourcemap: false,
             rollupOptions: {
                 external: [
                     "fs",
