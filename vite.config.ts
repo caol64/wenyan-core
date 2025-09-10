@@ -15,7 +15,6 @@ export default defineConfig(({ mode }) => {
                     theme: resolve(__dirname, "src/theme.ts"),
                     hltheme: resolve(__dirname, "src/hltheme.ts"),
                 },
-                name: "WenyanCore", // 浏览器全局变量名
                 fileName: (format, entryName) => `${entryName}.js`,
                 formats: ["es"],
             },
@@ -39,18 +38,6 @@ export default defineConfig(({ mode }) => {
                     "mathjax-full/js/handlers/html.js",
                     "mathjax-full/js/input/tex/AllPackages.js",
                 ],
-                // output: {
-                //     globals: {
-                //         marked: "marked",
-                //         "marked-highlight": "markedHighlight",
-                //         "mathjax-full": "mathjax",
-                //         "highlight.js": "hljs",
-                //         "front-matter": "frontMatter",
-                //         "formdata-node": "FormDataNode",
-                //         "css-tree": "csstree",
-                //         jsdom: "jsdom",
-                //     },
-                // },
             },
         },
         test: {

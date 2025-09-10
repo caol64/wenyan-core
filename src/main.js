@@ -23,7 +23,7 @@ const texConfig = {
     inlineMath: [['$', '$'], ['\\(', '\\)']],
     displayMath: [['$$', '$$'], ['\\[', '\\]']],
     processEscapes: true,
-    packages: AllPackages.sort().join(', ').split(/\s*,\s*/)
+    packages: AllPackages
 };
 
 const svgConfig = {
@@ -38,7 +38,6 @@ const svg = new SVG(svgConfig);
 function addContainer(math, doc) {
     const tag = math.display ? 'section' : 'span';
     const cls = math.display ? 'block-equation' : 'inline-equation';
-    // math.typesetRoot.setAttribute("math", math.math);
     math.typesetRoot = doc.adaptor.node(tag, {class: cls}, [math.typesetRoot]);
 }
 
@@ -52,7 +51,8 @@ async function renderMathInHtml(htmlString) {
             }
         });
         html.render();
-        return adaptor.outerHTML(adaptor.root(html.document))
+        const body = adaptor.body(html.document);
+        return adaptor.innerHTML(body);
     } catch (error) {
         console.error("Error rendering MathJax:", error);
         throw error;
@@ -109,12 +109,14 @@ export function configureMarked() {
     const renderer = marked.Renderer;
     const parser = marked.Parser;
 
+    // 重写渲染标题的方法（h1 ~ h6）
     renderer.heading = function (heading) {
         const text = parser.parseInline(heading.tokens);
         const level = heading.depth;
         return `<h${level}><span>${text}</span></h${level}>\n`;
     };
 
+    // 重写渲染paragraph的方法以更好的显示行间公式
     renderer.paragraph = function (paragraph) {
         const text = paragraph.text;
         if (
@@ -129,9 +131,7 @@ export function configureMarked() {
 
     renderer.image = function (img, title, text) {
         const href = img.href;
-        return `<img src="${href}" alt="${text || ""}" title="${
-            title || text || ""
-        }">`;
+        return `<img src="${href}" alt="${text || ""}" title="${title || text || ""}">`;
     };
 
     marked.use({ renderer });
@@ -174,7 +174,7 @@ export async function renderMarkdown(content) {
     return htmlWithMath;
 }
 
-export async function getContentForGzh(document, themeId, hlThemeId, isMacStyle) {
+export async function getContentForGzhInnerTheme(wenyanElement, themeId, hlThemeId, isMacStyle) {
     if (!(themeId in themes)) {
         throw new Error("主题不存在");
     }
@@ -182,7 +182,13 @@ export async function getContentForGzh(document, themeId, hlThemeId, isMacStyle)
         throw new Error("代码块主题不存在");
     }
     const theme = themes[themeId];
-    let customCss = replaceCSSVariables(await theme.getCss());
+    const customCss = replaceCSSVariables(await theme.getCss());
+    const hlTheme = hlThemes[hlThemeId];
+    const highlightCss = await hlTheme.getCss();
+    return getContentForGzhCustomCss(wenyanElement, customCss, highlightCss, isMacStyle);
+}
+
+export async function getContentForGzhCustomCss(wenyanElement, customCss, highlightCss, isMacStyle) {
     customCss = modifyCss(customCss, {
         '#wenyan pre code': [
             {
@@ -207,8 +213,6 @@ export async function getContentForGzh(document, themeId, hlThemeId, isMacStyle)
         parseValue: false,
     });
 
-    const hlTheme = hlThemes[hlThemeId];
-    const highlightCss = await hlTheme.getCss();
     const ast1 = csstree.parse(highlightCss, {
         context: "stylesheet",
         positions: false,
@@ -230,8 +234,6 @@ export async function getContentForGzh(document, themeId, hlThemeId, isMacStyle)
         ast.children.appendList(ast2.children);
     }
 
-    const wenyan = document.getElementById("wenyan");
-
     csstree.walk(ast, {
         visit: "Rule",
         enter(node, item, list) {
@@ -243,10 +245,10 @@ export async function getContentForGzh(document, themeId, hlThemeId, isMacStyle)
                     if (selector === "#wenyan") {
                         declarations.forEach((decl) => {
                             const value = csstree.generate(decl.value);
-                            wenyan.style[decl.property] = value;
+                            wenyanElement.style[decl.property] = value;
                         });
                     } else {
-                        const elements = wenyan.querySelectorAll(selector);
+                        const elements = wenyanElement.querySelectorAll(selector);
                         elements.forEach((element) => {
                             declarations.forEach((decl) => {
                                 const value = csstree.generate(decl.value);
@@ -260,7 +262,7 @@ export async function getContentForGzh(document, themeId, hlThemeId, isMacStyle)
     });
 
     // 处理公式
-    let elements = wenyan.querySelectorAll("mjx-container");
+    let elements = wenyanElement.querySelectorAll("mjx-container");
     elements.forEach((element) => {
         const svg = element.querySelector("svg");
         svg.style.width = svg.getAttribute("width");
@@ -270,26 +272,19 @@ export async function getContentForGzh(document, themeId, hlThemeId, isMacStyle)
         const parent = element.parentElement;
         element.remove();
         parent.appendChild(svg);
-        if (parent.classList.contains("block-equation")) {
-            parent.setAttribute(
-                "style",
-                "text-align: center; margin-bottom: 1rem;"
-            );
+        if (parent.classList.contains('block-equation')) {
+            parent.setAttribute("style", "text-align: center; margin-bottom: 1rem;");
         }
     });
     // 处理代码块
-    elements = wenyan.querySelectorAll("pre code");
-    elements.forEach((element) => {
+    elements = wenyanElement.querySelectorAll("pre code");
+    elements.forEach(element => {
         element.innerHTML = element.innerHTML
-            .replace(/\n/g, "<br>")
-            .replace(/(>[^<]+)|(^[^<]+)/g, (str) =>
-                str.replace(/\s/g, "&nbsp;")
-            );
+                .replace(/\n/g, '<br>')
+                .replace(/(>[^<]+)|(^[^<]+)/g, str => str.replace(/\s/g, '&nbsp;'));
     });
     // 公众号不支持css伪元素，将伪元素样式提取出来拼接成一个span
-    elements = wenyan.querySelectorAll(
-        "h1, h2, h3, h4, h5, h6, blockquote, pre"
-    );
+    elements = wenyanElement.querySelectorAll('h1, h2, h3, h4, h5, h6, blockquote, pre');
     elements.forEach((element) => {
         const afterResults = new Map();
         const beforeResults = new Map();
@@ -308,20 +303,14 @@ export async function getContentForGzh(document, themeId, hlThemeId, isMacStyle)
             },
         });
         if (afterResults.size > 0) {
-            element.appendChild(buildPseudoSpan(afterResults, document));
+            element.appendChild(buildPseudoSpan(afterResults, wenyanElement.ownerDocument));
         }
         if (beforeResults.size > 0) {
-            element.insertBefore(
-                buildPseudoSpan(beforeResults, document),
-                element.firstChild
-            );
+            element.insertBefore(buildPseudoSpan(beforeResults, wenyanElement.ownerDocument), element.firstChild);
         }
     });
-    wenyan.setAttribute("data-provider", "WenYan");
-    return `${wenyan.outerHTML.replace(
-        /class="mjx-solid"/g,
-        'fill="none" stroke-width="70"'
-    )}`;
+    wenyanElement.setAttribute("data-provider", "WenYan");
+    return `${wenyanElement.outerHTML.replace(/class="mjx-solid"/g, 'fill="none" stroke-width="70"')}`;
 }
 
 export function replaceCSSVariables(css) {

@@ -8,7 +8,7 @@ import {
     handleFrontMatter,
     configureMarked,
     renderMarkdown,
-    getContentForGzh,
+    getContentForGzhInnerTheme,
 } from "../dist/core.js";
 
 const frontmatter = `---
@@ -38,11 +38,12 @@ describe("main.ts tests", () => {
         const html = await renderMarkdown(preHandlerContent.body);
         const dom = new JSDOM(`<body><section id="wenyan">${html}</section></body>`);
         const document = dom.window.document;
-        const result = await getContentForGzh(document, "lapis", "monokai", true);
+        const wenyan = document.getElementById("wenyan");
+        const result = await getContentForGzhInnerTheme(wenyan, "maize", "solarized-light", true);
 
         // console.log(html);
 
-        const outputPath = join(__dirname, "out.txt");
+        const outputPath = join(__dirname, "publish.html");
         await writeFile(outputPath, result, "utf8");
         expect(result).toContain("</h2>");
     });

@@ -1,29 +1,52 @@
 {
   "name": "@wenyan-md/core",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Core library for Wenyan markdown rendering & publishing",
   "author": "Lei <caol64@gmail.com> (https://github.com/caol64)",
   "license": "Apache-2.0",
-  "keywords": ["公众号", "markdown", "文颜", "wenyan", "wechat", "publishing", "renderer"],
+  "keywords": [
+    "公众号",
+    "markdown",
+    "文颜",
+    "wenyan",
+    "wechat",
+    "publishing",
+    "renderer"
+  ],
   "type": "module",
   "files": [
     "dist"
   ],
-  "main": "./dist/core.js",
-  "module": "./dist/core.js",
   "exports": {
-    ".": "./dist/core.js",
-    "./publish": "./dist/publish.js",
-    "./wrapper": "./dist/wrapper.js",
-    "./theme": "./dist/theme.js",
-    "./hltheme": "./dist/hltheme.js"
+    ".": {
+      "import": "./dist/core.js",
+      "browser": "./dist/browser/wenyan-core.js"
+    },
+    "./publish": {
+      "import": "./dist/publish.js",
+      "types": "./dist/types/publish.d.ts"
+    },
+    "./wrapper": {
+      "import": "./dist/wrapper.js",
+      "types": "./dist/types/wrapper.d.ts"
+    },
+    "./theme": {
+      "import": "./dist/theme.js",
+      "types": "./dist/types/theme.d.ts"
+    },
+    "./hltheme": {
+      "import": "./dist/hltheme.js",
+      "types": "./dist/types/hltheme.d.ts"
+    }
   },
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build && tsc",
-    "testMain": "vitest run main.test.js",
-    "testWrapper": "vitest run wrapper.test.js",
-    "testPublish": "vitest run publish.test.js",
+    "build:browser": "vite build --config vite.config.browser.ts",
+    "build:all": "pnpm build && pnpm build:browser",
+    "test:main": "pnpm build && vitest run main.test.js",
+    "test:wrapper": "pnpm build && vitest run wrapper.test.js",
+    "test:publish": "pnpm build && vitest run publish.test.js",
     "prepublishOnly": "pnpm build"
   },
   "packageManager": "pnpm@10.7.1",

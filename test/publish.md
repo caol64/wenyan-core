@@ -18,3 +18,31 @@ cover: test/wenyan.jpg
 # 忽略所有 dist 目录下的 .map 文件
 dist/**/*.map
 ```
+
+## 2.12 公式
+
+### 行内公式
+
+比如这个化学公式：$\ce{Hg^2+ ->[I-] HgI2 ->[I-] [Hg^{II}I4]^2-}$，啦啦啦
+
+### 块公式
+
+$$
+H(D_2) = -\left(\frac{2}{4}\log_2 \frac{2}{4} + \frac{2}{4}\log_2 \frac{2}{4}\right) = 1
+$$
+
+### 矩阵
+
+$$
+\begin{pmatrix}
+  1 & a_1 & a_1^2 & \cdots & a_1^n \\
+  1 & a_2 & a_2^2 & \cdots & a_2^n \\
+  \vdots & \vdots & \vdots & \ddots & \vdots \\
+  1 & a_m & a_m^2 & \cdots & a_m^n \\
+  \end{pmatrix}
+$$
+
+### 待解决
+
+- $a^2 + b^2 = c^2$ : aaa
+- $a^2 + b^2 = c^2$ : aaa
