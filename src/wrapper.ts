@@ -4,7 +4,7 @@ import {
     handleFrontMatter,
     configureMarked,
     renderMarkdown,
-    getContentForGzhInnerTheme,
+    getContentForGzhBuiltinTheme,
 } from "./main.js";
 
 
@@ -23,7 +23,7 @@ export async function getGzhContent(content: string, themeId: string, hlThemeId:
     const dom = new JSDOM(`<body><section id="wenyan">${html}</section></body>`);
     const document = dom.window.document;
     const wenyan = document.getElementById("wenyan");
-    const result = await getContentForGzhInnerTheme(wenyan, themeId, hlThemeId, isMacStyle);
+    const result = await getContentForGzhBuiltinTheme(wenyan, themeId, hlThemeId, isMacStyle);
     return {
         title: preHandlerContent.title,
         cover: preHandlerContent.cover,

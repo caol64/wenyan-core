@@ -14,6 +14,10 @@ import macStyleCss from './mac_style.css?raw';
 import { themes } from "./theme.js"
 import { hlThemes } from "./hltheme.js"
 
+export * from "./theme.js";
+export * from "./hltheme.js";
+export { macStyleCss };
+
 // --- Constants ---
 export const serif = "ui-serif, Georgia, Cambria, 'Noto Serif', 'Times New Roman', serif";
 export const sansSerif = "ui-sans-serif, system-ui, 'Apple Color Emoji', 'Segoe UI', 'Segoe UI Symbol', 'Noto Sans', 'Roboto', sans-serif";
@@ -174,14 +178,22 @@ export async function renderMarkdown(content) {
     return htmlWithMath;
 }
 
-export async function getContentForGzhInnerTheme(wenyanElement, themeId, hlThemeId, isMacStyle) {
-    if (!(themeId in themes)) {
+export async function getContentForGzhBuiltinTheme(wenyanElement, themeId, hlThemeId, isMacStyle) {
+    let theme = themes["default"];
+    if (themeId) {
+        theme = themes[themeId];
+        if (!theme) {
+            theme = Object.values(themes).find(
+                t => t.name.toLowerCase() === themeId.toLowerCase()
+            );
+        }
+    }
+    if (!theme) {
         throw new Error("主题不存在");
     }
     if (!(hlThemeId in hlThemes)) {
         throw new Error("代码块主题不存在");
     }
-    const theme = themes[themeId];
     const customCss = replaceCSSVariables(await theme.getCss());
     const hlTheme = hlThemes[hlThemeId];
     const highlightCss = await hlTheme.getCss();
