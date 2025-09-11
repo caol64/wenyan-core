@@ -17,6 +17,14 @@
   "files": [
     "dist"
   ],
+  "homepage": "https://github.com/caol64/wenyan-core#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caol64/wenyan-core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/caol64/wenyan-core/issues"
+  },
   "exports": {
     ".": {
       "import": "./dist/core.js",
