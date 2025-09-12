@@ -51,7 +51,9 @@
     "dev": "vite build --watch",
     "build": "vite build && tsc",
     "build:browser": "vite build --config vite.config.browser.ts",
-    "build:all": "pnpm build && pnpm build:browser",
+    "build:styles": "vite build --config vite.config.styles.ts",
+    "build:math": "vite build --config vite.config.math.ts",
+    "build:all": "pnpm build && pnpm build:browser && pnpm build:styles && pnpm build:math",
     "test:main": "pnpm build && vitest run main.test.js",
     "test:wrapper": "pnpm build && vitest run wrapper.test.js",
     "test:publish": "pnpm build && vitest run publish.test.js",
@@ -59,7 +61,6 @@
   },
   "packageManager": "pnpm@10.7.1",
   "devDependencies": {
-    "@types/css-tree": "^2.3.10",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^24.3.0",
     "ts-lib": "^0.0.5",
@@ -68,13 +69,13 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "css-tree": "^3.1.0",
+    "css-tree": "3.0.1",
     "formdata-node": "^6.0.3",
     "front-matter": "^4.0.2",
-    "highlight.js": "^11.11.1",
+    "highlight.js": "11.10.0",
     "jsdom": "^26.1.0",
     "marked": "^15.0.12",
     "marked-highlight": "^2.2.1",
-    "mathjax-full": "^3.2.2"
+    "mathjax-full": "3.2.2"
   }
 }

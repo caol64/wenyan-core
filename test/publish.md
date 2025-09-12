@@ -46,3 +46,10 @@ $$
 
 - $a^2 + b^2 = c^2$ : aaa
 - $a^2 + b^2 = c^2$ : aaa
+
+## 链接
+
+* [macOS App Store 版](https://github.com/caol64/wenyan) - MAC 桌面应用
+* [Windows + Linux 版](https://github.com/caol64/wenyan-pc) - 跨平台桌面应用
+* [CLI 版本](https://github.com/caol64/wenyan-cli) - CI/CD 或脚本自动化发布公众号文章
+* [MCP 版本](https://github.com/caol64/wenyan-mcp) - 让 AI 自动发布公众号文章

@@ -39,7 +39,7 @@ describe("main.ts tests", () => {
         const dom = new JSDOM(`<body><section id="wenyan">${html}</section></body>`);
         const document = dom.window.document;
         const wenyan = document.getElementById("wenyan");
-        const result = await getContentForGzhBuiltinTheme(wenyan, "maize", "solarized-light", true);
+        const result = await getContentForGzhBuiltinTheme(wenyan, "maize", "solarized-light", true, true);
 
         // console.log(html);
 

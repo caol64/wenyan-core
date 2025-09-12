@@ -3,65 +3,16 @@ import { markedHighlight } from "marked-highlight";
 import hljs from "highlight.js";
 import fm from "front-matter";
 import * as csstree from "css-tree";
-import { mathjax } from 'mathjax-full/js/mathjax.js';
-import { TeX } from 'mathjax-full/js/input/tex.js';
-import { SVG } from 'mathjax-full/js/output/svg.js';
-import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor.js';
-import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html.js';
-import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages.js';
 
-import macStyleCss from './mac_style.css?raw';
-import { themes } from "./theme.js"
-import { hlThemes } from "./hltheme.js"
-
-export * from "./theme.js";
-export * from "./hltheme.js";
-export { macStyleCss };
+import { renderMathInHtml } from "./math.js";
+import macStyleCss from "./mac_style.css?raw";
+import { themes } from "./theme.js";
+import { hlThemes } from "./hltheme.js";
 
 // --- Constants ---
 export const serif = "ui-serif, Georgia, Cambria, 'Noto Serif', 'Times New Roman', serif";
 export const sansSerif = "ui-sans-serif, system-ui, 'Apple Color Emoji', 'Segoe UI', 'Segoe UI Symbol', 'Noto Sans', 'Roboto', sans-serif";
 export const monospace = "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Roboto Mono', 'Courier New', 'Microsoft YaHei', monospace";
-
-const texConfig = {
-    inlineMath: [['$', '$'], ['\\(', '\\)']],
-    displayMath: [['$$', '$$'], ['\\[', '\\]']],
-    processEscapes: true,
-    packages: AllPackages
-};
-
-const svgConfig = {
-    fontCache: 'none'
-};
-
-const adaptor = liteAdaptor();
-RegisterHTMLHandler(adaptor);
-const tex = new TeX(texConfig);
-const svg = new SVG(svgConfig);
-
-function addContainer(math, doc) {
-    const tag = math.display ? 'section' : 'span';
-    const cls = math.display ? 'block-equation' : 'inline-equation';
-    math.typesetRoot = doc.adaptor.node(tag, {class: cls}, [math.typesetRoot]);
-}
-
-async function renderMathInHtml(htmlString) {
-    try {
-        const html = mathjax.document(htmlString, {
-            InputJax: tex,
-            OutputJax: svg,
-            renderActions: {
-                addContainer: [190, (doc) => {for (const math of doc.math) {addContainer(math, doc)}}, addContainer]
-            }
-        });
-        html.render();
-        const body = adaptor.body(html.document);
-        return adaptor.innerHTML(body);
-    } catch (error) {
-        console.error("Error rendering MathJax:", error);
-        throw error;
-    }
-}
 
 // --- Marked.js Configuration ---
 export function configureMarked() {
@@ -178,7 +129,7 @@ export async function renderMarkdown(content) {
     return htmlWithMath;
 }
 
-export async function getContentForGzhBuiltinTheme(wenyanElement, themeId, hlThemeId, isMacStyle) {
+export async function getContentForGzhBuiltinTheme(wenyanElement, themeId, hlThemeId, isMacStyle, isAddFootnote) {
     let theme = themes["default"];
     if (themeId) {
         theme = themes[themeId];
@@ -197,10 +148,13 @@ export async function getContentForGzhBuiltinTheme(wenyanElement, themeId, hlThe
     const customCss = replaceCSSVariables(await theme.getCss());
     const hlTheme = hlThemes[hlThemeId];
     const highlightCss = await hlTheme.getCss();
-    return getContentForGzhCustomCss(wenyanElement, customCss, highlightCss, isMacStyle);
+    return getContentForGzhCustomCss(wenyanElement, customCss, highlightCss, isMacStyle, isAddFootnote);
 }
 
-export async function getContentForGzhCustomCss(wenyanElement, customCss, highlightCss, isMacStyle) {
+export async function getContentForGzhCustomCss(wenyanElement, customCss, highlightCss, isMacStyle, isAddFootnote) {
+    if (isAddFootnote) {
+        addFootnotes(false, wenyanElement);
+    }
     customCss = modifyCss(customCss, {
         '#wenyan pre code': [
             {
@@ -483,4 +437,44 @@ export function buildPseudoSpan(beforeRresults, document) {
     const cssString = entries.map(([key, value]) => `${key}: ${value}`).join('; ');
     span.style.cssText = cssString;
     return span;
+}
+
+export function addFootnotes(listStyle, element) {
+    let footnotes = [];
+    let footnoteIndex = 0;
+    const links = element.querySelectorAll('a[href]'); // 获取所有带有 href 的 a 元素
+    links.forEach((linkElement) => {
+        const title = linkElement.textContent || linkElement.innerText;
+        const href = linkElement.getAttribute("href");
+
+        // 添加脚注并获取脚注编号
+        footnotes.push([++footnoteIndex, title, href]);
+
+        // 在链接后插入脚注标记
+        const footnoteMarker = element.ownerDocument.createElement('sup');
+        footnoteMarker.setAttribute("class", "footnote");
+        footnoteMarker.innerHTML = `[${footnoteIndex}]`;
+        linkElement.after(footnoteMarker);
+    });
+    if (footnoteIndex > 0) {
+        if (!listStyle) {
+            let footnoteArray = footnotes.map((x) => {
+                if (x[1] === x[2]) {
+                    return `<p><span class="footnote-num">[${x[0]}]</span><span class="footnote-txt"><i>${x[1]}</i></span></p>`;
+                }
+                return `<p><span class="footnote-num">[${x[0]}]</span><span class="footnote-txt">${x[1]}: <i>${x[2]}</i></span></p>`;
+            });
+            const footnotesHtml = `<h3>引用链接</h3><section id="footnotes">${footnoteArray.join("")}</section>`;
+            element.innerHTML += footnotesHtml;
+        } else {
+            let footnoteArray = footnotes.map((x) => {
+                if (x[1] === x[2]) {
+                    return `<li id="#footnote-${x[0]}">[${x[0]}]: <i>${x[1]}</i></li>`;
+                }
+                return `<li id="#footnote-${x[0]}">[${x[0]}] ${x[1]}: <i>${x[2]}</i></li>`;
+            });
+            const footnotesHtml = `<h3>引用链接</h3><div id="footnotes"><ul>${footnoteArray.join("")}</ul></div>`;
+            element.innerHTML += footnotesHtml;
+        }
+    }
 }
