@@ -16,14 +16,14 @@ export type GzhContent = {
 };
 
 
-export async function getGzhContent(content: string, themeId: string, hlThemeId: string, isMacStyle: boolean): Promise<GzhContent> {
+export async function getGzhContent(content: string, themeId: string, hlThemeId: string, isMacStyle: boolean, isAddFootnote: boolean): Promise<GzhContent> {
     configureMarked();
     const preHandlerContent = handleFrontMatter(content);
     const html = await renderMarkdown(preHandlerContent.body);
     const dom = new JSDOM(`<body><section id="wenyan">${html}</section></body>`);
     const document = dom.window.document;
     const wenyan = document.getElementById("wenyan");
-    const result = await getContentForGzhBuiltinTheme(wenyan, themeId, hlThemeId, isMacStyle);
+    const result = await getContentForGzhBuiltinTheme(wenyan, themeId, hlThemeId, isMacStyle, isAddFootnote);
     return {
         title: preHandlerContent.title,
         cover: preHandlerContent.cover,
