@@ -1,4 +1,4 @@
-import { marked } from "marked";
+import { Marked } from "marked";
 import { markedHighlight } from "marked-highlight";
 import hljs from "highlight.js";
 import fm from "front-matter";
@@ -14,15 +14,18 @@ export const serif = "ui-serif, Georgia, Cambria, 'Noto Serif', 'Times New Roman
 export const sansSerif = "ui-sans-serif, system-ui, 'Apple Color Emoji', 'Segoe UI', 'Segoe UI Symbol', 'Noto Sans', 'Roboto', sans-serif";
 export const monospace = "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Roboto Mono', 'Courier New', 'Microsoft YaHei', monospace";
 
+let marked;
+
 // --- Marked.js Configuration ---
 export function configureMarked() {
     // ----------- 代码高亮 -----------
-    marked.use(
+    marked = new Marked(
         markedHighlight({
+            emptyLangClass: 'hljs',
             langPrefix: "hljs language-",
-            highlight: function(code, language) {
-                language = hljs.getLanguage(language) ? language : "plaintext";
-                return hljs.highlight(code, { language: language }).value;
+            highlight: function(code, lang, info) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
             }
         })
     );
@@ -74,10 +77,7 @@ export function configureMarked() {
     // 重写渲染paragraph的方法以更好的显示行间公式
     renderer.paragraph = function (paragraph) {
         const text = paragraph.text;
-        if (
-            text.length > 4 &&
-            (/\$\$[\s\S]*?\$\$/g.test(text) || /\\\[[\s\S]*?\\\]/g.test(text))
-        ) {
+        if (text.length > 4 && (/\$\$[\s\S]*?\$\$/g.test(text) || /\\\[[\s\S]*?\\\]/g.test(text))) {
             return `${text}\n`;
         } else {
             return `<p>${parser.parseInline(paragraph.tokens)}</p>\n`;
@@ -129,7 +129,7 @@ export async function renderMarkdown(content) {
     return htmlWithMath;
 }
 
-export async function getContentForGzhBuiltinTheme(wenyanElement, themeId, hlThemeId, isMacStyle, isAddFootnote) {
+export async function getContentForGzhBuiltinTheme(wenyanElement, themeId, hlThemeId, isMacStyle = true, isAddFootnote = true) {
     let theme = themes["default"];
     if (themeId) {
         theme = themes[themeId];
@@ -151,7 +151,7 @@ export async function getContentForGzhBuiltinTheme(wenyanElement, themeId, hlThe
     return getContentForGzhCustomCss(wenyanElement, customCss, highlightCss, isMacStyle, isAddFootnote);
 }
 
-export async function getContentForGzhCustomCss(wenyanElement, customCss, highlightCss, isMacStyle, isAddFootnote) {
+export async function getContentForGzhCustomCss(wenyanElement, customCss, highlightCss, isMacStyle = true, isAddFootnote = true) {
     if (isAddFootnote) {
         addFootnotes(false, wenyanElement);
     }

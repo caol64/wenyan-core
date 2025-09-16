@@ -16,7 +16,13 @@ export type GzhContent = {
 };
 
 
-export async function getGzhContent(content: string, themeId: string, hlThemeId: string, isMacStyle: boolean, isAddFootnote: boolean): Promise<GzhContent> {
+export async function getGzhContent(
+    content: string,
+    themeId: string,
+    hlThemeId: string,
+    isMacStyle: boolean = true,
+    isAddFootnote: boolean = true
+): Promise<GzhContent> {
     configureMarked();
     const preHandlerContent = handleFrontMatter(content);
     const html = await renderMarkdown(preHandlerContent.body);
