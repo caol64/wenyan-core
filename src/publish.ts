@@ -4,6 +4,8 @@ import { Blob, File } from 'formdata-node';
 import path from "path";
 import { fetchAccessToken, publishArticle, uploadMaterial, UploadResponse } from "./wechatApi.js";
 
+const hostImagePath = process.env.HOST_IMAGE_PATH || "";
+const dockerImagePath = "/mnt/host-downloads";
 
 async function uploadImage(imageUrl: string, accessToken: string, fileName?: string): Promise<UploadResponse> {
     let fileData: Blob | File;
@@ -23,7 +25,8 @@ async function uploadImage(imageUrl: string, accessToken: string, fileName?: str
         fileData = new Blob([buffer]);
     } else {
         // 本地路径
-        const fileNameFromLocal = path.basename(imageUrl);
+        const localImagePath = hostImagePath ? imageUrl.replace(hostImagePath, dockerImagePath) : imageUrl;
+        const fileNameFromLocal = path.basename(localImagePath);
         const ext = path.extname(fileNameFromLocal);
         finalName = fileName ?? (ext === "" ? `${fileNameFromLocal}.jpg` : fileNameFromLocal);
 
