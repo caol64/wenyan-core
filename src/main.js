@@ -1,4 +1,4 @@
-import { Marked } from "marked";
+import { marked } from "marked";
 import { markedHighlight } from "marked-highlight";
 import hljs from "highlight.js";
 import fm from "front-matter";
@@ -14,21 +14,20 @@ export const serif = "ui-serif, Georgia, Cambria, 'Noto Serif', 'Times New Roman
 export const sansSerif = "ui-sans-serif, system-ui, 'Apple Color Emoji', 'Segoe UI', 'Segoe UI Symbol', 'Noto Sans', 'Roboto', sans-serif";
 export const monospace = "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Roboto Mono', 'Courier New', 'Microsoft YaHei', monospace";
 
-let marked;
-
 // --- Marked.js Configuration ---
 export function configureMarked() {
+    // marked.setOptions(marked.getDefaults());
     // ----------- 代码高亮 -----------
-    marked = new Marked(
-        markedHighlight({
-            emptyLangClass: 'hljs',
-            langPrefix: "hljs language-",
-            highlight: function(code, lang, info) {
-                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-                return hljs.highlight(code, { language }).value;
-            }
-        })
-    );
+    const highlightExtension = markedHighlight({
+        emptyLangClass: 'hljs',
+        langPrefix: "hljs language-",
+        highlight: function(code, lang, info) {
+            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+            return hljs.highlight(code, { language }).value;
+        }
+    });
+
+    marked.use(highlightExtension);
 
     // ----------- 自定义图片语法扩展 ![](){...} -----------
     const attributeImageExtension = {
@@ -57,7 +56,7 @@ export function configureMarked() {
                     /^\d+$/.test(v) ? `${k}:${v}px` : `${k}:${v}`
                 )
                 .join("; ");
-            return `<img src="${token.href}" alt="${token.alt}" style="${attrStr}">`;
+            return `<img src="${token.href}" alt="${token.alt || ""}" title="${token.alt || ""}" style="${attrStr}">`;
         },
     };
 
@@ -84,9 +83,9 @@ export function configureMarked() {
         }
     };
 
-    renderer.image = function (img, title, text) {
-        const href = img.href;
-        return `<img src="${href}" alt="${text || ""}" title="${title || text || ""}">`;
+    renderer.image = function (token, title, text) {
+        const src = token.href;
+        return `<img src="${src}" alt="${token.text || ""}" title="${token.text || ""}">`;
     };
 
     marked.use({ renderer });

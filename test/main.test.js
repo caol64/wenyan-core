@@ -1,14 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { readFile, writeFile } from "fs/promises";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+import { describe, it, expect, beforeAll } from "vitest";
 
 import {
     handleFrontMatter,
     configureMarked,
+    renderMarkdown,
 } from "../dist/core.js";
-
-import { getGzhContent } from "../dist/wrapper.js";
 
 const frontmatter = `---
 title: 测试标题
@@ -18,23 +14,32 @@ cover: https://example.com/image.jpg
 
 Hello world!`;
 
+beforeAll(() => {
+    configureMarked();
+});
+
 describe("main.ts tests", () => {
     it("should parse frontmatter and return title, cover, and body", () => {
-        configureMarked();
         const result = handleFrontMatter(frontmatter);
         expect(result.title).toBe("测试标题");
         expect(result.cover).toBe("https://example.com/image.jpg");
         expect(result.body).toContain("# 正文");
     });
-    it("should convert markdown to HTML", async () => {
-        const __dirname = dirname(fileURLToPath(import.meta.url));
-        const md = await readFile(join(__dirname, "publish.md"), "utf8");
-        const result = await getGzhContent(md, "phycat", "solarized-light", true, true);
-
-        // console.log(html);
-
-        const outputPath = join(__dirname, "publish.html");
-        await writeFile(outputPath, result.content, "utf8");
-        expect(result.content).toContain("</h2>");
+    it("renderMarkdown image test1", async () => {
+        const result = await renderMarkdown("![alt](https://example.com/image.jpg){width=100 height=200}");
+        expect(result).equals('<p><img src="https://example.com/image.jpg" alt="alt" title="alt" style="width:100px; height:200px"></p>\n');
+    });
+    it("renderMarkdown image test2", async () => {
+        const result = await renderMarkdown("![alt](https://example.com/image.jpg)");
+        expect(result).equals('<p><img src="https://example.com/image.jpg" alt="alt" title="alt"></p>\n');
+    });
+    it("renderMarkdown image test3", async () => {
+        const result = await renderMarkdown("![alt](/home/images/文颜.jpg)");
+        expect(result).toContain('文颜.jpg');
+    });
+    it("renderMarkdown code test1", async () => {
+        const result = await renderMarkdown("```javascript\nimport { Marked } from \"marked\";\n```");
+        console.log(result);
+        expect(result).toContain('<span class="hljs-keyword">');
     });
 });

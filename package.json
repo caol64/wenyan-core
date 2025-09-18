@@ -1,6 +1,6 @@
 {
   "name": "@wenyan-md/core",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Core library for Wenyan markdown rendering & publishing",
   "author": "Lei <caol64@gmail.com> (https://github.com/caol64)",
   "license": "Apache-2.0",
@@ -56,7 +56,8 @@
     "build:all": "pnpm build && pnpm build:browser && pnpm build:styles && pnpm build:math",
     "test:main": "pnpm build && vitest run main.test.js",
     "test:wrapper": "pnpm build && vitest run wrapper.test.js",
-    "test:publish": "pnpm build && vitest run publish.test.js",
+    "test:publish": "pnpm build && vitest run test/publish.test.js",
+    "test:realPublish": "pnpm build && vitest run test/realPublish.test.js",
     "prepublishOnly": "pnpm build:all"
   },
   "packageManager": "pnpm@10.7.1",
