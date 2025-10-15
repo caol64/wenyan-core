@@ -4,7 +4,7 @@
 
 # 文颜 CORE
 
-[![npm](https://img.shields.io/npm/v/@wenyan-md/core?logo=npm)](https://www.npmjs.com/package/@wenyan-md/core)
+[![npm](https://img.shields.io/npm/v/@wenyan-md/core)](https://www.npmjs.com/package/@wenyan-md/core)
 [![License](https://img.shields.io/github/license/caol64/wenyan-core)](LICENSE)
 ![NPM Downloads](https://img.shields.io/npm/dm/%40wenyan-md%2Fcore)
 [![Stars](https://img.shields.io/github/stars/caol64/wenyan-core?style=social)](https://github.com/caol64/wenyan-core)

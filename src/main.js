@@ -274,6 +274,16 @@ export async function getContentForGzhCustomCss(wenyanElement, customCss, highli
             element.insertBefore(buildPseudoSpan(beforeResults, wenyanElement.ownerDocument), element.firstChild);
         }
     });
+    // 列表
+    elements = wenyanElement.querySelectorAll("li");
+    elements.forEach(li => {
+        const section = wenyanElement.ownerDocument.createElement("section");
+        // 将 li 的所有子节点移动进 section
+        while (li.firstChild) {
+            section.appendChild(li.firstChild);
+        }
+        li.appendChild(section);
+    });
     wenyanElement.setAttribute("data-provider", "WenYan");
     return `${wenyanElement.outerHTML.replace(/class="mjx-solid"/g, 'fill="none" stroke-width="70"')}`;
 }
