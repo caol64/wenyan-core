@@ -14,9 +14,10 @@
 **文颜**现已推出多个版本：
 
 * [macOS App Store 版](https://github.com/caol64/wenyan) - MAC 桌面应用
-* [Windows + Linux 版](https://github.com/caol64/wenyan-pc) - 跨平台桌面应用
+* [跨平台版本](https://github.com/caol64/wenyan-pc) - Windows/Linux 跨平台桌面应用
 * [CLI 版本](https://github.com/caol64/wenyan-cli) - CI/CD 或脚本自动化发布公众号文章
 * [MCP 版本](https://github.com/caol64/wenyan-mcp) - 让 AI 自动发布公众号文章
+* [嵌入版本](https://github.com/caol64/wenyan-core) - 将文颜的核心功能嵌入 Node 或者 Web 项目
 
 本项目是 **文颜的核心库文件**，你可以将其方便地嵌入自己的应用中，以实现排版美化和自动发布功能。
 
@@ -170,9 +171,13 @@ if (data.media_id) {
 
 ```html
 <!-- 从 unpkg 引入 -->
+<script src="https://unpkg.com/@wenyan-md/core/dist/browser/wenyan-math.js"></script>
+<script src="https://unpkg.com/@wenyan-md/core/dist/browser/wenyan-style.js"></script>
 <script src="https://unpkg.com/@wenyan-md/core/dist/browser/wenyan-core.js"></script>
 
 <!-- 或者从 jsDelivr 引入 -->
+<script src="https://cdn.jsdelivr.net/npm/@wenyan-md/core/dist/browser/wenyan-math.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@wenyan-md/core/dist/browser/wenyan-style.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@wenyan-md/core/dist/browser/wenyan-core.js"></script>
 
 <script>
