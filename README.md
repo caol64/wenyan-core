@@ -171,13 +171,13 @@ if (data.media_id) {
 
 ```html
 <!-- 从 unpkg 引入 -->
-<script src="https://unpkg.com/@wenyan-md/core/dist/browser/wenyan-math.js"></script>
-<script src="https://unpkg.com/@wenyan-md/core/dist/browser/wenyan-style.js"></script>
+<script src="https://unpkg.com/@wenyan-md/core/dist/math/wenyan-math.js"></script>
+<script src="https://unpkg.com/@wenyan-md/core/dist/styles/wenyan-styles.js"></script>
 <script src="https://unpkg.com/@wenyan-md/core/dist/browser/wenyan-core.js"></script>
 
 <!-- 或者从 jsDelivr 引入 -->
-<script src="https://cdn.jsdelivr.net/npm/@wenyan-md/core/dist/browser/wenyan-math.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@wenyan-md/core/dist/browser/wenyan-style.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@wenyan-md/core/dist/math/wenyan-math.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@wenyan-md/core/dist/styles/wenyan-styles.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@wenyan-md/core/dist/browser/wenyan-core.js"></script>
 
 <script>
