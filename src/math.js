@@ -32,7 +32,12 @@ const svg = new SVG(svgConfig);
 function addContainer(math, doc) {
     const tag = math.display ? 'section' : 'span';
     const cls = math.display ? 'block-equation' : 'inline-equation';
-    math.typesetRoot = doc.adaptor.node(tag, {class: cls}, [math.typesetRoot]);
+    const container = math.typesetRoot;
+    if (math.math) {
+        doc.adaptor.setAttribute(container, 'math', math.math);
+    }
+    const node = doc.adaptor.node(tag, { class: cls }, [container]);
+    math.typesetRoot = node;
 }
 
 export async function renderMathInHtml(htmlString) {

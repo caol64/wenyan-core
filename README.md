@@ -169,7 +169,13 @@ if (data.media_id) {
 
 推荐使用 **[unpkg](https://unpkg.com/)** 或 **[jsDelivr](https://www.jsdelivr.com/)**。
 
+浏览器版本的文颜需自行引入依赖`highlight.js`和`csstree`。
+
 ```html
+<!-- 添加依赖 -->
+<script src="https://cdn.jsdelivr.net/npm/css-tree/dist/csstree.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+
 <!-- 从 unpkg 引入 -->
 <script src="https://unpkg.com/@wenyan-md/core/dist/math/wenyan-math.js"></script>
 <script src="https://unpkg.com/@wenyan-md/core/dist/styles/wenyan-styles.js"></script>
