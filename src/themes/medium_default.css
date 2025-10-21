@@ -1,6 +1,6 @@
 :root {
     --sans-serif-font: source-serif-pro, Georgia, Cambria, "Times New Roman", Times, serif;
-    --monospace-font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "liberation mono", "courier new", monospace;
+    --monospace-font: Menlo, Monaco, Consolas, "liberation mono", "courier new", monospace;
 }
 #wenyan {
     font-family: var(--sans-serif-font);

@@ -20,7 +20,7 @@
 }
 #wenyan p,
 #wenyan pre {
-    margin: 1em 0.8em;
+    margin: 1em 0;
 }
 #wenyan strong {
     color: var(--primary-color);

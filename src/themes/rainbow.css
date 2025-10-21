@@ -19,7 +19,7 @@
 }
 #wenyan p,
 #wenyan pre {
-    margin: 1em 0.8em;
+    margin: 1em 0;
 }
 #wenyan h1,
 #wenyan h2,
@@ -43,6 +43,7 @@
     padding-right: 1em;
     border-left: 0.5em solid var(--h-border-color);
     border-radius: 0.4em;
+    display: inline-block;
 }
 #wenyan h3 {
     font-size: 1.3em;

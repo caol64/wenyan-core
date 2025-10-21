@@ -1,8 +1,3 @@
-:root {
-    --sans-serif-font: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-        "Noto Color Emoji";
-    --monospace-font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "liberation mono", "courier new", monospace;
-}
 #wenyan {
     font-family: var(--sans-serif-font);
     line-height: 1.75;

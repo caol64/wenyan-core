@@ -10,9 +10,9 @@ import { themes } from "./theme.js";
 import { hlThemes } from "./hltheme.js";
 
 // --- Constants ---
-export const serif = "ui-serif, Georgia, Cambria, 'Noto Serif', 'Times New Roman', serif";
-export const sansSerif = "ui-sans-serif, system-ui, 'Apple Color Emoji', 'Segoe UI', 'Segoe UI Symbol', 'Noto Sans', 'Roboto', sans-serif";
-export const monospace = "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Roboto Mono', 'Courier New', 'Microsoft YaHei', monospace";
+export const serif = "Georgia, Cambria, 'Noto Serif', 'Times New Roman', serif";
+export const sansSerif = "system-ui, 'Apple Color Emoji', 'Segoe UI', 'Segoe UI Symbol', 'Noto Sans', 'Roboto', sans-serif";
+export const monospace = "Menlo, Monaco, Consolas, 'Liberation Mono', 'Roboto Mono', 'Courier New', 'Microsoft YaHei', monospace";
 
 // --- Marked.js Configuration ---
 export function configureMarked() {
