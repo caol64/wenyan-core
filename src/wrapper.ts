@@ -23,8 +23,8 @@ export async function getGzhContent(
     isMacStyle: boolean = true,
     isAddFootnote: boolean = true
 ): Promise<GzhContent> {
-    configureMarked();
-    const preHandlerContent = handleFrontMatter(content);
+    await configureMarked();
+    const preHandlerContent = await handleFrontMatter(content);
     const html = await renderMarkdown(preHandlerContent.body);
     const dom = new JSDOM(`<body><section id="wenyan">${html}</section></body>`);
     const document = dom.window.document;

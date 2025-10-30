@@ -14,81 +14,92 @@ export const serif = "Georgia, Cambria, 'Noto Serif', 'Times New Roman', serif";
 export const sansSerif = "system-ui, 'Apple Color Emoji', 'Segoe UI', 'Segoe UI Symbol', 'Noto Sans', 'Roboto', sans-serif";
 export const monospace = "Menlo, Monaco, Consolas, 'Liberation Mono', 'Roboto Mono', 'Courier New', 'Microsoft YaHei', monospace";
 
+let markedConfigured = false;
+let configurePromise = null;
+
 // --- Marked.js Configuration ---
-export function configureMarked() {
+export async function configureMarked() {
+    if (markedConfigured) return;
+    if (configurePromise) return configurePromise; // 等待前一次初始化完成
+
     // marked.setOptions(marked.getDefaults());
-    // ----------- 代码高亮 -----------
-    const highlightExtension = markedHighlight({
-        emptyLangClass: 'hljs',
-        langPrefix: "hljs language-",
-        highlight: function(code, lang, info) {
-            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-            return hljs.highlight(code, { language }).value;
-        }
-    });
-
-    marked.use(highlightExtension);
-
-    // ----------- 自定义图片语法扩展 ![](){...} -----------
-    const attributeImageExtension = {
-        name: "attributeImage",
-        level: "inline",
-        start(src) {
-            return src.indexOf("![");
-        },
-        tokenizer(src) {
-            const rule = /^!\[([^\]]*)\]\(([^)]+)\)\{(.*?)\}/;
-            const match = rule.exec(src);
-            if (match) {
-                return {
-                    type: "attributeImage",
-                    raw: match[0],
-                    alt: match[1],
-                    href: match[2],
-                    attrs: match[3],
-                };
+    configurePromise = (async () => {
+        // ----------- 代码高亮 -----------
+        const highlightExtension = markedHighlight({
+            emptyLangClass: 'hljs',
+            langPrefix: "hljs language-",
+            highlight: function(code, lang, info) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
             }
-        },
-        renderer(token) {
-            const attrs = stringToMap(token.attrs);
-            const attrStr = Array.from(attrs)
-                .map(([k, v]) =>
-                    /^\d+$/.test(v) ? `${k}:${v}px` : `${k}:${v}`
-                )
-                .join("; ");
-            return `<img src="${token.href}" alt="${token.alt || ""}" title="${token.alt || ""}" style="${attrStr}">`;
-        },
-    };
+        });
 
-    marked.use({ extensions: [attributeImageExtension] });
+        marked.use(highlightExtension);
 
-    // ----------- 自定义渲染器 -----------
-    const renderer = marked.Renderer;
-    const parser = marked.Parser;
+        // ----------- 自定义图片语法扩展 ![](){...} -----------
+        const attributeImageExtension = {
+            name: "attributeImage",
+            level: "inline",
+            start(src) {
+                return src.indexOf("![");
+            },
+            tokenizer(src) {
+                const rule = /^!\[([^\]]*)\]\(([^)]+)\)\{(.*?)\}/;
+                const match = rule.exec(src);
+                if (match) {
+                    return {
+                        type: "attributeImage",
+                        raw: match[0],
+                        alt: match[1],
+                        href: match[2],
+                        attrs: match[3],
+                    };
+                }
+            },
+            renderer(token) {
+                const attrs = stringToMap(token.attrs);
+                const attrStr = Array.from(attrs)
+                    .map(([k, v]) =>
+                        /^\d+$/.test(v) ? `${k}:${v}px` : `${k}:${v}`
+                    )
+                    .join("; ");
+                return `<img src="${token.href}" alt="${token.alt || ""}" title="${token.alt || ""}" style="${attrStr}">`;
+            },
+        };
 
-    // 重写渲染标题的方法（h1 ~ h6）
-    renderer.heading = function (heading) {
-        const text = parser.parseInline(heading.tokens);
-        const level = heading.depth;
-        return `<h${level}><span>${text}</span></h${level}>\n`;
-    };
+        marked.use({ extensions: [attributeImageExtension] });
 
-    // 重写渲染paragraph的方法以更好的显示行间公式
-    renderer.paragraph = function (paragraph) {
-        const text = paragraph.text;
-        if (text.length > 4 && (/\$\$[\s\S]*?\$\$/g.test(text) || /\\\[[\s\S]*?\\\]/g.test(text))) {
-            return `${text}\n`;
-        } else {
-            return `<p>${parser.parseInline(paragraph.tokens)}</p>\n`;
-        }
-    };
+        // ----------- 自定义渲染器 -----------
+        const renderer = marked.Renderer;
+        const parser = marked.Parser;
 
-    renderer.image = function (token, title, text) {
-        const src = token.href;
-        return `<img src="${src}" alt="${token.text || ""}" title="${token.text || ""}">`;
-    };
+        // 重写渲染标题的方法（h1 ~ h6）
+        renderer.heading = function (heading) {
+            const text = parser.parseInline(heading.tokens);
+            const level = heading.depth;
+            return `<h${level}><span>${text}</span></h${level}>\n`;
+        };
 
-    marked.use({ renderer });
+        // 重写渲染paragraph的方法以更好的显示行间公式
+        renderer.paragraph = function (paragraph) {
+            const text = paragraph.text;
+            if (text.length > 4 && (/\$\$[\s\S]*?\$\$/g.test(text) || /\\\[[\s\S]*?\\\]/g.test(text))) {
+                return `${text}\n`;
+            } else {
+                return `<p>${parser.parseInline(paragraph.tokens)}</p>\n`;
+            }
+        };
+
+        renderer.image = function (token, title, text) {
+            const src = token.href;
+            return `<img src="${src}" alt="${token.text || ""}" title="${token.text || ""}">`;
+        };
+
+        marked.use({ renderer });
+        markedConfigured = true;
+    })();
+
+    return configurePromise;
 }
 
 // 辅助函数：把 "{width=100 height=200}" 字符串转成 Map
@@ -103,7 +114,7 @@ function stringToMap(str) {
     return map;
 }
 
-export function handleFrontMatter(markdown) {
+export async function handleFrontMatter(markdown) {
     const { attributes, body } = fm(markdown);
     const result = {};
     let head = "";
@@ -123,6 +134,7 @@ export function handleFrontMatter(markdown) {
 }
 
 export async function renderMarkdown(content) {
+    await configureMarked();
     const html = marked.parse(content);
     const htmlWithMath = await renderMathInHtml(html);
     return htmlWithMath;

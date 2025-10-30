@@ -4,7 +4,7 @@ import {
     handleFrontMatter,
     configureMarked,
     renderMarkdown,
-} from "../dist/core.js";
+} from "../src/main.js";
 
 const frontmatter = `---
 title: 测试标题
@@ -14,13 +14,13 @@ cover: https://example.com/image.jpg
 
 Hello world!`;
 
-beforeAll(() => {
-    configureMarked();
+beforeAll(async() => {
+    await configureMarked();
 });
 
 describe("main.ts tests", () => {
-    it("should parse frontmatter and return title, cover, and body", () => {
-        const result = handleFrontMatter(frontmatter);
+    it("should parse frontmatter and return title, cover, and body", async () => {
+        const result = await handleFrontMatter(frontmatter);
         expect(result.title).toBe("测试标题");
         expect(result.cover).toBe("https://example.com/image.jpg");
         expect(result.body).toContain("# 正文");
