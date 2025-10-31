@@ -9,10 +9,10 @@ import {
 
 
 export type GzhContent = {
-    title: string;
-    cover: string;
+    title?: string;
+    cover?: string;
     content: string;
-    description: string;
+    description?: string;
 };
 
 
@@ -29,7 +29,7 @@ export async function getGzhContent(
     const dom = new JSDOM(`<body><section id="wenyan">${html}</section></body>`);
     const document = dom.window.document;
     const wenyan = document.getElementById("wenyan");
-    const result = await getContentForGzhBuiltinTheme(wenyan, themeId, hlThemeId, isMacStyle, isAddFootnote);
+    const result = await getContentForGzhBuiltinTheme(wenyan!, themeId, hlThemeId, isMacStyle, isAddFootnote);
     return {
         title: preHandlerContent.title,
         cover: preHandlerContent.cover,

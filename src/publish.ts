@@ -71,8 +71,8 @@ async function uploadImages(content: string, accessToken: string): Promise<{ htm
     return { html: updatedHtml, firstImageId };
 }
 
-export async function publishToDraft(title: string, content: string, cover: string) {
-    const accessToken = await fetchAccessToken();
+export async function publishToDraft(title: string, content: string, cover: string, appId?: string, appSecret?: string) {
+    const accessToken = await fetchAccessToken(appId, appSecret);
     if (!accessToken.access_token) {
         if (accessToken.errcode) {
             throw new Error(`获取 Access Token 失败，错误码：${accessToken.errcode}，${accessToken.errmsg}`);

@@ -120,7 +120,7 @@ const { title, cover, content, description } = await getGzhContent(
 ```ts
 import { publishToDraft } from "@wenyan-md/core/publish";
 
-// 首先确保环境变量有效
+// 方式1，你可以通过环境变量注入WECHAT_APP_ID和WECHAT_APP_SECRET
 const wechatAppId = process.env.WECHAT_APP_ID;
 const wechatAppSecret = process.env.WECHAT_APP_SECRET;
 
@@ -136,6 +136,10 @@ if (data.media_id) {
 } else {
   console.error(`上传失败，\n${data}`);
 }
+
+// 方式2，你可以直接以参数形式传入WECHAT_APP_ID和WECHAT_APP_SECRET
+
+const data = await publishToDraft(title, content, cover, wechatAppId, wechatAppSecret);
 ```
 
 #### 参数说明

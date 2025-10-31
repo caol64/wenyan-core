@@ -3,15 +3,17 @@ import { FormData, File, Blob } from "formdata-node";
 const tokenUrl = "https://api.weixin.qq.com/cgi-bin/token";
 const publishUrl = "https://api.weixin.qq.com/cgi-bin/draft/add";
 const uploadUrl = `https://api.weixin.qq.com/cgi-bin/material/add_material`;
-const appId = process.env.WECHAT_APP_ID || "";
-const appSecret = process.env.WECHAT_APP_SECRET || "";
+const appIdEnv = process.env.WECHAT_APP_ID || "";
+const appSecretEnv = process.env.WECHAT_APP_SECRET || "";
 
 export type UploadResponse = {
     media_id: string;
     url: string;
 };
 
-export async function fetchAccessToken() {
+export async function fetchAccessToken(appId?: string, appSecret?: string) {
+    appId = appId ?? appIdEnv;
+    appSecret = appSecret ?? appSecretEnv;
     const response = await fetch(`${tokenUrl}?grant_type=client_credential&appid=${appId}&secret=${appSecret}`);
     if (!response.ok) {
         const errorText = await response.text();
