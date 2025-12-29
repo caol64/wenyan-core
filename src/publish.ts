@@ -1,7 +1,8 @@
 import { JSDOM } from "jsdom";
-import { fileFromPath } from 'formdata-node/file-from-path';
-import { Blob, File } from 'formdata-node';
-import path from "path";
+import { fileFromPath } from "formdata-node/file-from-path";
+import { Blob, File } from "formdata-node";
+import path from "node:path";
+import { stat } from "node:fs/promises";
 import { fetchAccessToken, publishArticle, uploadMaterial, UploadResponse } from "./wechatApi.js";
 
 const hostImagePath = process.env.HOST_IMAGE_PATH || "";
@@ -20,17 +21,24 @@ async function uploadImage(imageUrl: string, accessToken: string, fileName?: str
         const fileNameFromUrl = path.basename(imageUrl.split("?")[0]);
         const ext = path.extname(fileNameFromUrl);
         finalName = fileName ?? (ext === "" ? `${fileNameFromUrl}.jpg` : fileNameFromUrl);
-
         const buffer = await response.arrayBuffer();
-        fileData = new Blob([buffer]);
+        if (buffer.byteLength === 0) {
+            throw new Error(`远程图片大小为0，无法上传: ${imageUrl}`);
+        }
+        const contentType = response.headers.get("content-type") || "image/jpeg";
+        fileData = new Blob([buffer], { type: contentType });
     } else {
         // 本地路径
         const localImagePath = hostImagePath ? imageUrl.replace(hostImagePath, dockerImagePath) : imageUrl;
+        const safePath = path.resolve(localImagePath);
+        const stats = await stat(safePath);
+        if (stats.size === 0) {
+            throw new Error(`本地图片大小为0，无法上传: ${safePath}`);
+        }
         const fileNameFromLocal = path.basename(localImagePath);
         const ext = path.extname(fileNameFromLocal);
         finalName = fileName ?? (ext === "" ? `${fileNameFromLocal}.jpg` : fileNameFromLocal);
-
-        fileData = await fileFromPath(imageUrl);
+        fileData = await fileFromPath(safePath);
     }
 
     const data = await uploadMaterial("image", fileData, finalName, accessToken);
@@ -40,22 +48,21 @@ async function uploadImage(imageUrl: string, accessToken: string, fileName?: str
     return data;
 }
 
-
-async function uploadImages(content: string, accessToken: string): Promise<{ html: string, firstImageId: string }> {
-    if (!content.includes('<img')) {
+async function uploadImages(content: string, accessToken: string): Promise<{ html: string; firstImageId: string }> {
+    if (!content.includes("<img")) {
         return { html: content, firstImageId: "" };
     }
 
     const dom = new JSDOM(content);
     const document = dom.window.document;
-    const images = Array.from(document.querySelectorAll('img'));
+    const images = Array.from(document.querySelectorAll("img"));
 
     const uploadPromises = images.map(async (element) => {
-        const dataSrc = element.getAttribute('src');
+        const dataSrc = element.getAttribute("src");
         if (dataSrc) {
-            if (!dataSrc.startsWith('https://mmbiz.qpic.cn')) {
+            if (!dataSrc.startsWith("https://mmbiz.qpic.cn")) {
                 const resp = await uploadImage(dataSrc, accessToken);
-                element.setAttribute('src', resp.url);
+                element.setAttribute("src", resp.url);
                 return resp.media_id;
             } else {
                 return dataSrc;
@@ -71,7 +78,13 @@ async function uploadImages(content: string, accessToken: string): Promise<{ htm
     return { html: updatedHtml, firstImageId };
 }
 
-export async function publishToDraft(title: string, content: string, cover: string, appId?: string, appSecret?: string) {
+export async function publishToDraft(
+    title: string,
+    content: string,
+    cover: string,
+    appId?: string,
+    appSecret?: string
+) {
     const accessToken = await fetchAccessToken(appId, appSecret);
     if (!accessToken.access_token) {
         if (accessToken.errcode) {
@@ -80,8 +93,7 @@ export async function publishToDraft(title: string, content: string, cover: stri
             throw new Error(`获取 Access Token 失败: ${accessToken}`);
         }
     }
-    const handledContent = content.replace(/\n<li/g, "<li").replace(/<\/li>\n/g, "<\/li>");
-    const { html, firstImageId } = await uploadImages(handledContent, accessToken.access_token);
+    const { html, firstImageId } = await uploadImages(content, accessToken.access_token);
     let thumbMediaId = "";
     if (cover) {
         const resp = await uploadImage(cover, accessToken.access_token, "cover.jpg");

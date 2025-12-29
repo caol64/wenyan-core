@@ -19,11 +19,9 @@ export default defineConfig(({ mode }) => {
                 formats: ["es"],
             },
             sourcemap: false,
+            ssr: true,
             rollupOptions: {
                 external: [
-                    "fs",
-                    "fs/promises",
-                    "path",
                     "marked",
                     "marked-highlight",
                     "highlight.js",

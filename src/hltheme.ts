@@ -3,7 +3,7 @@ export type HlTheme = {
     getCss: () => Promise<string>;
 };
 
-const themeMeta: Omit<HlTheme, 'getCss'>[] = [
+const themeMeta: Omit<HlTheme, "getCss">[] = [
     {
         id: "atom-one-dark",
     },
@@ -33,9 +33,9 @@ const themeMeta: Omit<HlTheme, 'getCss'>[] = [
     },
 ];
 
-const themeCssModules = import.meta.glob('./highlight/styles/*.css', {
-    query: '?raw',
-    import: 'default'
+const themeCssModules = import.meta.glob("./highlight/styles/*.css", {
+    query: "?raw",
+    import: "default",
 });
 
 export const hlThemes: Record<string, HlTheme> = {};

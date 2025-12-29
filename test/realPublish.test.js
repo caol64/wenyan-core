@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { readFile } from "fs/promises";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+import { readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { publishToDraft } from "../src/publish.js";
 
 

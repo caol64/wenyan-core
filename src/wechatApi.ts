@@ -1,4 +1,6 @@
+import { FormDataEncoder } from "form-data-encoder";
 import { FormData, File, Blob } from "formdata-node";
+import { Readable } from "node:stream";
 
 const tokenUrl = "https://api.weixin.qq.com/cgi-bin/token";
 const publishUrl = "https://api.weixin.qq.com/cgi-bin/draft/add";
@@ -30,17 +32,23 @@ export async function uploadMaterial(
 ) {
     const form = new FormData();
     form.append("media", fileData, fileName);
+    const encoder = new FormDataEncoder(form);
     const response = await fetch(`${uploadUrl}?access_token=${accessToken}&type=${type}`, {
         method: 'POST',
-        body: form as any,
-    });
+        headers: encoder.headers,
+        body: Readable.from(encoder) as any,
+        duplex: "half",
+    } as RequestInit);
     if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`上传素材失败: ${response.status} ${errorText}`);
     }
     const data = await response.json();
+    if (data.errcode && data.errcode !== 0) {
+        throw new Error(`上传素材失败: ${data.errcode} ${data.errmsg}`);
+    }
     if (data.url && data.url.startsWith("http://")) {
-        data.url = data.url.replace("http://", "https://");
+        data.url = data.url.replace(/^http:\/\//i, "https://");
     }
     return data;
 }

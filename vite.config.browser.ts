@@ -11,7 +11,7 @@ export default defineConfig({
         lib: {
             entry: resolve(__dirname, "src/main.js"),
             name: "WenyanCore", // 浏览器全局变量名
-            fileName: () => `wenyan-core.js`,
+            fileName: () => "wenyan-core.js",
             formats: ["iife"],
         },
         sourcemap: false,
