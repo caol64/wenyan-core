@@ -26,5 +26,5 @@ jobs:
 
       - name: Publish to npm
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install
           pnpm publish --access public --no-git-checks
