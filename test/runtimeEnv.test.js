@@ -12,17 +12,30 @@ describe("RuntimeEnv Logic Tests", () => {
     });
 
     describe("1. Local Environment (Not in Container)", () => {
-        it("should return absolute path using system native resolve", () => {
+        beforeEach(() => {
             // 模拟非容器环境
             RuntimeEnv.isContainer = false;
             RuntimeEnv.hostFilePath = "";
-
-            const input = "./test-file.txt";
+        });
+        it("should return absolute path using system native resolve", () => {
+            const input = "/test-file.txt";
             const result = RuntimeEnv.resolveLocalPath(input);
 
             // 在非容器模式下，应该直接调用 path.resolve
             // 这里的预期结果取决于你运行测试的系统，所以主要检查是否是绝对路径
             expect(result).toBe(path.resolve(input));
+        });
+        it("should return absolute path using system native resolve", () => {
+            const input = "./test-file.txt";
+            const relativeBase = "/root/dir";
+            const result = RuntimeEnv.resolveLocalPath(input, relativeBase);
+            expect(result).toBe(path.resolve(relativeBase, input));
+        });
+        it("should return absolute path using system native resolve", () => {
+            const input = "/test-file.txt";
+            const relativeBase = "/root/dir";
+            const result = RuntimeEnv.resolveLocalPath(input, relativeBase);
+            expect(result).toBe(input);
         });
     });
 
@@ -89,6 +102,27 @@ describe("RuntimeEnv Logic Tests", () => {
             const input = "D:\\Games\\config.ini";
             const result = RuntimeEnv.resolveLocalPath(input);
             // 应该只是把 \ 变成 /，但不进行路径替换
+            expect(result).toBe("D:/Games/config.ini");
+        });
+
+        it("should return normalized path if file is on a different drive", () => {
+            const input = "Games\\config.ini";
+            const relativeBase = "D:\\";
+            const result = RuntimeEnv.resolveLocalPath(input, relativeBase);
+            expect(result).toBe("D:/Games/config.ini");
+        });
+
+        it("should return normalized path if file is on a different drive", () => {
+            const input = "Games\\config.ini";
+            const relativeBase = "C:/Users/Dev/Project";
+            const result = RuntimeEnv.resolveLocalPath(input, relativeBase);
+            expect(result).toBe("/app/Games/config.ini");
+        });
+
+        it("should return normalized path if file is on a different drive", () => {
+            const input = "D:\\Games\\config.ini";
+            const relativeBase = "E:\\";
+            const result = RuntimeEnv.resolveLocalPath(input, relativeBase);
             expect(result).toBe("D:/Games/config.ini");
         });
     });

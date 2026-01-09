@@ -6,7 +6,7 @@ import { stat } from "node:fs/promises";
 import { fetchAccessToken, publishArticle, uploadMaterial, UploadResponse } from "./wechatApi.js";
 import { RuntimeEnv } from "./runtimeEnv.js";
 
-async function uploadImage(imageUrl: string, accessToken: string, fileName?: string): Promise<UploadResponse> {
+async function uploadImage(imageUrl: string, accessToken: string, fileName?: string, relativePath?: string): Promise<UploadResponse> {
     let fileData: Blob | File;
     let finalName: string;
 
@@ -27,16 +27,15 @@ async function uploadImage(imageUrl: string, accessToken: string, fileName?: str
         fileData = new Blob([buffer], { type: contentType });
     } else {
         // 本地路径
-        const resolvedPath = RuntimeEnv.resolveLocalPath(imageUrl);
-        const safePath = path.resolve(resolvedPath);
-        const stats = await stat(safePath);
+        const resolvedPath = RuntimeEnv.resolveLocalPath(imageUrl, relativePath);
+        const stats = await stat(resolvedPath);
         if (stats.size === 0) {
-            throw new Error(`本地图片大小为0，无法上传: ${safePath}`);
+            throw new Error(`本地图片大小为0，无法上传: ${resolvedPath}`);
         }
         const fileNameFromLocal = path.basename(resolvedPath);
         const ext = path.extname(fileNameFromLocal);
         finalName = fileName ?? (ext === "" ? `${fileNameFromLocal}.jpg` : fileNameFromLocal);
-        fileData = await fileFromPath(safePath);
+        fileData = await fileFromPath(resolvedPath);
     }
 
     const data = await uploadMaterial("image", fileData, finalName, accessToken);
@@ -46,7 +45,7 @@ async function uploadImage(imageUrl: string, accessToken: string, fileName?: str
     return data;
 }
 
-async function uploadImages(content: string, accessToken: string): Promise<{ html: string; firstImageId: string }> {
+async function uploadImages(content: string, accessToken: string, relativePath?: string): Promise<{ html: string; firstImageId: string }> {
     if (!content.includes("<img")) {
         return { html: content, firstImageId: "" };
     }
@@ -59,7 +58,7 @@ async function uploadImages(content: string, accessToken: string): Promise<{ htm
         const dataSrc = element.getAttribute("src");
         if (dataSrc) {
             if (!dataSrc.startsWith("https://mmbiz.qpic.cn")) {
-                const resp = await uploadImage(dataSrc, accessToken);
+                const resp = await uploadImage(dataSrc, accessToken, undefined, relativePath);
                 element.setAttribute("src", resp.url);
                 return resp.media_id;
             } else {
@@ -81,7 +80,8 @@ export async function publishToDraft(
     content: string,
     cover: string,
     appId?: string,
-    appSecret?: string
+    appSecret?: string,
+    relativePath?: string,
 ) {
     const accessToken = await fetchAccessToken(appId, appSecret);
     if (!accessToken.access_token) {
@@ -91,14 +91,14 @@ export async function publishToDraft(
             throw new Error(`获取 Access Token 失败: ${accessToken}`);
         }
     }
-    const { html, firstImageId } = await uploadImages(content, accessToken.access_token);
+    const { html, firstImageId } = await uploadImages(content, accessToken.access_token, relativePath);
     let thumbMediaId = "";
     if (cover) {
-        const resp = await uploadImage(cover, accessToken.access_token, "cover.jpg");
+        const resp = await uploadImage(cover, accessToken.access_token, "cover.jpg", relativePath);
         thumbMediaId = resp.media_id;
     } else {
         if (firstImageId.startsWith("https://mmbiz.qpic.cn")) {
-            const resp = await uploadImage(firstImageId, accessToken.access_token, "cover.jpg");
+            const resp = await uploadImage(firstImageId, accessToken.access_token, "cover.jpg", relativePath);
             thumbMediaId = resp.media_id;
         } else {
             thumbMediaId = firstImageId;

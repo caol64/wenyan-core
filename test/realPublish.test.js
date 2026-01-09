@@ -12,7 +12,10 @@ describe("publish.ts tests", () => {
         const data = await publishToDraft(
             "自动化测试",
             html,
-            "test/wenyan.jpg",
+            undefined,
+            undefined,
+            undefined,
+            __dirname,
         );
         expect(data).toHaveProperty("media_id");
         expect(data.media_id).toBeTruthy();
