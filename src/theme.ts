@@ -1,3 +1,5 @@
+import { normalizeCssLoader } from "./utils.js";
+
 export type Theme = {
     id: string;
     name: string;
@@ -70,6 +72,7 @@ const themeMeta: Omit<Theme, "getCss">[] = [
 const themeCssModules = import.meta.glob("./themes/*.css", {
     query: "?raw",
     import: "default",
+    eager: true,
 });
 
 // 工具函数：根据 meta + CSS loader 生成 Theme
@@ -82,7 +85,7 @@ function createTheme(meta: Omit<Theme, "getCss">): Theme | null {
     }
     return {
         ...meta,
-        getCss: cssModuleLoader as () => Promise<string>,
+        getCss: normalizeCssLoader(cssModuleLoader),
     };
 }
 
@@ -116,7 +119,7 @@ export const otherThemes: Record<string, Theme> = Object.fromEntries(
             description: "",
             appName: "",
             author: "",
-            getCss: themeCssModules[`./themes/${id}.css`] as () => Promise<string>,
+            getCss: normalizeCssLoader(themeCssModules[`./themes/${id}.css`]),
         },
     ])
 );

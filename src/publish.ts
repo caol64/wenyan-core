@@ -4,9 +4,7 @@ import { Blob, File } from "formdata-node";
 import path from "node:path";
 import { stat } from "node:fs/promises";
 import { fetchAccessToken, publishArticle, uploadMaterial, UploadResponse } from "./wechatApi.js";
-
-const hostImagePath = process.env.HOST_IMAGE_PATH || "";
-const dockerImagePath = "/mnt/host-downloads";
+import { RuntimeEnv } from "./runtimeEnv.js";
 
 async function uploadImage(imageUrl: string, accessToken: string, fileName?: string): Promise<UploadResponse> {
     let fileData: Blob | File;
@@ -29,13 +27,13 @@ async function uploadImage(imageUrl: string, accessToken: string, fileName?: str
         fileData = new Blob([buffer], { type: contentType });
     } else {
         // 本地路径
-        const localImagePath = hostImagePath ? imageUrl.replace(hostImagePath, dockerImagePath) : imageUrl;
-        const safePath = path.resolve(localImagePath);
+        const resolvedPath = RuntimeEnv.resolveLocalPath(imageUrl);
+        const safePath = path.resolve(resolvedPath);
         const stats = await stat(safePath);
         if (stats.size === 0) {
             throw new Error(`本地图片大小为0，无法上传: ${safePath}`);
         }
-        const fileNameFromLocal = path.basename(localImagePath);
+        const fileNameFromLocal = path.basename(resolvedPath);
         const ext = path.extname(fileNameFromLocal);
         finalName = fileName ?? (ext === "" ? `${fileNameFromLocal}.jpg` : fileNameFromLocal);
         fileData = await fileFromPath(safePath);

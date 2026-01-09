@@ -9,30 +9,47 @@
 ![NPM Downloads](https://img.shields.io/npm/dm/%40wenyan-md%2Fcore)
 [![Stars](https://img.shields.io/github/stars/caol64/wenyan-core?style=social)](https://github.com/caol64/wenyan-core)
 
-「文颜」是一款多平台排版美化工具，让你将 Markdown 一键发布至微信公众号、知乎、今日头条等主流写作平台。
+## 简介
 
-**文颜**现已推出多个版本：
+**文颜（Wenyan）** 是一款多平台 Markdown 排版与发布工具，支持将 Markdown 一键转换并发布至：
+
+- 微信公众号
+- 知乎
+- 今日头条
+- 以及其它内容平台（持续扩展中）
+
+文颜的目标是：**让写作者与开发者专注内容，而不是排版和平台适配**。
+
+本仓库是 **文颜的核心库（CORE）**，适合以下场景：
+
+- 嵌入 Node.js / Web 项目
+- 构建自定义写作或发布系统
+- 与 CLI / 桌面端 / MCP / AI 系统集成
+- 二次开发排版或发布能力
+
+## 文颜的不同版本
+
+文颜目前提供多种形态，覆盖不同使用场景：
 
 * [macOS App Store 版](https://github.com/caol64/wenyan) - MAC 桌面应用
-* [跨平台版本](https://github.com/caol64/wenyan-pc) - Windows/Linux 跨平台桌面应用
-* [CLI 版本](https://github.com/caol64/wenyan-cli) - CI/CD 或脚本自动化发布公众号文章
-* [MCP 版本](https://github.com/caol64/wenyan-mcp) - 让 AI 自动发布公众号文章
-* [嵌入版本](https://github.com/caol64/wenyan-core) - 将文颜的核心功能嵌入 Node 或者 Web 项目
+* [跨平台桌面版](https://github.com/caol64/wenyan-pc) - Windows / Linux
+* [CLI 版本](https://github.com/caol64/wenyan-cli) - 命令行 / CI 自动化发布
+* [MCP 版本](https://github.com/caol64/wenyan-mcp) - AI 自动发文
+* 👉 **CORE 版本**（本项目）- 文颜核心能力库
 
-本项目是 **文颜的核心库文件**，你可以将其方便地嵌入自己的应用中，以实现排版美化和自动发布功能。
-
-## 功能
+## 功能特性
 
 * 使用内置主题对 Markdown 内容排版
-* 支持图片自动上传
-* 支持数学公式渲染
+* 自动处理并上传图片（本地 / 网络）
+* 支持数学公式（MathJax）
 * 一键发布文章到微信公众号草稿箱
+* 可在 Node / 浏览器 环境中运行
 
-## 主题效果
+## 主题效果预览
 
 👉 [内置主题预览](https://yuzhi.tech/docs/wenyan/theme)
 
-文颜采用了多个开源的 Typora 主题，在此向各位作者表示感谢：
+文颜内置并适配了多个优秀的 Typora 主题，在此感谢原作者：
 
 - [Orange Heart](https://github.com/evgo2017/typora-theme-orange-heart)
 - [Rainbow](https://github.com/thezbm/typora-theme-rainbow)
@@ -52,7 +69,7 @@ npm install @wenyan-md/core
 yarn add @wenyan-md/core
 ```
 
-## 使用示例
+## 基本用法
 
 ### 1. Markdown 排版美化
 
@@ -68,50 +85,37 @@ const { title, cover, content, description } = await getGzhContent(
   inputContent,
   theme,
   highlightTheme,
-  isMacStyle
+  isMacStyle,
+  isAddFootnote,
 );
 ```
 
 #### 参数说明
 
-| 参数名              | 类型        | 说明                                              |
-| ---------------- | --------- | ----------------------------------------------- |
-| `inputContent`   | `string`  | 输入的 Markdown 文本                                 |
-| `theme`          | `string`  | 排版主题 ID（如 `"lapis"`, `"default"` 等，见下文）       |
-| `highlightTheme` | `string`  | 代码高亮主题（如 `"github"`, `"solarized-light"`， 见下文） |
-| `isMacStyle`     | `boolean` | 代码块是否启用 Mac 风格                   |
+| 参数名 | 类型 | 说明 |
+| --- | --- | --- |
+| `inputContent` | `string` | 输入的 Markdown 文本，必填 |
+| `theme` | `string` | 排版主题 ID，必填 |
+| `highlightTheme` | `string` | 代码高亮主题，必填 |
+| `isMacStyle` | `boolean` | 是否启用代码块 Mac 风格，默认开启 |
+| `isAddFootnote` | `boolean` | 是否将链接转脚注，默认开启 |
 
-排版主题可选参数：
+排版主题：
 
-- default
-- orangeheart
-- rainbow
-- lapis
-- pie
-- maize
-- purple
-- phycat
+- default / orangeheart / rainbow / lapis / pie / maize / purple / phycat
 
-高亮主题可选参数：
+高亮主题：
 
-- atom-one-dark
-- atom-one-light
-- dracula
-- github-dark
-- github
-- monokai
-- solarized-dark
-- solarized-light
-- xcode
+- atom-one-dark / atom-one-light / dracula / github-dark / github / monokai / solarized-dark / solarized-light / xcode
 
 #### 返回值
 
-| 字段            | 类型       | 说明                     |
-| ------------- | -------- | ---------------------- |
-| `title`       | `string` | `frontmatter`中的文章标题，见下文 |
-| `cover`       | `string` | `frontmatter`中的文章封面图，见下文          |
-| `content`     | `string` | 转换后的 HTML 文章内容，发布接口需要用到         |
-| `description` | `string` | `frontmatter`中的文章简介，见下文         |
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `title` | `string` | 从 frontmatter 中获取的文章标题 |
+| `cover` | `string` | 封面图 |
+| `content` | `string` | 转换后的 HTML 内容 |
+| `description` | `string` | frontmatter 中的文章简介 |
 
 ---
 
@@ -120,129 +124,87 @@ const { title, cover, content, description } = await getGzhContent(
 ```ts
 import { publishToDraft } from "@wenyan-md/core/publish";
 
-// 方式1，你可以通过环境变量注入WECHAT_APP_ID和WECHAT_APP_SECRET
-const wechatAppId = process.env.WECHAT_APP_ID;
-const wechatAppSecret = process.env.WECHAT_APP_SECRET;
-
-if (!wechatAppId || !wechatAppSecret) {
-  console.error("WECHAT_APP_ID and WECHAT_APP_SECRET must be set as environment variables.");
-  process.exit(1);
-}
-
-const data = await publishToDraft(title, content, cover);
+const data = await publishToDraft(title, content, cover, wechatAppId, wechatAppSecret);
 
 if (data.media_id) {
-  console.log(`上传成功，media_id: ${data.media_id}`);
-} else {
-  console.error(`上传失败，\n${data}`);
+  console.log("上传成功：", data.media_id);
 }
-
-// 方式2，你可以直接以参数形式传入WECHAT_APP_ID和WECHAT_APP_SECRET
-
-const data = await publishToDraft(title, content, cover, wechatAppId, wechatAppSecret);
 ```
 
 #### 参数说明
 
-| 参数名       | 类型       | 说明         |
-| --------- | -------- | ---------- |
-| `title`   | `string` | 文章标题       |
-| `content` | `string` | 文章 HTML 内容 |
-| `cover`   | `string` | 封面图 URL    |
+| 参数名 | 类型 | 说明 |
+| --- | --- | --- |
+| `title` | `string` | 文章标题 |
+| `content` | `string` | HTML 内容 |
+| `cover` | `string` | 封面图 URL |
+| `wechatAppId` | `string` | 微信公众号 APPID |
+| `wechatAppSecret` | `string` | 微信公众号 APP_SECRET |
 
-#### 返回值
+#### 环境变量注入APPID和APP_SECRET
 
-返回 **微信公众号 API 的响应对象**，常见字段：
+也可以通过环境变量注入APPID和APP_SECRET：
 
-| 字段         | 类型       | 说明                    |
-| ---------- | -------- | --------------------- |
-| `media_id` | `string` | 草稿的 media\_id，后续发布时需要 |
+```sh
+export WECHAT_APP_ID=xxx
+export WECHAT_APP_SECRET=yyy
+```
 
-## 环境变量
+```ts
+import { publishToDraft } from "@wenyan-md/core/publish";
 
-在使用 `publishToDraft` 前，需要在环境中配置：
+const data = await publishToDraft(title, content, cover);
 
-* `WECHAT_APP_ID`
-* `WECHAT_APP_SECRET`
-
-推荐通过 `.env` 文件或 CI/CD 环境变量注入。
+if (data.media_id) {
+  console.log("上传成功：", data.media_id);
+}
+```
 
 ## 浏览器直接使用
 
-除了通过 `npm` 安装外，你也可以直接在浏览器环境中引入打包好的版本（IIFE 格式），无需构建工具。
-
-推荐使用 **[unpkg](https://unpkg.com/)** 或 **[jsDelivr](https://www.jsdelivr.com/)**。
-
-浏览器版本的文颜需自行引入依赖`highlight.js`和`csstree`。
+文颜 CORE 提供浏览器可直接引入的 IIFE 构建版本，适合前端或纯静态页面使用。目前不支持“发布到微信公众号草稿箱”功能。
 
 ```html
-<!-- 添加依赖 -->
 <script src="https://cdn.jsdelivr.net/npm/css-tree/dist/csstree.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-
-<!-- 从 unpkg 引入 -->
-<script src="https://unpkg.com/@wenyan-md/core/dist/math/wenyan-math.js"></script>
-<script src="https://unpkg.com/@wenyan-md/core/dist/styles/wenyan-styles.js"></script>
-<script src="https://unpkg.com/@wenyan-md/core/dist/browser/wenyan-core.js"></script>
-
-<!-- 或者从 jsDelivr 引入 -->
-<script src="https://cdn.jsdelivr.net/npm/@wenyan-md/core/dist/math/wenyan-math.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@wenyan-md/core/dist/styles/wenyan-styles.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@wenyan-md/core/dist/browser/wenyan-core.js"></script>
 
 <script>
-  // 使用全局变量 WenyanCore
   const { configureMarked, renderMarkdown, themes } = WenyanCore;
-
-  (async () => {
-    configureMarked();
-    const input = "# Hello from Browser";
-    const content = await renderMarkdown(input);
-    const theme = themes["lapis"];
-    const styledCss = await theme.getCss();
-    const style = document.createElement("style");
-    style.textContent = styledCss;
-    document.head.appendChild(style);
-    document.body.innerHTML = content;
-  })();
+  configureMarked();
+  const html = await renderMarkdown('# Hello from Browser');
+  document.body.innerHTML = html;
 </script>
 ```
 
-这样你就可以在 **任意前端项目** 或 **纯静态页面** 中直接使用文颜的功能。
+## Markdown Frontmatter 说明
 
-## 微信公众号 IP 白名单
-
-请务必将服务器 IP 加入公众号平台的 IP 白名单，以确保上传接口调用成功。
-详细配置说明请参考：[https://yuzhi.tech/docs/wenyan/upload](https://yuzhi.tech/docs/wenyan/upload)
-
-## 配置说明（Frontmatter）
-
-为了可以正确上传文章，需要在每一篇 Markdown 文章的开头添加一段`frontmatter`，提供`title`、`cover`两个字段：
+每篇文章顶部需包含 frontmatter：
 
 ```md
 ---
-title: 在本地跑一个大语言模型(2) - 给模型提供外部知识库
-cover: /Users/lei/Downloads/result_image.jpg
-description: 本文介绍如何为本地大语言模型提供外部知识库。
+title: 示例文章
+cover: /path/to/cover.jpg
+description: 文章简介
 ---
 ```
 
-* `title` 是文章标题，必填。
-* `cover` 是文章封面，支持本地路径和网络图片：
+* `title`：必填
+* `cover`：本地路径或网络图片（正文有图可省略）
 
-  * 如果正文有至少一张图片，可省略，此时将使用其中一张作为封面；
-  * 如果正文无图片，则必须提供 cover。
+## 微信公众号 IP 白名单
 
-## 关于图片自动上传
+> ⚠️ 重要
+>
+> 请确保运行服务的服务器 IP 已加入微信公众号后台 IP 白名单。
 
-* 支持图片路径：
-
-  * 本地路径（如：`/Users/lei/Downloads/result_image.jpg`）
-  * 网络路径（如：`https://example.com/image.jpg`）
+配置说明：[https://yuzhi.tech/docs/wenyan/upload](https://yuzhi.tech/docs/wenyan/upload)
 
 ## 赞助
 
-如果您觉得不错，可以给我家猫咪买点罐头吃。[喂猫❤️](https://yuzhi.tech/sponsor)
+如果你觉得文颜对你有帮助，可以给我家猫咪买点罐头 ❤️
+
+[https://yuzhi.tech/sponsor](https://yuzhi.tech/sponsor)
 
 ## License
 

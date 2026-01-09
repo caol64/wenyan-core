@@ -297,7 +297,11 @@ export async function getContentForGzhCustomCss(wenyanElement, customCss, highli
         li.appendChild(section);
     });
     wenyanElement.setAttribute("data-provider", "WenYan");
-    return `${wenyanElement.outerHTML.replace(/class="mjx-solid"/g, 'fill="none" stroke-width="70"')}`;
+    return `${wenyanElement.outerHTML
+        .replace(/class="mjx-solid"/g, 'fill="none" stroke-width="70"')
+        .replace(/\n<li/g, "<li")
+        .replace(/<\/li>\n/g, "<\/li>")
+    }`;
 }
 
 export function replaceCSSVariables(css) {

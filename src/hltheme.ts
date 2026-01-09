@@ -1,3 +1,5 @@
+import { normalizeCssLoader } from "./utils.js";
+
 export type HlTheme = {
     id: string;
     getCss: () => Promise<string>;
@@ -36,6 +38,7 @@ const themeMeta: Omit<HlTheme, "getCss">[] = [
 const themeCssModules = import.meta.glob("./highlight/styles/*.css", {
     query: "?raw",
     import: "default",
+    eager: true,
 });
 
 export const hlThemes: Record<string, HlTheme> = {};
@@ -47,7 +50,7 @@ for (const meta of themeMeta) {
     if (cssModuleLoader) {
         hlThemes[meta.id] = {
             ...meta,
-            getCss: cssModuleLoader as () => Promise<string>,
+            getCss: normalizeCssLoader(cssModuleLoader),
         };
     } else {
         console.warn(`[Highlight Themes] CSS file not found for theme: ${meta.id}`);
