@@ -6,7 +6,12 @@ import { stat } from "node:fs/promises";
 import { fetchAccessToken, publishArticle, uploadMaterial, UploadResponse } from "./wechatApi.js";
 import { RuntimeEnv } from "./runtimeEnv.js";
 
-async function uploadImage(imageUrl: string, accessToken: string, fileName?: string, relativePath?: string): Promise<UploadResponse> {
+async function uploadImage(
+    imageUrl: string,
+    accessToken: string,
+    fileName?: string,
+    relativePath?: string
+): Promise<UploadResponse> {
     let fileData: Blob | File;
     let finalName: string;
 
@@ -45,7 +50,11 @@ async function uploadImage(imageUrl: string, accessToken: string, fileName?: str
     return data;
 }
 
-async function uploadImages(content: string, accessToken: string, relativePath?: string): Promise<{ html: string; firstImageId: string }> {
+async function uploadImages(
+    content: string,
+    accessToken: string,
+    relativePath?: string
+): Promise<{ html: string; firstImageId: string }> {
     if (!content.includes("<img")) {
         return { html: content, firstImageId: "" };
     }
@@ -75,14 +84,14 @@ async function uploadImages(content: string, accessToken: string, relativePath?:
     return { html: updatedHtml, firstImageId };
 }
 
-export async function publishToDraft(
-    title: string,
-    content: string,
-    cover: string,
-    appId?: string,
-    appSecret?: string,
-    relativePath?: string,
-) {
+export interface PublishOptions {
+    appId?: string;
+    appSecret?: string;
+    relativePath?: string;
+}
+
+export async function publishToDraft(title: string, content: string, cover: string = "", options: PublishOptions = {}) {
+    const { appId, appSecret, relativePath } = options;
     const accessToken = await fetchAccessToken(appId, appSecret);
     if (!accessToken.access_token) {
         if (accessToken.errcode) {
