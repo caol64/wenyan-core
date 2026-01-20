@@ -1,18 +1,21 @@
 import { JSDOM } from "jsdom";
 import { fileFromPath } from "formdata-node/file-from-path";
-import { Blob, File } from "formdata-node";
 import path from "node:path";
 import { stat } from "node:fs/promises";
-import { fetchAccessToken, publishArticle, uploadMaterial, UploadResponse } from "./wechatApi.js";
-import { RuntimeEnv } from "./runtimeEnv.js";
+import { RuntimeEnv } from "../node/runtimeEnv.js";
+import { createWechatClient } from "./core.js";
+import { nodeHttpAdapter } from "./adapters/node.js";
+import { UploadResponse } from "./http.js";
+
+const { uploadMaterial, publishArticle, fetchAccessToken } = createWechatClient(nodeHttpAdapter);
 
 async function uploadImage(
     imageUrl: string,
     accessToken: string,
     fileName?: string,
-    relativePath?: string
+    relativePath?: string,
 ): Promise<UploadResponse> {
-    let fileData: Blob | File;
+    let fileData: Blob;
     let finalName: string;
 
     if (imageUrl.startsWith("http")) {
@@ -40,7 +43,8 @@ async function uploadImage(
         const fileNameFromLocal = path.basename(resolvedPath);
         const ext = path.extname(fileNameFromLocal);
         finalName = fileName ?? (ext === "" ? `${fileNameFromLocal}.jpg` : fileNameFromLocal);
-        fileData = await fileFromPath(resolvedPath);
+        const fileFromPathResult = await fileFromPath(resolvedPath);
+        fileData = new Blob([await fileFromPathResult.arrayBuffer()], { type: fileFromPathResult.type });
     }
 
     const data = await uploadMaterial("image", fileData, finalName, accessToken);
@@ -53,7 +57,7 @@ async function uploadImage(
 async function uploadImages(
     content: string,
     accessToken: string,
-    relativePath?: string
+    relativePath?: string,
 ): Promise<{ html: string; firstImageId: string }> {
     if (!content.includes("<img")) {
         return { html: content, firstImageId: "" };
@@ -92,7 +96,9 @@ export interface PublishOptions {
 
 export async function publishToDraft(title: string, content: string, cover: string = "", options: PublishOptions = {}) {
     const { appId, appSecret, relativePath } = options;
-    const accessToken = await fetchAccessToken(appId, appSecret);
+    const appIdEnv = process.env.WECHAT_APP_ID || "";
+    const appSecretEnv = process.env.WECHAT_APP_SECRET || "";
+    const accessToken = await fetchAccessToken(appId ?? appIdEnv, appSecret ?? appSecretEnv);
     if (!accessToken.access_token) {
         if (accessToken.errcode) {
             throw new Error(`获取 Access Token 失败，错误码：${accessToken.errcode}，${accessToken.errmsg}`);

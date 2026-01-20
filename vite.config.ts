@@ -1,5 +1,5 @@
 /// <reference types="vitest" />
-import { resolve } from "path";
+import { resolve } from "node:path";
 import { defineConfig, loadEnv } from "vite";
 
 export default defineConfig(({ mode }) => {
@@ -9,11 +9,9 @@ export default defineConfig(({ mode }) => {
         build: {
             lib: {
                 entry: {
-                    core: resolve(__dirname, "src/main.js"),
-                    publish: resolve(__dirname, "src/publish.ts"),
-                    wrapper: resolve(__dirname, "src/wrapper.ts"),
-                    theme: resolve(__dirname, "src/theme.ts"),
-                    hltheme: resolve(__dirname, "src/hltheme.ts"),
+                    core: resolve(__dirname, "src/core/index.ts"),
+                    publish: resolve(__dirname, "src/wechat/publish.ts"),
+                    wrapper: resolve(__dirname, "src/node/wrapper.ts"),
                 },
                 fileName: (format, entryName) => `${entryName}.js`,
                 formats: ["es"],
@@ -40,7 +38,7 @@ export default defineConfig(({ mode }) => {
         },
         test: {
             // globals: true,
-            include: ["test/**/*.test.js"],
+            include: ["test/**/*.test.js", "test/**/*.test.ts"],
             env,
         },
     };

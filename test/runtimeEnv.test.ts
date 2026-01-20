@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import path from "node:path";
-import { RuntimeEnv } from "../src/runtimeEnv";
+import { RuntimeEnv } from "../src/node/runtimeEnv";
 
 describe("RuntimeEnv Logic Tests", () => {
     // 备份原始状态，以便测试后恢复

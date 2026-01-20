@@ -11,86 +11,73 @@
 
 ## 简介
 
-**文颜（Wenyan）** 是一款多平台 Markdown 排版与发布工具，支持将 Markdown 一键转换并发布至：
+**文颜（Wenyan）** 是一套多平台 Markdown 排版与发布工具链，  
+**文颜 CORE** 是其核心库，专注于：
 
--   微信公众号
--   知乎
--   今日头条
--   以及其它内容平台（持续扩展中）
+- Markdown → HTML 渲染
+- 主题排版（公众号 / Web）
+- 代码高亮与样式增强
+- 发布前内容处理（脚注、图片、样式兼容）
 
-文颜的目标是：**让写作者与开发者专注内容，而不是排版和平台适配**。
+适合以下使用场景：
 
-本仓库是 **文颜的核心库（CORE）**，适合以下场景：
+- 在 **Node.js / Web** 项目中嵌入排版能力
+- 构建 **CLI / 桌面端 / MCP / AI 写作系统**
+- 自定义 Markdown 排版或内容发布流程
+- 作为文颜生态的二次开发基础
 
--   嵌入 Node.js / Web 项目
--   构建自定义写作或发布系统
--   与 CLI / 桌面端 / MCP / AI 系统集成
--   二次开发排版或发布能力
-
-## 文颜的不同版本
-
-文颜目前提供多种形态，覆盖不同使用场景：
-
--   [macOS App Store 版](https://github.com/caol64/wenyan) - MAC 桌面应用
--   [跨平台桌面版](https://github.com/caol64/wenyan-pc) - Windows / Linux
--   [CLI 版本](https://github.com/caol64/wenyan-cli) - 命令行 / CI 自动化发布
--   [MCP 版本](https://github.com/caol64/wenyan-mcp) - AI 自动发文
--   👉 **CORE 版本**（本项目）- 文颜核心能力库
-
-## 功能特性
-
--   使用内置主题对 Markdown 内容排版
--   自动处理并上传图片（本地 / 网络）
--   支持数学公式（MathJax）
--   一键发布文章到微信公众号草稿箱
--   可在 Node / 浏览器 环境中运行
-
-## 主题效果预览
-
-👉 [内置主题预览](https://yuzhi.tech/docs/wenyan/theme)
-
-文颜内置并适配了多个优秀的 Typora 主题，在此感谢原作者：
-
--   [Orange Heart](https://github.com/evgo2017/typora-theme-orange-heart)
--   [Rainbow](https://github.com/thezbm/typora-theme-rainbow)
--   [Lapis](https://github.com/YiNNx/typora-theme-lapis)
--   [Pie](https://github.com/kevinzhao2233/typora-theme-pie)
--   [Maize](https://github.com/BEATREE/typora-maize-theme)
--   [Purple](https://github.com/hliu202/typora-purple-theme)
--   [物理猫-薄荷](https://github.com/sumruler/typora-theme-phycat)
-
-## 安装方式
+## 安装
 
 ```bash
-pnpm add @wenyan-md/core
-# 或者
 npm install @wenyan-md/core
-# 或者
-yarn add @wenyan-md/core
 ```
 
-## 基本用法
+## 在 Node.js 环境中使用
 
-### 1. Markdown 排版美化
+（适用于 CLI / 服务端 / MCP / 自动发布场景）
+
+### 1. 将 Markdown 排版后发布到公众号草稿箱
+
 
 ```ts
-import { getGzhContent } from "@wenyan-md/core/wrapper";
+import { renderStyledContent } from "@wenyan-md/core/wrapper";
+import { publishToDraft } from "@wenyan-md/core/publish";
 
-const inputContent = "# Hello, Wenyan";
-const theme = "lapis";
-const highlightTheme = "solarized-light";
-const isMacStyle = true;
+const markdown = "# Hello, Wenyan";
 
-const { title, cover, content, description } = await getGzhContent(inputContent, theme, highlightTheme, isMacStyle, isAddFootnote);
+const gzhContent = await renderStyledContent(markdown, {
+  themeId: "lapis",
+  hlThemeId: "solarized-light",
+  isMacStyle: true,
+  isAddFootnote: true,
+});
+
+const result = await publishToDraft(
+  gzhContent.title,
+  gzhContent.content,
+  gzhContent.cover,
+  {
+    wechatAppId: "xxx",
+    wechatAppSecret: "yyy",
+  }
+);
+
+if (result.media_id) {
+  console.log("上传成功：", result.media_id);
+}
 ```
+
+> [!NOTE]
+>
+> 在 Node 环境 下，文颜会自动识别 Markdown 中的本地图片，并上传至微信公众号素材库后再进行替换。
 
 #### 参数说明
 
 | 参数名           | 类型      | 说明                              |
 | ---------------- | --------- | --------------------------------- |
 | `inputContent`   | `string`  | 输入的 Markdown 文本，必填        |
-| `theme`          | `string`  | 排版主题 ID，必填                 |
-| `highlightTheme` | `string`  | 代码高亮主题，必填                |
+| `themeId`          | `string`  | 排版主题 ID，必填                 |
+| `hlThemeId` | `string`  | 代码高亮主题，必填                |
 | `isMacStyle`     | `boolean` | 是否启用代码块 Mac 风格，默认开启 |
 | `isAddFootnote`  | `boolean` | 是否将链接转脚注，默认开启        |
 
@@ -102,61 +89,65 @@ const { title, cover, content, description } = await getGzhContent(inputContent,
 
 -   atom-one-dark / atom-one-light / dracula / github-dark / github / monokai / solarized-dark / solarized-light / xcode
 
-#### 返回值
-
-| 字段          | 类型     | 说明                            |
-| ------------- | -------- | ------------------------------- |
-| `title`       | `string` | 从 frontmatter 中获取的文章标题 |
-| `cover`       | `string` | 封面图                          |
-| `content`     | `string` | 转换后的 HTML 内容              |
-| `description` | `string` | frontmatter 中的文章简介        |
-
----
-
-### 2. 发布到微信公众号草稿箱
-
-```ts
-import { publishToDraft } from "@wenyan-md/core/publish";
-
-const data = await publishToDraft(title, content, cover, { wechatAppId, wechatAppSecret });
-
-if (data.media_id) {
-    console.log("上传成功：", data.media_id);
-}
-```
-
-#### 参数说明
-
-| 参数名            | 类型     | 说明                                                |
-| ----------------- | -------- | --------------------------------------------------- |
-| `title`           | `string` | `getGzhContent`接口返回的`title`                    |
-| `content`         | `string` | `getGzhContent`接口返回的`content`                  |
-| `cover`           | `string` | `getGzhContent`接口返回的`cover`                    |
-| `wechatAppId`     | `string` | 微信公众号 APPID（如果通过环境变量注入可省略）      |
-| `wechatAppSecret` | `string` | 微信公众号 APP_SECRET（如果通过环境变量注入可省略） |
-
 #### 环境变量注入 APPID 和 APP_SECRET
 
-也可以通过环境变量注入 APPID 和 APP_SECRET：
+当环境变量存在时，`publishToDraft`可省略参数传入。
 
 ```sh
 export WECHAT_APP_ID=xxx
 export WECHAT_APP_SECRET=yyy
 ```
 
+### 2. 使用自定义主题
+
 ```ts
-import { publishToDraft } from "@wenyan-md/core/publish";
+import { renderStyledContent } from "@wenyan-md/core/wrapper";
+import fs from "node:fs/promises";
 
-const data = await publishToDraft(title, content, cover);
+const markdown = "# Hello, Wenyan";
+const themeCss = await fs.readFile("/path/to/css", "utf-8");
 
-if (data.media_id) {
-    console.log("上传成功：", data.media_id);
-}
+const gzhContent = await renderStyledContent(markdown, {
+  themeCss: themeCss,
+  hlThemeId: "solarized-light",
+  isMacStyle: true,
+  isAddFootnote: true,
+});
 ```
 
-## 浏览器直接使用
+## 在浏览器环境使用
 
-文颜 CORE 提供浏览器可直接引入的 IIFE 构建版本，适合前端或纯静态页面使用。目前浏览器版本仅支持“Markdown 排版美化”，不支持“发布到微信公众号草稿箱”功能。
+### 1. ES Module 方式
+
+```ts
+import { createWenyanCore } from "@wenyan-md/core";
+
+const markdown = "# Hello from Browser";
+
+const wenyan = await createWenyanCore();
+
+// 解析 frontmatter
+const { body } = await wenyan.handleFrontMatter(markdown);
+
+// Markdown → HTML
+const html = await wenyan.renderMarkdown(body);
+document.getElementById("wenyan").innerHTML = html;
+
+// 应用排版样式
+const styledHtml = await wenyan.applyStylesWithTheme(
+  document.getElementById("wenyan"),
+  {
+    themeId: "lapis",
+    hlThemeId: "solarized-light",
+    isMacStyle: true,
+    isAddFootnote: true,
+  }
+);
+```
+
+### 2. IIFE（直接在浏览器中引入）
+
+适用于 **纯前端 / 静态页面** 场景。
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/css-tree/dist/csstree.js"></script>
@@ -164,21 +155,19 @@ if (data.media_id) {
 <script src="https://cdn.jsdelivr.net/npm/@wenyan-md/core/dist/browser/wenyan-core.js"></script>
 
 <script>
-    const { configureMarked, renderMarkdown, themes } = WenyanCore;
-    const html = await renderMarkdown('# Hello from Browser');
-    document.body.innerHTML = html;
+    const html = await WenyanCore.renderMarkdown("# Hello from Browser");
+    document.getElementById("wenyan").innerHTML = html;
 </script>
 ```
 
 ## Markdown Frontmatter 说明
 
-每篇文章顶部需包含 frontmatter：
+使用`publishToDraft`接口发布文章时，每篇文章顶部需包含 frontmatter：
 
 ```md
 ---
 title: 示例文章
 cover: /path/to/cover.jpg
-description: 文章简介
 ---
 ```
 
@@ -187,7 +176,7 @@ description: 文章简介
 
 ## 微信公众号 IP 白名单
 
-> ⚠️ 重要
+> [!IMPORTANT]
 >
 > 请确保运行服务的服务器 IP 已加入微信公众号后台 IP 白名单。
 

@@ -1,7 +1,7 @@
 import { resolve } from "path";
 import { defineConfig } from "vite";
 
-const macStyle = resolve(__dirname, "src/mac_style.css?raw");
+const macStyle = resolve(__dirname, "src/assets/mac_style.css?raw");
 const theme = resolve(__dirname, "src/theme.js");
 const hlTheme = resolve(__dirname, "src/hltheme.js");
 const math = resolve(__dirname, "src/math.js");
@@ -19,7 +19,7 @@ export default defineConfig({
         rollupOptions: {
             external: [
                 "highlight.js",
-                "./mac_style.css?raw",
+                "./assets/mac_style.css?raw",
                 "./theme.js",
                 "./hltheme.js",
                 "css-tree",

@@ -3,7 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { getGzhContent } from "../dist/wrapper.js";
+import { getGzhContent } from "../dist/wrapper";
 
 describe("wrapper.ts tests", () => {
     it("should return GzhContent", async () => {

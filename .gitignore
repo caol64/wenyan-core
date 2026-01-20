@@ -4,5 +4,5 @@ dist/
 *.log
 .env*
 *.tsbuildinfo
-test/out.html
 pnpm-lock.yaml
+test/__snapshots__/
