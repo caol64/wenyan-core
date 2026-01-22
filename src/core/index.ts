@@ -146,3 +146,5 @@ async function resolveCssContent<T extends { getCss: () => Promise<string> }>(
 export * from "./themeRegistry.js";
 export * from "./hlThemeRegistry.js";
 export { serif, sansSerif, monospace } from "./utils.js";
+export { createCssModifier } from "./parser/cssParser.js";
+export { macStyleCss } from "./renderer/macStyleRender.js";
