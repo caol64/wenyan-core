@@ -40,7 +40,7 @@ npm install @wenyan-md/core
 ## 内置主题
 
 - [内置主题](src/assets/themes/)
-- [内置代码高亮主题](src/assets/highlight/)
+- [内置代码高亮主题](src/assets/highlight/styles/)
 - [内置主题预览](https://yuzhi.tech/docs/wenyan/theme)
 
 ## 赞助

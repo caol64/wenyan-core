@@ -1,6 +1,6 @@
 {
   "name": "@wenyan-md/core",
-  "version": "1.0.18",
+  "version": "2.0.0",
   "description": "Core library for Wenyan markdown rendering & publishing",
   "author": "Lei <caol64@gmail.com> (https://github.com/caol64)",
   "license": "Apache-2.0",
