@@ -43,7 +43,7 @@
   "scripts": {
     "dev": "vite build --watch",
     "check": "tsc --noEmit",
-    "build": "vite build && tsc",
+    "build": "pnpm check && vite build && tsc",
     "build:browser": "vite build --config vite.config.browser.ts",
     "build:styles": "vite build --config vite.config.styles.ts",
     "build:math": "vite build --config vite.config.math.ts",

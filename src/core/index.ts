@@ -1,5 +1,5 @@
 import { replaceCSSVariables } from "./utils.js";
-import { registerBuiltInHlThemes, getHlTheme, getAllHlThemes } from "./hlThemeRegistry.js";
+import { registerBuiltInHlThemes, getHlTheme, getAllHlThemes } from "./theme/hlThemeRegistry.js";
 import { addFootnotes } from "./renderer/footnotesRender.js";
 import { FrontMatterResult, handleFrontMatter } from "./parser/frontMatterParser.js";
 import { renderHighlightTheme } from "./renderer/highlightApplyRender.js";
@@ -8,7 +8,7 @@ import { createMarkedClient } from "./parser/markedParser.js";
 import { createMathJaxParser } from "./parser/mathjaxParser.js";
 import { wechatPostRender } from "./renderer/wechatPostRender.js";
 import { renderTheme } from "./renderer/themeApplyRender.js";
-import { registerAllBuiltInThemes, getTheme, getAllGzhThemes } from "./themeRegistry.js";
+import { registerAllBuiltInThemes, getTheme, getAllGzhThemes } from "./theme/themeRegistry.js";
 import { applyPseudoElements } from "./renderer/pseudoApplyRender.js";
 
 export interface WenyanOptions {
@@ -143,8 +143,8 @@ async function resolveCssContent<T extends { getCss: () => Promise<string> }>(
     return replaceCSSVariables(rawCss);
 }
 
-export * from "./themeRegistry.js";
-export * from "./hlThemeRegistry.js";
+export * from "./theme/themeRegistry.js";
+export * from "./theme/hlThemeRegistry.js";
 export { serif, sansSerif, monospace } from "./utils.js";
 export { createCssModifier } from "./parser/cssParser.js";
 export { macStyleCss } from "./renderer/macStyleRender.js";

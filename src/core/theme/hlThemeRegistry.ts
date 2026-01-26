@@ -1,5 +1,5 @@
 import { CssSource } from "./types.js";
-import { normalizeCssLoader } from "./utils.js";
+import { normalizeCssLoader } from "../utils.js";
 
 export interface HlTheme {
     id: string;
@@ -32,7 +32,7 @@ const hlThemeIds = [
     "xcode",
 ];
 
-const cssModules = import.meta.glob("../assets/highlight/styles/*.css", {
+const cssModules = import.meta.glob("../../assets/highlight/styles/*.css", {
     query: "?raw",
     import: "default",
     eager: true,
@@ -40,7 +40,7 @@ const cssModules = import.meta.glob("../assets/highlight/styles/*.css", {
 
 export function registerBuiltInHlThemes() {
     for (const id of hlThemeIds) {
-        const path = `../assets/highlight/styles/${id}.min.css`;
+        const path = `../../assets/highlight/styles/${id}.min.css`;
         const loader = cssModules[path];
         if (!loader) continue;
 

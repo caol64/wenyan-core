@@ -1,5 +1,5 @@
 import { CssSource } from "./types.js";
-import { normalizeCssLoader } from "./utils.js";
+import { normalizeCssLoader } from "../utils.js";
 
 export interface ThemeMeta {
     id: string;
@@ -97,7 +97,7 @@ const otherBuiltInThemeMetas: ThemeMeta[] = otherThemeIds.map((id) => ({
     author: "",
 }));
 
-const cssModules = import.meta.glob("../assets/themes/*.css", {
+const cssModules = import.meta.glob("../../assets/themes/*.css", {
     query: "?raw",
     import: "default",
     eager: true,
@@ -110,7 +110,7 @@ export function registerAllBuiltInThemes() {
 
 function registerBuiltInThemes(themeMetas: ThemeMeta[]) {
     for (const meta of themeMetas) {
-        const path = `../assets/themes/${meta.id}.css`;
+        const path = `../../assets/themes/${meta.id}.css`;
         const loader = cssModules[path];
         if (!loader) continue;
 
