@@ -21,34 +21,53 @@ export function createCssModifier(updates: CssUpdateMap) {
 
         csstree.walk(ast, {
             visit: "Rule",
-            leave(node, _, list) {
+            leave(node) {
                 if (node.prelude?.type !== "SelectorList") return;
 
+                // 1. 获取该规则包含的所有选择器字符串
                 const selectors = node.prelude.children.toArray().map((sel) => csstree.generate(sel));
 
                 if (selectors.length > 0) {
-                    const selector = selectors[0];
-                    const update = updates[selector];
-                    if (!update) return;
+                    // 使用 Map 来去重，如果 h1 和 p 都定义了 font-size，后者的配置会覆盖前者
+                    const mergedUpdates = new Map<string, CssUpdate>();
 
-                    for (const { property, value, append } of update) {
+                    selectors.forEach((sel) => {
+                        const updateList = updates[sel];
+                        if (updateList) {
+                            updateList.forEach((update) => {
+                                // 以属性名(property)为 key 进行合并
+                                mergedUpdates.set(update.property, update);
+                            });
+                        }
+                    });
+
+                    // 如果没有任何更新需要应用，直接返回
+                    if (mergedUpdates.size === 0) return;
+
+                    // 3. 应用合并后的更新
+                    for (const { property, value, append } of mergedUpdates.values()) {
                         if (value) {
                             let found = false;
+
+                            // 查找并替换现有属性
                             csstree.walk(node.block, (decl) => {
                                 if (decl.type === "Declaration" && decl.property === property) {
-                                    decl.value = csstree.parse(value, { context: "value" }) as csstree.Value;
+                                    // decl.value = csstree.parse(value, { context: "value" }) as csstree.Value;
                                     found = true;
                                 }
                             });
-                            if (!found && append) {
-                                node.block.children.prepend(
-                                    list.createItem({
-                                        type: "Declaration",
-                                        property,
-                                        value: csstree.parse(value, { context: "value" }) as csstree.Value,
-                                        important: false,
-                                    }),
-                                );
+
+                            // append = true → 永远追加
+                            // append = false → 仅在不存在时追加
+                            const shouldAppend = append === true || (append === false && !found);
+                            if (shouldAppend && value) {
+                                const newItem = node.block.children.createItem({
+                                    type: "Declaration",
+                                    property,
+                                    value: csstree.parse(value, { context: "value" }) as csstree.Value,
+                                    important: false,
+                                });
+                                node.block.children.prepend(newItem);
                             }
                         }
                     }

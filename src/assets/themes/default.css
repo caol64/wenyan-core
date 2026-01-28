@@ -4,7 +4,6 @@
  */
 /* 全局属性 */
 #wenyan {
-    font-family: var(--sans-serif-font);
     line-height: 1.75;
     font-size: 16px;
 }
@@ -16,8 +15,7 @@
 #wenyan h4,
 #wenyan h5,
 #wenyan h6,
-#wenyan p,
-#wenyan pre {
+#wenyan p {
     margin: 1em 0;
 }
 /* 段落 */
@@ -135,6 +133,7 @@
     margin: 1em 0.5em;
     padding: .5em;
     box-shadow: rgba(0, 0, 0, 0.55) 0px 1px 5px;
+    font-size: 12px;
 }
 /* 代码块 */
 #wenyan pre code {

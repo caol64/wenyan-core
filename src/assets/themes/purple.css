@@ -17,7 +17,6 @@
     --header-weight: normal;
 }
 #wenyan {
-    font-family: var(--sans-serif-font);
     color: var(--text-color);
     line-height: 1.75;
     font-size: 16px;
@@ -38,7 +37,6 @@
     padding: 0px;
     font-weight: var(--header-weight);
     color: var(--title-color);
-    font-family: var(--sans-serif-font);
 }
 #wenyan h1 {
     text-align: center;
@@ -150,6 +148,7 @@
     margin: 1em 0.5em;
     padding: .5em;
     box-shadow: rgba(0, 0, 0, 0.55) 0px 1px 5px;
+    font-size: 12px;
 }
 #wenyan pre code {
     display: block;

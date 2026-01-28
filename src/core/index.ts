@@ -1,4 +1,4 @@
-import { replaceCSSVariables } from "./utils.js";
+import { monospace, replaceCSSVariables, sansSerif } from "./utils.js";
 import { registerBuiltInHlThemes, getHlTheme, getAllHlThemes } from "./theme/hlThemeRegistry.js";
 import { addFootnotes } from "./renderer/footnotesRender.js";
 import { FrontMatterResult, handleFrontMatter } from "./parser/frontMatterParser.js";
@@ -10,6 +10,7 @@ import { wechatPostRender } from "./renderer/wechatPostRender.js";
 import { renderTheme } from "./renderer/themeApplyRender.js";
 import { registerAllBuiltInThemes, getTheme, getAllGzhThemes } from "./theme/themeRegistry.js";
 import { applyPseudoElements } from "./renderer/pseudoApplyRender.js";
+import { createCssModifier } from "./parser/cssParser.js";
 
 export interface WenyanOptions {
     isConvertMathJax?: boolean;
@@ -69,8 +70,31 @@ export async function createWenyanCore(options: WenyanOptions = {}) {
                     `代码主题不存在: ${hlThemeId}`,
                 ),
             ]);
+            const modifiedCss = createCssModifier({
+                "#wenyan": [
+                    {
+                        property: "font-family",
+                        value: sansSerif,
+                        append: false,
+                    },
+                ],
+                "#wenyan pre code": [
+                    {
+                        property: "font-family",
+                        value: monospace,
+                        append: false,
+                    },
+                ],
+                "#wenyan pre": [
+                    {
+                        property: "font-size",
+                        value: "12px",
+                        append: false,
+                    },
+                ],
+            })(resolvedThemeCss);
             return this.applyStylesWithResolvedCss(wenyanElement, {
-                themeCss: resolvedThemeCss,
+                themeCss: modifiedCss,
                 hlThemeCss: resolvedHlThemeCss,
                 isMacStyle,
                 isAddFootnote,
@@ -148,3 +172,6 @@ export * from "./theme/hlThemeRegistry.js";
 export { serif, sansSerif, monospace } from "./utils.js";
 export { createCssModifier } from "./parser/cssParser.js";
 export { macStyleCss } from "./renderer/macStyleRender.js";
+export * from "./platform/medium.js";
+export * from "./platform/zhihu.js";
+export * from "./platform/toutiao.js";

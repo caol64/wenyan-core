@@ -14,14 +14,12 @@
     --main-6: #da282a;
 }
 #wenyan {
-    font-family: var(--sans-serif-font);
     line-height: 1.75;
     color: var(--mid-10);
     letter-spacing: 0;
     font-size: 16px;
 }
-#wenyan p,
-#wenyan pre {
+#wenyan p {
     margin: 1em 0;
 }
 #wenyan p {
@@ -208,6 +206,7 @@
     margin: 1em 0.5em;
     padding: .5em;
     box-shadow: rgba(0, 0, 0, 0.55) 0px 1px 5px;
+    font-size: 12px;
 }
 #wenyan pre code {
     display: block;

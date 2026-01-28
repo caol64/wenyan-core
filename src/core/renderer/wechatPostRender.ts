@@ -42,8 +42,7 @@ export function wechatPostRender(element: HTMLElement): void {
     const listElements = element.querySelectorAll<HTMLLIElement>("li");
 
     listElements.forEach((li) => {
-        // ownerDocument 可能为 null (如果元素未挂载)，回退到全局 document
-        const doc = element.ownerDocument || document;
+        const doc = element.ownerDocument;
         const section = doc.createElement("section");
 
         // 将 li 的所有子节点移动进 section

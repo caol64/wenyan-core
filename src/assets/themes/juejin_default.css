@@ -1,6 +1,6 @@
 #wenyan {
-    font-family: var(--sans-serif-font);
     line-height: 1.75;
+    font-size: 16px;
 }
 #wenyan * {
     box-sizing: border-box;
@@ -11,8 +11,7 @@
 #wenyan h4,
 #wenyan h5,
 #wenyan h6,
-#wenyan p,
-#wenyan pre {
+#wenyan p {
     margin: 1em 0;
 }
 #wenyan h1,
@@ -93,6 +92,7 @@
     padding: .5em;
     color: #333;
     background: #f8f8f8;
+    font-size: 12px;
 }
 #wenyan pre code {
     font-family: var(--monospace-font);
