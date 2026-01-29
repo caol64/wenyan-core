@@ -6,7 +6,7 @@ type CssUpdate = {
     append?: boolean;
 };
 
-type CssUpdateMap = Record<string, CssUpdate[]>;
+export type CssUpdateMap = Record<string, CssUpdate[]>;
 export const parseOptions: csstree.ParseOptions = {
     context: "stylesheet",
     positions: false,

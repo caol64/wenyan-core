@@ -141,7 +141,6 @@
     position: absolute;
     top: 0;
     left: 12px;
-    font-family: Arial, serif;
     font-size: 2em;
     font-weight: 700;
     line-height: 1em;
@@ -181,7 +180,6 @@
 #wenyan p code {
     padding: 2px 4px 1px;
     margin: 0 2px;
-    font-family: var(--monospace-font);
     font-size: 0.92rem;
     color: var(--main-5);
     background-color: var(--main-1);
@@ -213,7 +211,6 @@
     overflow-x: auto;
     margin: .5em;
     padding: 0;
-    font-family: var(--monospace-font);
 }
 #wenyan .footnote {
     color: rgb(239, 112, 96);

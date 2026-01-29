@@ -1,6 +1,6 @@
 {
   "name": "@wenyan-md/core",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Core library for Wenyan markdown rendering & publishing",
   "author": "Lei <caol64@gmail.com> (https://github.com/caol64)",
   "license": "Apache-2.0",
@@ -49,7 +49,7 @@
     "build:math": "vite build --config vite.config.math.ts",
     "build:all": "pnpm build && pnpm build:styles && pnpm build:math && pnpm build:browser",
     "test": "pnpm build && vitest",
-    "test:wrapper": "pnpm build && vitest run test/wrapper.test.ts",
+    "test:wrapper": "vitest run test/wrapper.test.ts",
     "test:publish": "vitest run test/publish.test.ts",
     "test:realPublish": "vitest run test/realPublish.test.ts",
     "test:runtimeEnv": "vitest run test/runtimeEnv.test.ts",

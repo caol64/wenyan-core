@@ -1,9 +1,4 @@
-:root {
-    --sans-serif-font: source-serif-pro, Georgia, Cambria, "Times New Roman", Times, serif;
-    --monospace-font: Menlo, Monaco, Consolas, "liberation mono", "courier new", monospace;
-}
 #wenyan {
-    font-family: var(--sans-serif-font);
     line-height: 1.75;
     font-size: 16px;
 }
@@ -16,7 +11,6 @@
 #wenyan h4,
 #wenyan h5,
 #wenyan h6 {
-    font-family: sohne, "Helvetica Neue", Helvetica, Arial, sans-serif;
     margin: 1em 0;
 }
 #wenyan h1 {
@@ -84,7 +78,6 @@
     padding: 4px 6px;
     font-size: 0.78em;
     border-radius: 3px;
-    font-family: var(--monospace-font);
     background-color: #f2f2f2;
 }
 #wenyan pre {
@@ -101,7 +94,6 @@
     overflow-x: auto;
     margin: .5em;
     padding: 0;
-    font-family: var(--monospace-font);
     background: #f9f9f9;
 }
 #wenyan hr {

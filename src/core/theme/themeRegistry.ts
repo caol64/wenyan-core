@@ -1,5 +1,4 @@
-import { CssSource } from "./types.js";
-import { normalizeCssLoader } from "../utils.js";
+import { CssSource, loadCssBySource, normalizeCssLoader } from "../utils.js";
 
 export interface ThemeMeta {
     id: string;
@@ -97,7 +96,7 @@ const otherBuiltInThemeMetas: ThemeMeta[] = otherThemeIds.map((id) => ({
     author: "",
 }));
 
-const cssModules = import.meta.glob("../../assets/themes/*.css", {
+const cssModules = import.meta.glob("/src/assets/themes/*.css", {
     query: "?raw",
     import: "default",
     eager: true,
@@ -110,7 +109,7 @@ export function registerAllBuiltInThemes() {
 
 function registerBuiltInThemes(themeMetas: ThemeMeta[]) {
     for (const meta of themeMetas) {
-        const path = `../../assets/themes/${meta.id}.css`;
+        const path = `/src/assets/themes/${meta.id}.css`;
         const loader = cssModules[path];
         if (!loader) continue;
 
@@ -124,26 +123,7 @@ function registerBuiltInThemes(themeMetas: ThemeMeta[]) {
 }
 
 function createTheme(meta: ThemeMeta, source: CssSource): Theme {
-    return {
-        meta,
-        async getCss() {
-            switch (source.type) {
-                case "inline":
-                    return source.css;
-
-                case "asset":
-                    return source.loader();
-
-                // case "file":
-                //     return fs.readFile(source.path, "utf-8");
-
-                case "url":
-                    const res = await fetch(source.url);
-                    if (!res.ok) throw new Error(`Failed to load theme CSS`);
-                    return res.text();
-            }
-        },
-    };
+    return { meta, getCss: () => loadCssBySource(source) };
 }
 
 export function getAllGzhThemes(): Theme[] {

@@ -94,7 +94,6 @@
     background: #f2f2f2;
 }
 #wenyan p code {
-    font-family: var(--monospace-font);
     color: #1e6bb8;
 }
 /* 代码块 */
@@ -107,7 +106,6 @@
     font-size: 12px;
 }
 #wenyan pre code {
-    font-family: var(--monospace-font);
     display: block;
     overflow-x: auto;
     margin: .5em;

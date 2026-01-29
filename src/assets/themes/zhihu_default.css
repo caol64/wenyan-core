@@ -80,7 +80,6 @@
     margin: 0px 2px;
     padding: 3px 4px;
     border-radius: 3px;
-    font-family: var(--monospace-font);
     background-color: rgb(246, 246, 246);
 }
 #wenyan pre {

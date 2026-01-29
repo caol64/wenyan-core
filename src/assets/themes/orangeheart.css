@@ -101,7 +101,6 @@
     margin: 0 2px;
     color: rgb(239, 112, 96);
     background-color: rgba(27, 31, 35, 0.05);
-    font-family: var(--monospace-font);
     word-break: break-all;
 }
 #wenyan img {
@@ -157,7 +156,6 @@
     display: block;
     margin: .5em;
     padding: 0;
-    font-family: var(--monospace-font);
 }
 #wenyan .footnote {
     color: rgb(239, 112, 96);

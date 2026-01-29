@@ -1,4 +1,4 @@
-import { monospace, replaceCSSVariables, sansSerif } from "./utils.js";
+import { monospace, resolveCssContent, sansSerif } from "./utils.js";
 import { registerBuiltInHlThemes, getHlTheme, getAllHlThemes } from "./theme/hlThemeRegistry.js";
 import { addFootnotes } from "./renderer/footnotesRender.js";
 import { FrontMatterResult, handleFrontMatter } from "./parser/frontMatterParser.js";
@@ -10,7 +10,8 @@ import { wechatPostRender } from "./renderer/wechatPostRender.js";
 import { renderTheme } from "./renderer/themeApplyRender.js";
 import { registerAllBuiltInThemes, getTheme, getAllGzhThemes } from "./theme/themeRegistry.js";
 import { applyPseudoElements } from "./renderer/pseudoApplyRender.js";
-import { createCssModifier } from "./parser/cssParser.js";
+import { createCssModifier, CssUpdateMap } from "./parser/cssParser.js";
+import { registerBuiltInMacStyle } from "./theme/macStyleRegistry.js";
 
 export interface WenyanOptions {
     isConvertMathJax?: boolean;
@@ -32,6 +33,7 @@ export async function createWenyanCore(options: WenyanOptions = {}) {
     const mathJaxParser = createMathJaxParser();
     registerAllBuiltInThemes();
     registerBuiltInHlThemes();
+    registerBuiltInMacStyle();
     return {
         async handleFrontMatter(markdown: string): Promise<FrontMatterResult> {
             return await handleFrontMatter(markdown);
@@ -70,29 +72,7 @@ export async function createWenyanCore(options: WenyanOptions = {}) {
                     `代码主题不存在: ${hlThemeId}`,
                 ),
             ]);
-            const modifiedCss = createCssModifier({
-                "#wenyan": [
-                    {
-                        property: "font-family",
-                        value: sansSerif,
-                        append: false,
-                    },
-                ],
-                "#wenyan pre code": [
-                    {
-                        property: "font-family",
-                        value: monospace,
-                        append: false,
-                    },
-                ],
-                "#wenyan pre": [
-                    {
-                        property: "font-size",
-                        value: "12px",
-                        append: false,
-                    },
-                ],
-            })(resolvedThemeCss);
+            const modifiedCss = createCssModifier(DEFAULT_CSS_UPDATES)(resolvedThemeCss);
             return this.applyStylesWithResolvedCss(wenyanElement, {
                 themeCss: modifiedCss,
                 hlThemeCss: resolvedHlThemeCss,
@@ -139,39 +119,49 @@ export async function createWenyanCore(options: WenyanOptions = {}) {
     };
 }
 
-async function resolveCssContent<T extends { getCss: () => Promise<string> }>(
-    directCss: string | undefined, // 直接传入的 CSS
-    id: string, // ID
-    finder: (id: string) => T | undefined, // 精确查找函数 (getTheme)
-    fallbackFinder: (id: string) => T | undefined, // 模糊查找函数 (find in array)
-    errorMessage: string, // 报错信息
-): Promise<string> {
-    // 1. 如果有直接传入的 CSS，直接处理返回（同步操作）
-    if (directCss) {
-        return replaceCSSVariables(directCss);
-    }
-
-    // 2. 查找主题对象
-    let theme = finder(id);
-    if (!theme) {
-        theme = fallbackFinder(id);
-    }
-
-    // 3. 依然没找到，抛错
-    if (!theme) {
-        throw new Error(errorMessage);
-    }
-
-    // 4. 异步获取 CSS 并处理
-    const rawCss = await theme.getCss();
-    return replaceCSSVariables(rawCss);
-}
+const DEFAULT_CSS_UPDATES: CssUpdateMap = {
+    "#wenyan": [
+        {
+            property: "font-family",
+            value: sansSerif,
+            append: false,
+        },
+    ],
+    "#wenyan pre": [
+        {
+            property: "font-size",
+            value: "12px",
+            append: false,
+        },
+    ],
+    "#wenyan pre code": [
+        {
+            property: "font-family",
+            value: monospace,
+            append: false,
+        },
+    ],
+    "#wenyan p code": [
+        {
+            property: "font-family",
+            value: monospace,
+            append: false,
+        },
+    ],
+    "#wenyan li code": [
+        {
+            property: "font-family",
+            value: monospace,
+            append: false,
+        },
+    ],
+};
 
 export * from "./theme/themeRegistry.js";
 export * from "./theme/hlThemeRegistry.js";
 export { serif, sansSerif, monospace } from "./utils.js";
 export { createCssModifier } from "./parser/cssParser.js";
-export { macStyleCss } from "./renderer/macStyleRender.js";
+export { getMacStyleCss, registerMacStyle } from "./theme/macStyleRegistry.js";
 export * from "./platform/medium.js";
 export * from "./platform/zhihu.js";
 export * from "./platform/toutiao.js";

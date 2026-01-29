@@ -14,11 +14,7 @@
     --h6-r-graphic: url("data:image/svg+xml;utf8,<svg fill='rgba(74, 200, 141, 0.5)' height='24' viewBox='0 0 32 32' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M4.571 25.143c-1.257 0-2.286 1.029-2.286 2.286s1.029 2.286 2.286 2.286 2.286-1.029 2.286-2.286-1.029-2.286-2.286-2.286zM4.571 18.286c-1.257 0-2.286 1.029-2.286 2.286s1.029 2.286 2.286 2.286 2.286-1.029 2.286-2.286-1.029-2.286-2.286-2.286zM4.571 11.429c-1.257 0-2.286 1.029-2.286 2.286s1.029 2.286 2.286 2.286 2.286-1.029 2.286-2.286-1.029-2.286-2.286-2.286zM11.429 18.286c-1.257 0-2.286 1.029-2.286 2.286s1.029 2.286 2.286 2.286 2.286-1.029 2.286-2.286-1.029-2.286-2.286-2.286zM11.429 25.143c-1.257 0-2.286 1.029-2.286 2.286s1.029 2.286 2.286 2.286 2.286-1.029 2.286-2.286-1.029-2.286-2.286-2.286zM11.429 16c1.257 0 2.286-1.029 2.286-2.286s-1.029-2.286-2.286-2.286-2.286 1.029-2.286 2.286 1.029 2.286 2.286 2.286z'/></svg>")
         no-repeat center;
 
-    /* 是否开启网格背景？1 是；0 否 */
-    --bg-grid: 0;
-
     /* 主题颜色 */
-
     --head-title-color: #3db8bf;
     /* 标题主色 */
     --head-title-h2-color: #fff;
@@ -44,30 +40,17 @@
 #wenyan {
     font-size: 14px;
     margin: 0 auto;
-    padding: 15px;
     line-height: 1.75;
-    color: #000;
     letter-spacing: 1.1px;
     word-break: break-word;
     word-wrap: break-word;
     text-align: left;
-    background-image: linear-gradient(
-            90deg,
-            rgba(50, 0, 0, 0.05) calc(3% * var(--bg-grid)),
-            rgba(0, 0, 0, 0) calc(3% * var(--bg-grid))
-        ),
-        linear-gradient(
-            360deg,
-            rgba(50, 0, 0, 0.05) calc(3% * var(--bg-grid)),
-            rgba(0, 0, 0, 0) calc(3% * var(--bg-grid))
-        );
-    background-size: 20px 20px;
     background-position: center center;
 }
 #wenyan p {
     text-align: justify;
     color: #333;
-    margin: 10px 10px;
+    margin: 10px 0;
     word-spacing: 2px;
 }
 #wenyan h3::after,
@@ -208,9 +191,6 @@ h6 {
     margin: 0px 6px;
     word-spacing: 2px;
     line-height: 2.5;
-}
-
-#wenyan li {
     position: relative;
 }
 #wenyan li > p {
@@ -267,7 +247,6 @@ h6 {
     color: var(--element-color-linecode);
     background: var(--element-color-linecode-background);
     border-radius: 3px;
-    font-family: var(--monospace-font);
     letter-spacing: 0.5px;
 }
 #wenyan li code {
@@ -282,7 +261,6 @@ h6 {
     font-size: 12px;
 }
 #wenyan pre code {
-    font-family: var(--monospace-font);
     display: block;
     overflow-x: auto;
     margin: 0.5em;

@@ -101,3 +101,55 @@ export function replaceCSSVariables(css: string): string {
     // 注意：这里的正则假设 :root 块内只有变量定义，如果还有其他样式可能会被误删
     return modifiedCSS.replace(/:root\s*\{[^}]*\}/g, "");
 }
+
+export async function resolveCssContent<T extends { getCss: () => Promise<string> }>(
+    directCss: string | undefined, // 直接传入的 CSS
+    id: string, // ID
+    finder: (id: string) => T | undefined, // 精确查找函数 (getTheme)
+    fallbackFinder: (id: string) => T | undefined, // 模糊查找函数 (find in array)
+    errorMessage: string, // 报错信息
+): Promise<string> {
+    // 1. 如果有直接传入的 CSS，直接处理返回（同步操作）
+    if (directCss) {
+        return replaceCSSVariables(directCss);
+    }
+
+    // 2. 查找主题对象
+    let theme = finder(id);
+    if (!theme) {
+        theme = fallbackFinder(id);
+    }
+
+    // 3. 依然没找到，抛错
+    if (!theme) {
+        throw new Error(errorMessage);
+    }
+
+    // 4. 异步获取 CSS 并处理
+    const rawCss = await theme.getCss();
+    return replaceCSSVariables(rawCss);
+}
+
+export type CssSource =
+    | { type: "inline"; css: string }
+    | { type: "asset"; loader: () => Promise<string> }
+    // | { type: "file"; path: string }
+    | { type: "url"; url: string };
+
+export async function loadCssBySource(source: CssSource): Promise<string> {
+    switch (source.type) {
+        case "inline":
+            return source.css;
+        case "asset":
+            return source.loader();
+        // case "file":
+        //     return fs.readFile(source.path, "utf-8");
+        case "url": {
+            const res = await fetch(source.url);
+            if (!res.ok) throw new Error(`Failed to load CSS from ${source.url}`);
+            return res.text();
+        }
+        default:
+            throw new Error("Unknown source type");
+    }
+}

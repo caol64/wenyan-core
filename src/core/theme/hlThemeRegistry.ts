@@ -1,5 +1,4 @@
-import { CssSource } from "./types.js";
-import { normalizeCssLoader } from "../utils.js";
+import { CssSource, loadCssBySource, normalizeCssLoader } from "../utils.js";
 
 export interface HlTheme {
     id: string;
@@ -32,7 +31,7 @@ const hlThemeIds = [
     "xcode",
 ];
 
-const cssModules = import.meta.glob("../../assets/highlight/styles/*.css", {
+const cssModules = import.meta.glob("/src/assets/highlight/styles/*.css", {
     query: "?raw",
     import: "default",
     eager: true,
@@ -40,7 +39,7 @@ const cssModules = import.meta.glob("../../assets/highlight/styles/*.css", {
 
 export function registerBuiltInHlThemes() {
     for (const id of hlThemeIds) {
-        const path = `../../assets/highlight/styles/${id}.min.css`;
+        const path = `/src/assets/highlight/styles/${id}.min.css`;
         const loader = cssModules[path];
         if (!loader) continue;
 
@@ -54,24 +53,5 @@ export function registerBuiltInHlThemes() {
 }
 
 function createTheme(id: string, source: CssSource): HlTheme {
-    return {
-        id,
-        async getCss() {
-            switch (source.type) {
-                case "inline":
-                    return source.css;
-
-                case "asset":
-                    return source.loader();
-
-                // case "file":
-                //     return fs.readFile(source.path, "utf-8");
-
-                case "url":
-                    const res = await fetch(source.url);
-                    if (!res.ok) throw new Error(`Failed to load theme CSS`);
-                    return res.text();
-            }
-        },
-    };
+    return { id, getCss: () => loadCssBySource(source) };
 }

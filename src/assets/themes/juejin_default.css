@@ -80,7 +80,6 @@
     font-size: 0.95em;
 }
 #wenyan p code {
-    font-family: var(--monospace-font);
     background: #fff5f5;
     color: #ff502c;
     padding: 4px 6px;
@@ -95,7 +94,6 @@
     font-size: 12px;
 }
 #wenyan pre code {
-    font-family: var(--monospace-font);
     display: block;
     overflow-x: auto;
     margin: .5em;
