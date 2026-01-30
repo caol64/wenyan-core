@@ -40,3 +40,6 @@ export async function getGzhContent(
         isAddFootnote,
     });
 }
+
+export * from "./configStore.js";
+export * from "./runtimeEnv.js";

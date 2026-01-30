@@ -11,7 +11,11 @@
 
 ## 概览
 
-在 Node 环境中，由于不存在浏览器 DOM，Wenyan 使用 **JSDOM** 模拟 DOM 来完成完整的渲染流程。
+在 Node 环境中，由于不存在浏览器 DOM，Wenyan 使用 **JSDOM** 模拟 DOM 来完成完整的渲染流程。你需要安装下列库：
+
+```bash
+npm install jsdom
+```
 
 核心能力由以下函数提供：
 

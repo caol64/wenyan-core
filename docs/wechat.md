@@ -13,6 +13,12 @@
 * 自动选择封面
 * 发布到公众号草稿箱
 
+首先，请安装下列库：
+
+```bash
+npm install jsdom form-data-encoder formdata-node
+```
+
 ## publishToDraft
 
 ```ts
