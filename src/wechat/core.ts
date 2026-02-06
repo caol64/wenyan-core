@@ -47,3 +47,7 @@ export function createWechatClient(adapter: HttpAdapter) {
         },
     };
 }
+
+export type WechatClient = ReturnType<typeof createWechatClient>;
+export * from "./http.js";
+export * from "./adapters/browser.js";

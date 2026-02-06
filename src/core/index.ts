@@ -165,3 +165,4 @@ export { getMacStyleCss, registerMacStyle } from "./theme/macStyleRegistry.js";
 export * from "./platform/medium.js";
 export * from "./platform/zhihu.js";
 export * from "./platform/toutiao.js";
+export { addFootnotes } from "./renderer/footnotesRender.js";
