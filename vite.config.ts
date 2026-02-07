@@ -10,9 +10,10 @@ export default defineConfig(({ mode }) => {
             lib: {
                 entry: {
                     core: resolve(__dirname, "src/core/index.ts"),
-                    publish: resolve(__dirname, "src/wechat/publish.ts"),
+                    publish: resolve(__dirname, "src/node/publish.ts"),
                     wrapper: resolve(__dirname, "src/node/wrapper.ts"),
-                    wechat: resolve(__dirname, "src/wechat/core.ts"),
+                    wechat: resolve(__dirname, "src/wechat.ts"),
+                    http: resolve(__dirname, "src/http.ts"),
                 },
                 fileName: (format, entryName) => `${entryName}.js`,
                 formats: ["es"],

@@ -2,10 +2,10 @@ import { JSDOM } from "jsdom";
 import { fileFromPath } from "formdata-node/file-from-path";
 import path from "node:path";
 import { stat } from "node:fs/promises";
-import { RuntimeEnv } from "../node/runtimeEnv.js";
-import { createWechatClient } from "./core.js";
-import { nodeHttpAdapter } from "./adapters/node.js";
-import { UploadResponse } from "./http.js";
+import { RuntimeEnv } from "./runtimeEnv.js";
+import { createWechatClient } from "../wechat.js";
+import { nodeHttpAdapter } from "./nodeHttpAdapter.js";
+import { UploadResponse } from "../http.js";
 
 const { uploadMaterial, publishArticle, fetchAccessToken } = createWechatClient(nodeHttpAdapter);
 

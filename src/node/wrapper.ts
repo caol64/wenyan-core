@@ -42,4 +42,3 @@ export async function getGzhContent(
 }
 
 export * from "./configStore.js";
-export * from "./runtimeEnv.js";
