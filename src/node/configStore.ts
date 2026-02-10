@@ -1,6 +1,7 @@
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
+import { ensureDir, safeReadJson, safeWriteJson } from "./utils.js";
 
 export interface WenyanConfig {
     themes?: Record<string, ThemeConfigOptions>;
@@ -16,8 +17,8 @@ export interface ThemeConfigOptions {
 const defaultConfig: WenyanConfig = {};
 
 export const configDir = process.env.APPDATA
-    ? path.join(process.env.APPDATA, "wenyan-md") // Windows
-    : path.join(os.homedir(), ".config", "wenyan-md"); // macOS/Linux
+    ? path.join(process.env.APPDATA, "wenyan-md")
+    : path.join(os.homedir(), ".config", "wenyan-md");
 
 export const configPath = path.join(configDir, "config.json");
 
@@ -29,33 +30,22 @@ class ConfigStore {
     }
 
     private load() {
+        ensureDir(configDir);
+
         if (fs.existsSync(configPath)) {
-            try {
-                const fileContent = fs.readFileSync(configPath, "utf-8");
-                this.config = { ...defaultConfig, ...JSON.parse(fileContent) };
-            } catch (error) {
-                console.warn("⚠️ 配置文件解析失败，将使用默认配置");
-                this.config = { ...defaultConfig };
-            }
+            this.config = {
+                ...defaultConfig,
+                ...safeReadJson<WenyanConfig>(configPath, defaultConfig),
+            };
         }
     }
 
     private save() {
-        this.mkdirIfNotExists();
         try {
-            fs.writeFileSync(configPath, JSON.stringify(this.config, null, 2), "utf-8");
+            ensureDir(configDir);
+            safeWriteJson(configPath, this.config);
         } catch (error) {
             console.error("❌ 无法保存配置文件:", error);
-        }
-    }
-
-    private mkdirIfNotExists(dir: string = configDir) {
-        try {
-            if (!fs.existsSync(dir)) {
-                fs.mkdirSync(dir, { recursive: true });
-            }
-        } catch (error) {
-            console.error("❌ 无法创建配置目录:", error);
         }
     }
 
@@ -63,52 +53,61 @@ class ConfigStore {
         return this.config;
     }
 
-    addThemeToConfig(name: string, content: string): void {
-        const savedPath = this.addThemeFile(name, content);
-        this.config.themes = this.config.themes || {};
-        this.config.themes[name] = {
-            id: name,
-            name: name,
-            path: savedPath,
-        };
-        this.save();
-    }
-
     getThemes(): ThemeConfigOptions[] {
-        return this.config.themes ? Object.values(this.config.themes) : [];
+        return Object.values(this.config.themes ?? {});
     }
 
     getThemeById(themeId: string): string | undefined {
-        const themeOption = this.config.themes ? this.config.themes[themeId] : undefined;
-        if (themeOption) {
-            const absoluteFilePath = path.join(configDir, themeOption.path);
-            if (fs.existsSync(absoluteFilePath)) {
-                return fs.readFileSync(absoluteFilePath, "utf-8");
-            }
+        const themeOption = this.config.themes?.[themeId];
+        if (!themeOption) return;
+
+        const absoluteFilePath = path.join(configDir, themeOption.path);
+
+        try {
+            return fs.readFileSync(absoluteFilePath, "utf-8");
+        } catch {
+            return undefined;
         }
-        return undefined;
+    }
+
+    addThemeToConfig(name: string, content: string): void {
+        const savedPath = this.addThemeFile(name, content);
+
+        this.config.themes ??= {};
+        this.config.themes[name] = {
+            id: name,
+            name,
+            path: savedPath,
+        };
+
+        this.save();
     }
 
     addThemeFile(themeId: string, themeContent: string): string {
         const filePath = `themes/${themeId}.css`;
         const absoluteFilePath = path.join(configDir, filePath);
-        this.mkdirIfNotExists(path.dirname(absoluteFilePath));
+
+        ensureDir(path.dirname(absoluteFilePath));
         fs.writeFileSync(absoluteFilePath, themeContent, "utf-8");
+
         return filePath;
     }
 
     deleteThemeFromConfig(themeId: string) {
-        if (this.config.themes && this.config.themes[themeId]) {
-            this.deleteThemeFile(this.config.themes[themeId].path);
-            delete this.config.themes[themeId];
-            this.save();
-        }
+        const theme = this.config.themes?.[themeId];
+        if (!theme) return;
+
+        this.deleteThemeFile(theme.path);
+        delete this.config.themes![themeId];
+
+        this.save();
     }
 
     deleteThemeFile(filePath: string) {
-        const absoluteFilePath = path.join(configDir, filePath);
-        if (fs.existsSync(absoluteFilePath)) {
-            fs.unlinkSync(absoluteFilePath);
+        try {
+            fs.unlinkSync(path.join(configDir, filePath));
+        } catch {
+            // ignore
         }
     }
 }

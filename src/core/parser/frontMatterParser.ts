@@ -3,8 +3,10 @@ import fm from "front-matter";
 export interface FrontMatterResult {
     body: string;
     title?: string;
-    description?: string;
     cover?: string;
+    description?: string;
+    author?: string;
+    source_url?: string;
 }
 
 export async function handleFrontMatter(markdown: string): Promise<FrontMatterResult> {
@@ -13,7 +15,7 @@ export async function handleFrontMatter(markdown: string): Promise<FrontMatterRe
     const { attributes, body } = fm(markdown);
     const result: FrontMatterResult = { body: body || "" };
     let head = "";
-    const { title, description, cover } = attributes;
+    const { title, description, cover, author, source_url } = attributes;
     if (title) {
         result.title = title;
     }
@@ -26,6 +28,12 @@ export async function handleFrontMatter(markdown: string): Promise<FrontMatterRe
     }
     if (head) {
         result.body = head + result.body;
+    }
+    if (author) {
+        result.author = author;
+    }
+    if (source_url) {
+        result.source_url = source_url;
     }
     return result;
 }

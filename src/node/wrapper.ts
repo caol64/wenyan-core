@@ -6,6 +6,8 @@ export interface StyledContent {
     title?: string;
     cover?: string;
     description?: string;
+    author?: string;
+    source_url?: string;
 }
 
 const wenyanCoreInstance = await createWenyanCore();
@@ -22,6 +24,8 @@ export async function renderStyledContent(content: string, options: ApplyStylesO
         title: preHandlerContent.title,
         cover: preHandlerContent.cover,
         description: preHandlerContent.description,
+        author: preHandlerContent.author,
+        source_url: preHandlerContent.source_url,
     };
 }
 
