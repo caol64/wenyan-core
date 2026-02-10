@@ -19,16 +19,33 @@
 npm install jsdom form-data-encoder formdata-node
 ```
 
-## publishToDraft
+## publishToWechatDraft
 
 ```ts
-async function publishToDraft(
-  title: string,
-  content: string,
-  cover?: string,
-  options?: PublishOptions
+async function publishToWechatDraft(
+  articleOptions: ArticleOptions, publishOptions?: PublishOptions
 ): Promise<any>
 ```
+
+### ArticleOptions
+
+```ts
+export interface ArticleOptions {
+  title: string;
+  content: string;
+  cover?: string;
+  author?: string;
+  source_url?: string;
+}
+```
+
+| 参数           | 说明              |
+| ------------ | --------------- |
+| title        | 文章标题     |
+| content      | 文章内容 |
+| cover        | 文章封面       |
+| author       | 作者       |
+| source_url   | 原文地址       |
 
 ### PublishOptions
 
@@ -58,14 +75,14 @@ export interface PublishOptions {
 ### 示例
 
 ```ts
-await publishToDraft(
-  "我的第一篇文章",
-  htmlContent,
-  "", // 不指定封面，自动使用正文第一张图片
+await publishToWechatDraft({
+  title: "我的第一篇文章",
+  content: htmlContent,
+  cover: "", // 不指定封面，自动使用正文第一张图片
   {
     relativePath: process.cwd(),
   }
-);
+});
 ```
 
 ## 图片处理逻辑说明
@@ -111,15 +128,15 @@ HTML
 ```ts
 import {
   renderStyledContent,
-  publishToDraft
+  publishToWechatDraft
 } from "@wenyan-md/core/node";
 
 const { content, title } = await renderStyledContent(markdown);
 
-await publishToDraft(
-  title ?? "未命名文章",
-  content
-);
+await publishToWechatDraft({
+  title: title ?? "未命名文章",
+  content,
+});
 ```
 
 ## 适用场景
@@ -142,7 +159,7 @@ await publishToDraft(
 
 ## Markdown Frontmatter 说明
 
-使用`publishToDraft`接口发布文章时，每篇文章顶部需包含 frontmatter：
+使用`publishToWechatDraft`接口发布文章时，每篇文章顶部需包含 frontmatter：
 
 ```md
 ---
