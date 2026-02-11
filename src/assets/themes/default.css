@@ -101,8 +101,11 @@
     background-color: #f0f0f0;
 }
 /* 表格斑马条纹效果 */
-#wenyan table tr:nth-child(2n) {
+#wenyan table tr:nth-child(even) {
     background-color: #f8f8f8;
+}
+#wenyan table tr:nth-child(odd) {
+    background-color: #fff;
 }
 /* 引用块 */
 #wenyan blockquote {

@@ -79,6 +79,7 @@
     font-size: 0.78em;
     border-radius: 3px;
     background-color: #f2f2f2;
+    color: #222;
 }
 #wenyan pre {
     line-height: 2;
@@ -106,19 +107,24 @@
 /* 链接 */
 #wenyan a {
     word-wrap: break-word;
-    color: #000000;
-}
-/* 脚注 */
-#wenyan #footnotes ul {
-    font-size: 0.9em;
-    margin: 0;
-    padding-left: 1.2em;
-}
-#wenyan #footnotes li {
-    margin: 0 0 0 1.2em;
-    word-wrap: break-word;
     word-break: break-all;
 }
+/* 脚注 */
 #wenyan .footnote {
     color: #000000;
+}
+#wenyan #footnotes p {
+    display: flex;
+    margin: 0;
+    font-size: 0.9em;
+}
+#wenyan .footnote-num {
+    display: inline;
+    width: 10%;
+}
+#wenyan .footnote-txt {
+    display: inline;
+    width: 90%;
+    word-wrap: break-word;
+    word-break: break-all;
 }

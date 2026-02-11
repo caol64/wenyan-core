@@ -39,17 +39,14 @@
 }
 #wenyan {
     font-size: 14px;
-    margin: 0 auto;
     line-height: 1.75;
     letter-spacing: 1.1px;
     word-break: break-word;
     word-wrap: break-word;
     text-align: left;
-    background-position: center center;
 }
 #wenyan p {
     text-align: justify;
-    color: #333;
     margin: 10px 0;
     word-spacing: 2px;
 }
@@ -208,23 +205,17 @@ h6 {
     border-radius: 4px;
     line-height: 26px;
 }
-#wenyan blockquote p {
-    color: #000;
-}
 #wenyan a {
-    color: #000;
     font-weight: bolder;
     text-decoration: none;
     border-bottom: 1px solid #3db8bf;
 }
 
 #wenyan strong {
-    color: #000;
     font-weight: bold;
 }
 #wenyan em {
     font-style: italic;
-    color: #000;
 }
 #wenyan del {
     text-decoration-color: var(--element-color-deep);
@@ -282,7 +273,6 @@ h6 {
     font-size: 10px;
     padding: 9px 12px;
     line-height: 22px;
-    color: #222;
     border: 1px solid var(--element-color-deep);
     vertical-align: top;
 }

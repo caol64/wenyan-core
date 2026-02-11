@@ -112,17 +112,21 @@
     color: #0069c2;
 }
 /* 脚注 */
-#wenyan #footnotes ul {
-    font-size: 0.9em;
-    margin: 0;
-    padding-left: 1.2em;
-}
-#wenyan #footnotes li {
-    margin: 0 0 0 1.2em;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    word-break: break-all;
-}
 #wenyan .footnote {
     color: #0069c2;
+}
+#wenyan #footnotes p {
+    display: flex;
+    margin: 0;
+    font-size: 0.9em;
+}
+#wenyan .footnote-num {
+    display: inline;
+    width: 10%;
+}
+#wenyan .footnote-txt {
+    display: inline;
+    width: 90%;
+    word-wrap: break-word;
+    word-break: break-all;
 }

@@ -17,7 +17,6 @@
     --header-weight: normal;
 }
 #wenyan {
-    color: var(--text-color);
     line-height: 1.75;
     font-size: 16px;
 }
@@ -114,7 +113,6 @@
     font-size: 0.75em;
     padding: 9px 12px;
     line-height: 22px;
-    color: #222;
     border: 1px solid var(--border-quote);
     vertical-align: top;
 }
@@ -145,14 +143,14 @@
     border-radius: 5px;
     line-height: 2;
     margin: 1em 0.5em;
-    padding: .5em;
+    padding: 0.5em;
     box-shadow: rgba(0, 0, 0, 0.55) 0px 1px 5px;
     font-size: 12px;
 }
 #wenyan pre code {
     display: block;
     overflow-x: auto;
-    margin: .5em;
+    margin: 0.5em;
     padding: 0;
 }
 #wenyan .footnote {

@@ -5,7 +5,6 @@
 
 :root {
     --bg-color: #fafafa;
-    --text-color: #333333;
     --primary-color: #428bca;
 }
 #wenyan {
@@ -45,7 +44,6 @@
 }
 #wenyan h2 span {
     font-weight: bold;
-    color: #333;
     padding: 3px 10px 1px;
 }
 #wenyan h3 {
@@ -65,7 +63,6 @@
     margin-top: 8px;
     margin-bottom: 8px;
     padding-left: 40px;
-    color: black;
 }
 #wenyan ul {
     list-style-type: disc;
@@ -101,7 +98,12 @@
     padding: 0;
     border: none;
     text-align: center;
-    background-image: linear-gradient(to right, rgba(231, 93, 109, 0.3), rgba(255, 159, 150, 0.75), rgba(255, 216, 181, 0.3));
+    background-image: linear-gradient(
+        to right,
+        rgba(231, 93, 109, 0.3),
+        rgba(255, 159, 150, 0.75),
+        rgba(255, 216, 181, 0.3)
+    );
 }
 #wenyan p code,
 #wenyan span code,
@@ -113,7 +115,7 @@
     word-break: break-all;
     color: rgb(235, 76, 55);
     background-color: #f0f0f0;
-    font-size: .8em;
+    font-size: 0.8em;
 }
 #wenyan img {
     max-width: 100%;
@@ -139,7 +141,6 @@
     font-size: 0.75em;
     padding: 9px 12px;
     line-height: 22px;
-    color: #222;
     border: 1px solid rgb(255, 216, 181);
     vertical-align: top;
 }
@@ -148,21 +149,27 @@
     color: #ffb11b;
     background: #fff9f9;
 }
-#wenyan table tr:nth-child(2n) {
+#wenyan table td {
+    color: #222;
+}
+#wenyan table tr:nth-child(even) {
     background: #fff9f9;
+}
+#wenyan table tr:nth-child(odd) {
+    background-color: #fff;
 }
 #wenyan pre {
     border-radius: 5px;
     line-height: 2;
     margin: 1em 0.5em;
-    padding: .5em;
+    padding: 0.5em;
     box-shadow: rgba(0, 0, 0, 0.55) 0px 1px 5px;
     font-size: 12px;
 }
 #wenyan pre code {
     display: block;
     overflow-x: auto;
-    margin: .5em;
+    margin: 0.5em;
     padding: 0;
 }
 #wenyan .footnote {

@@ -37,6 +37,7 @@
 #wenyan h2 {
     font-size: 1.3em;
     background-color: var(--h-bg-color);
+    color: rgb(102, 102, 102);
     padding-left: 1em;
     padding-right: 1em;
     border-left: 0.5em solid var(--h-border-color);
@@ -79,9 +80,13 @@
     padding: 9px 12px;
     line-height: 22px;
     vertical-align: top;
+    color: #222;
 }
 #wenyan table tr:nth-child(even) {
     background-color: var(--tr-bg-color);
+}
+#wenyan table tr:nth-child(odd) {
+    background-color: #fff;
 }
 #wenyan blockquote {
     font-size: 0.9em;
@@ -124,7 +129,6 @@
     margin-left: 0.25em;
     margin-right: 0.25em;
     padding: 0.05em 0.3em;
-    background-color: var(--code-bg-color);
     border-radius: 0.4em;
     box-shadow: 0.13em 0.13em 0.26em rgb(197, 197, 197);
     font-size: 0.9em;
