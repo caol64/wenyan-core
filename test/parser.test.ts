@@ -34,4 +34,18 @@ describe("createWenyanCore", async () => {
         expect(result).toContain("sys");
 
     });
+
+    it("should render markdown with image", async () => {
+        const md = "![](C:/Users/lei/Downloads/1_0D7dkNntY-hlvNXAHzHr2g.jpg){x=100}";
+        const result = await instance.renderMarkdown(md);
+
+        console.log(result);
+
+        // 验证图片标签是否正确渲染
+        expect(result).toContain('src="C:/Users/lei/Downloads/1_0D7dkNntY-hlvNXAHzHr2g.jpg');
+
+        // 验证自定义属性是否正确渲染
+        expect(result).toContain('style="x:100px"');
+
+    });
 });
