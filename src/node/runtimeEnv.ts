@@ -55,7 +55,7 @@ export const RuntimeEnv = {
             }
         }
 
-        if (normalizedInput.startsWith(this.hostFilePath)) {
+        if (this.hostFilePath && normalizedInput.startsWith(this.hostFilePath)) {
             let relativePart = normalizedInput.slice(this.hostFilePath.length);
 
             if (relativePart && !relativePart.startsWith("/")) {
