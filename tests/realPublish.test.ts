@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { publishToDraft } from "../src/wechat/publish.js";
+import { publishToDraft } from "../src/node/publish.js";
 
 describe("publish.ts tests", () => {
     it("publish to gzh", { timeout: 10000 }, async () => {

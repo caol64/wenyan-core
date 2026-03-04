@@ -3,7 +3,7 @@ import { fileFromPath } from "formdata-node/file-from-path";
 import path from "node:path";
 import { stat } from "node:fs/promises";
 import { RuntimeEnv } from "./runtimeEnv.js";
-import { createWechatClient, WechatUploadResponse } from "../wechat.js";
+import { createWechatClient, WechatPublishResponse, WechatUploadResponse } from "../wechat.js";
 import { nodeHttpAdapter } from "./nodeHttpAdapter.js";
 import { tokenStore } from "./tokenStore.js";
 import { md5FromBuffer, md5FromFile } from "./utils.js";
@@ -12,7 +12,7 @@ import { uploadCacheStore } from "./uploadCacheStore.js";
 const { uploadMaterial, publishArticle, fetchAccessToken } = createWechatClient(nodeHttpAdapter);
 const mediaIdMapping = new Map<string, string>(); // 微信 url 和 media_id 的映射
 
-export interface PublishOptions {
+export interface WechatPublishOptions {
     appId?: string;
     appSecret?: string;
     relativePath?: string;
@@ -40,7 +40,7 @@ async function uploadImage(
         // 远程 URL
         const response = await fetch(imageUrl);
         if (!response.ok || !response.body) {
-            throw new Error(`Failed to download image from URL: ${imageUrl}`);
+            throw new Error(`下载图片失败 URL: ${imageUrl}`);
         }
         const arrayBuffer = await response.arrayBuffer();
         if (arrayBuffer.byteLength === 0) {
@@ -49,14 +49,14 @@ async function uploadImage(
         const buffer = Buffer.from(arrayBuffer);
         md5 = md5FromBuffer(buffer);
         // 先查缓存
-        const cached = uploadCacheStore.get(md5);
+        const cached = await uploadCacheStore.get(md5);
         if (cached) {
             // 写入映射
             mediaIdMapping.set(cached.url, cached.media_id);
             return {
                 media_id: cached.media_id,
                 url: cached.url,
-            } as WechatUploadResponse;
+            };
         }
 
         const fileNameFromUrl = path.basename(imageUrl.split("?")[0]);
@@ -73,17 +73,17 @@ async function uploadImage(
             throw new Error(`本地图片大小为0，无法上传: ${resolvedPath}`);
         }
 
-        md5 = md5FromFile(resolvedPath);
+        md5 = await md5FromFile(resolvedPath);
 
         // 查缓存
-        const cached = uploadCacheStore.get(md5);
+        const cached = await uploadCacheStore.get(md5);
         if (cached) {
             // 写入映射
             mediaIdMapping.set(cached.url, cached.media_id);
             return {
                 media_id: cached.media_id,
                 url: cached.url,
-            } as WechatUploadResponse;
+            };
         }
 
         const fileNameFromLocal = path.basename(resolvedPath);
@@ -96,7 +96,7 @@ async function uploadImage(
     // 上传
     const data = await uploadMaterial("image", fileData, finalName, accessToken);
     // 写入缓存
-    uploadCacheStore.set(md5, data.media_id, data.url);
+    await uploadCacheStore.set(md5, data.media_id, data.url);
     // 写入映射
     mediaIdMapping.set(data.url, data.media_id);
     return data;
@@ -136,7 +136,10 @@ async function uploadImages(
     return { html: updatedHtml, firstImageId };
 }
 
-export async function publishToWechatDraft(articleOptions: ArticleOptions, publishOptions: PublishOptions = {}) {
+export async function publishToWechatDraft(
+    articleOptions: ArticleOptions,
+    publishOptions: WechatPublishOptions = {},
+): Promise<WechatPublishResponse> {
     const { title, content, cover, author, source_url } = articleOptions;
     const { appId, appSecret, relativePath } = publishOptions;
 
@@ -162,8 +165,6 @@ export async function publishToWechatDraft(articleOptions: ArticleOptions, publi
         } else {
             const resp = await uploadImage(cover, accessToken, "cover.jpg", relativePath);
             thumbMediaId = resp.media_id;
-            // 写入映射
-            mediaIdMapping.set(resp.url, resp.media_id);
         }
     } else {
         // 如果是 URL，需要重新上传作为封面，为了获取 media_id
@@ -174,8 +175,6 @@ export async function publishToWechatDraft(articleOptions: ArticleOptions, publi
             } else {
                 const resp = await uploadImage(firstImageId, accessToken, "cover.jpg", relativePath);
                 thumbMediaId = resp.media_id;
-                // 写入映射
-                mediaIdMapping.set(resp.url, resp.media_id);
             }
         } else {
             // 已经是 media_id
@@ -202,7 +201,12 @@ export async function publishToWechatDraft(articleOptions: ArticleOptions, publi
     throw new Error(`上传到公众号草稿失败: ${JSON.stringify(data)}`);
 }
 
-export async function publishToDraft(title: string, content: string, cover: string = "", options: PublishOptions = {}) {
+export async function publishToDraft(
+    title: string,
+    content: string,
+    cover: string = "",
+    options: WechatPublishOptions = {},
+): Promise<WechatPublishResponse> {
     return publishToWechatDraft({ title, content, cover }, options);
 }
 
@@ -217,7 +221,7 @@ async function getAccessTokenWithCache(appId: string, appSecret: string) {
     const result = await fetchAccessToken(appId, appSecret);
 
     // 3. 写入缓存
-    tokenStore.setToken(appId, result.access_token, result.expires_in);
+    await tokenStore.setToken(appId, result.access_token, result.expires_in);
 
     return result.access_token;
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { publishToDraft } from "../src/publish.js";
+import { publishToDraft } from "../src/node/publish.js";
 
-vi.mock("../src/wechatApi", () => {
+vi.mock("../src/node/wechatApi", () => {
     return {
         fetchAccessToken: vi.fn().mockResolvedValue({
             access_token: "mock_token",
@@ -21,16 +21,16 @@ describe("publish.ts tests", () => {
         vi.clearAllMocks();
     });
     it("should publish article successfully", async () => {
-        const result = await publishToDraft("自动化测试", "<p>正文</p>", "test/wenyan.jpg");
+        const result = await publishToDraft("自动化测试", "<p>正文</p>", "tests/wenyan.jpg");
         expect(result).toHaveProperty("media_id", "mock_media_id");
     });
 
     it("should throw error when no media_id returned", async () => {
-        const { publishArticle } = await import("../src/wechatApi");
+        const { publishArticle } = await import("../src/node/wechatApi");
         publishArticle.mockResolvedValueOnce({ errcode: 41005, errmsg: "mock error" });
 
         await expect(
-            publishToDraft("失败测试", "<p>正文</p>", "test/wenyan.jpg")
+            publishToDraft("失败测试", "<p>正文</p>", "tests/wenyan.jpg")
         ).rejects.toThrow(/上传到公众号草稿失败，错误码：41005，mock error/);
     });
 });

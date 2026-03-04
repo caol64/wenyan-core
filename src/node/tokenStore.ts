@@ -1,5 +1,5 @@
 import path from "node:path";
-import fs from "node:fs";
+import fs from "node:fs/promises";
 import { configDir } from "./configStore.js";
 import { ensureDir, safeReadJson, safeWriteJson } from "./utils.js";
 
@@ -18,58 +18,60 @@ const defaultCache: TokenCache = {
 };
 
 class TokenStore {
-    private cache: TokenCache = defaultCache;
+    private cache: TokenCache = { ...defaultCache };
+    private initPromise: Promise<void>;
 
     constructor() {
-        this.load();
+        this.initPromise = this.load();
     }
 
-    private load() {
-        ensureDir(configDir);
-
-        if (fs.existsSync(tokenPath)) {
-            this.cache = safeReadJson<TokenCache>(tokenPath, defaultCache);
-        }
+    private async load() {
+        await ensureDir(configDir);
+        this.cache = await safeReadJson<TokenCache>(tokenPath, defaultCache);
     }
 
-    private save() {
+    private async save() {
         try {
-            ensureDir(configDir);
-            safeWriteJson(tokenPath, this.cache);
+            await ensureDir(configDir);
+            await safeWriteJson(tokenPath, this.cache);
         } catch (error) {
-            console.error("❌ 无法保存 token:", error);
+            throw new Error(`无法保存 token: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 
     isValid(appid: string): boolean {
-        if (!this.cache) return false;
+        const currentTime = Math.floor(Date.now() / 1000); // 当前时间（秒）
+        const bufferTime = 600; // 10 分钟缓冲，避免过期前瞬间失效
+        const isAppidMatch = this.cache.appid === appid;
+        const isNotExpired = this.cache.expireAt > currentTime + bufferTime;
 
-        return this.cache.appid === appid && this.cache.expireAt > Date.now() / 1000 + 600;
+        return isAppidMatch && isNotExpired;
     }
 
     getToken(appid: string): string | null {
         return this.isValid(appid) ? this.cache.accessToken : null;
     }
 
-    setToken(appid: string, accessToken: string, expiresIn: number) {
+    async setToken(appid: string, accessToken: string, expiresIn: number) {
+        await this.initPromise;
         this.cache = {
             appid,
             accessToken,
             expireAt: Math.floor(Date.now() / 1000) + expiresIn,
         };
 
-        this.save();
+        await this.save();
     }
 
-    clear() {
-        this.cache = defaultCache;
+    async clear() {
+        await this.initPromise;
+        this.cache = { ...defaultCache };
 
         try {
-            if (fs.existsSync(tokenPath)) {
-                fs.unlinkSync(tokenPath);
-            }
+            await fs.unlink(tokenPath);
         } catch {
-            // ignore
+            // 文件不存在/删除失败时，写入默认缓存覆盖
+            await this.save();
         }
     }
 }

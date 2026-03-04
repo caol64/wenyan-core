@@ -11,7 +11,7 @@
 
 ## 简介
 
-**文颜（Wenyan）** 是一套多平台 Markdown 排版与发布工具链，  **文颜 CORE** 是其核心库，专注于：
+**[文颜（Wenyan）](https://wenyan.yuzhi.tech/)** 是一套多平台 Markdown 排版与发布工具链，  **文颜 CORE** 是其核心库，专注于：
 
 - Markdown → HTML 渲染
 - 主题排版（公众号 / Web）

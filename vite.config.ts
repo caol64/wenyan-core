@@ -13,7 +13,6 @@ export default defineConfig(({ mode }) => {
                     publish: resolve(__dirname, "src/node/publish.ts"),
                     wrapper: resolve(__dirname, "src/node/wrapper.ts"),
                     wechat: resolve(__dirname, "src/wechat.ts"),
-                    http: resolve(__dirname, "src/http.ts"),
                 },
                 fileName: (format, entryName) => `${entryName}.js`,
                 formats: ["es"],
@@ -40,7 +39,7 @@ export default defineConfig(({ mode }) => {
         },
         test: {
             // globals: true,
-            include: ["test/**/*.test.js", "test/**/*.test.ts"],
+            include: ["tests/**/*.test.js", "tests/**/*.test.ts"],
             env,
         },
     };

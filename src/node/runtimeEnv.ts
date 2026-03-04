@@ -1,20 +1,5 @@
 import path from "node:path";
-
-/**
- * 路径标准化工具函数
- * 将 Windows 的反斜杠 \ 转换为正斜杠 /，并去除末尾斜杠
- * 目的：在 Linux 容器内也能正确处理 Windows 路径字符串
- */
-function normalizePath(p: string): string {
-    return p.replace(/\\/g, "/").replace(/\/+$/, "");
-}
-
-function isAbsolutePath(path: string): boolean {
-    if (!path) return false;
-    const winAbsPattern = /^[a-zA-Z]:\//;
-    const linuxAbsPattern = /^\//;
-    return winAbsPattern.test(path) || linuxAbsPattern.test(path);
-}
+import { isAbsolutePath, normalizePath } from "./utils.js";
 
 export const RuntimeEnv = {
     isContainer: !!process.env.CONTAINERIZED,
@@ -32,7 +17,7 @@ export const RuntimeEnv = {
                 // 情况 B：没有提供基准目录，必须强制 inputPath 是绝对路径
                 if (!path.isAbsolute(inputPath)) {
                     throw new Error(
-                        `Invalid input: '${inputPath}'. When relativeBase is not provided, inputPath must be an absolute path.`
+                        `Invalid input: '${inputPath}'. InputPath must be an absolute path.`
                     );
                 }
                 // 规范化绝对路径（消除中间的 /./ 或 /../）
@@ -50,7 +35,7 @@ export const RuntimeEnv = {
         } else {
             if (!isAbsolutePath(normalizedInput)) {
                 throw new Error(
-                    `Invalid input: '${inputPath}'. When relativeBase is not provided, inputPath must be an absolute path.`
+                    `Invalid input: '${inputPath}'. InputPath must be an absolute path.`
                 );
             }
         }

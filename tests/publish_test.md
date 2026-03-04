@@ -1,6 +1,6 @@
 ---
 title: 自动化测试
-cover: https://raw.githubusercontent.com/caol64/wenyan-core/refs/heads/main/test/wenyan.jpg
+cover: https://raw.githubusercontent.com/caol64/wenyan-core/refs/heads/main/tests/wenyan.jpg
 description: 文颜 MCP Server 是一个基于模型上下文协议（Model Context Protocol, MCP）的服务器组件，支持将 Markdown 格式的文章发布至微信公众号草稿箱，并使用与 文颜 相同的主题系统进行排版。
 ---
 
@@ -9,7 +9,7 @@ description: 文颜 MCP Server 是一个基于模型上下文协议（Model Cont
 - 方式一：本地运行
 - 方式二：使用 Docker 运行（推荐）
 
-![](https://raw.githubusercontent.com/caol64/wenyan-core/refs/heads/main/test/result_image.jpg)
+![](https://raw.githubusercontent.com/caol64/wenyan-core/refs/heads/main/tests/result_image.jpg)
 
 ```javascript
 import { Marked } from "marked";

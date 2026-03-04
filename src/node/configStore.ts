@@ -1,6 +1,6 @@
 import path from "node:path";
 import os from "node:os";
-import fs from "node:fs";
+import fs from "node:fs/promises";
 import { ensureDir, safeReadJson, safeWriteJson } from "./utils.js";
 
 export interface WenyanConfig {
@@ -24,54 +24,53 @@ export const configPath = path.join(configDir, "config.json");
 
 class ConfigStore {
     private config: WenyanConfig = { ...defaultConfig };
+    private initPromise: Promise<void>;
 
     constructor() {
-        this.load();
+        this.initPromise = this.load();
     }
 
-    private load() {
-        ensureDir(configDir);
-
-        if (fs.existsSync(configPath)) {
-            this.config = {
-                ...defaultConfig,
-                ...safeReadJson<WenyanConfig>(configPath, defaultConfig),
-            };
-        }
+    private async load() {
+        await ensureDir(configDir);
+        this.config = await safeReadJson<WenyanConfig>(configPath, defaultConfig);
     }
 
-    private save() {
+    private async save() {
         try {
-            ensureDir(configDir);
-            safeWriteJson(configPath, this.config);
+            await ensureDir(configDir);
+            await safeWriteJson(configPath, this.config);
         } catch (error) {
-            console.error("❌ 无法保存配置文件:", error);
+            throw new Error(`无法保存配置文件: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 
-    getConfig(): WenyanConfig {
+    async getConfig(): Promise<WenyanConfig> {
+        await this.initPromise; // 等待初始化完成
         return this.config;
     }
 
-    getThemes(): ThemeConfigOptions[] {
+    async getThemes(): Promise<ThemeConfigOptions[]> {
+        await this.initPromise;
         return Object.values(this.config.themes ?? {});
     }
 
-    getThemeById(themeId: string): string | undefined {
+    async getThemeById(themeId: string): Promise<string | undefined> {
+        await this.initPromise;
         const themeOption = this.config.themes?.[themeId];
-        if (!themeOption) return;
+        if (!themeOption) return undefined;
 
         const absoluteFilePath = path.join(configDir, themeOption.path);
 
         try {
-            return fs.readFileSync(absoluteFilePath, "utf-8");
+            return await fs.readFile(absoluteFilePath, "utf-8");
         } catch {
             return undefined;
         }
     }
 
-    addThemeToConfig(name: string, content: string): void {
-        const savedPath = this.addThemeFile(name, content);
+    async addThemeToConfig(name: string, content: string): Promise<void> {
+        await this.initPromise;
+        const savedPath = await this.addThemeFile(name, content);
 
         this.config.themes ??= {};
         this.config.themes[name] = {
@@ -80,32 +79,33 @@ class ConfigStore {
             path: savedPath,
         };
 
-        this.save();
+        await this.save();
     }
 
-    addThemeFile(themeId: string, themeContent: string): string {
+    async addThemeFile(themeId: string, themeContent: string): Promise<string> {
         const filePath = `themes/${themeId}.css`;
         const absoluteFilePath = path.join(configDir, filePath);
 
-        ensureDir(path.dirname(absoluteFilePath));
-        fs.writeFileSync(absoluteFilePath, themeContent, "utf-8");
+        await ensureDir(path.dirname(absoluteFilePath));
+        await fs.writeFile(absoluteFilePath, themeContent, "utf-8");
 
         return filePath;
     }
 
-    deleteThemeFromConfig(themeId: string) {
+    async deleteThemeFromConfig(themeId: string): Promise<void> {
+        await this.initPromise;
         const theme = this.config.themes?.[themeId];
         if (!theme) return;
 
-        this.deleteThemeFile(theme.path);
+        await this.deleteThemeFile(theme.path);
         delete this.config.themes![themeId];
 
-        this.save();
+        await this.save();
     }
 
-    deleteThemeFile(filePath: string) {
+    async deleteThemeFile(filePath: string): Promise<void> {
         try {
-            fs.unlinkSync(path.join(configDir, filePath));
+            await fs.unlink(path.join(configDir, filePath));
         } catch {
             // ignore
         }

@@ -1,6 +1,6 @@
 {
   "name": "@wenyan-md/core",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Core library for Wenyan markdown rendering & publishing",
   "author": "Lei <caol64@gmail.com> (https://github.com/caol64)",
   "license": "Apache-2.0",
@@ -43,23 +43,17 @@
       "types": "./dist/types/wechat.d.ts"
     },
     "./http": {
-      "import": "./dist/http.js",
       "types": "./dist/types/http.d.ts"
     }
   },
   "scripts": {
-    "dev": "vite build --watch",
     "check": "tsc --noEmit",
     "build": "vite build && tsc",
-    "build:browser": "vite build --config vite.config.browser.ts",
-    "build:styles": "vite build --config vite.config.styles.ts",
-    "build:math": "vite build --config vite.config.math.ts",
-    "build:all": "pnpm build && pnpm build:styles && pnpm build:math && pnpm build:browser",
     "test": "pnpm build && vitest",
-    "test:wrapper": "vitest run test/wrapper.test.ts",
-    "test:publish": "vitest run test/publish.test.ts",
-    "test:realPublish": "vitest run test/realPublish.test.ts",
-    "test:runtimeEnv": "vitest run test/runtimeEnv.test.ts",
+    "test:wrapper": "vitest run tests/wrapper.test.ts",
+    "test:publish": "vitest run tests/publish.test.ts",
+    "test:realPublish": "vitest run tests/realPublish.test.ts",
+    "test:runtimeEnv": "vitest run tests/runtimeEnv.test.ts",
     "prepublishOnly": "pnpm build"
   },
   "packageManager": "pnpm@10.7.1",

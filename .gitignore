@@ -5,4 +5,4 @@ dist/
 .env*
 *.tsbuildinfo
 pnpm-lock.yaml
-test/__snapshots__/
+tests/__snapshots__/
