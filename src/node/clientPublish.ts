@@ -7,6 +7,13 @@ import { ClientPublishOptions, StyledContent } from "./types.js";
 import { readBinaryFile } from "./utils.js";
 import { RuntimeEnv } from "./runtimeEnv.js";
 
+export const CLIENT_PUBLISH_API_ENDPOINTS = {
+    health: "/health",
+    verify: "/verify",
+    upload: "/upload",
+    publish: "/publish",
+} as const;
+
 export function getServerUrl(options: ClientPublishOptions): string {
     let serverUrl = options.server || "http://localhost:3000";
     serverUrl = serverUrl.replace(/\/$/, ""); // 移除末尾的斜杠
@@ -30,7 +37,7 @@ export function getHeaders(options: ClientPublishOptions): Record<string, string
 export async function healthCheck(serverUrl: string): Promise<string> {
     try {
         // 1. 物理连通性与服务指纹验证
-        const healthRes = await fetch(`${serverUrl}/health`, { method: "GET" });
+        const healthRes = await fetch(`${serverUrl}${CLIENT_PUBLISH_API_ENDPOINTS.health}`, { method: "GET" });
 
         if (!healthRes.ok) {
             throw new Error(`HTTP Error: ${healthRes.status} ${healthRes.statusText}`);
@@ -53,7 +60,7 @@ export async function healthCheck(serverUrl: string): Promise<string> {
  * 鉴权探针测试
  */
 export async function verifyAuth(serverUrl: string, headers: Record<string, string>): Promise<void> {
-    const verifyRes = await fetch(`${serverUrl}/verify`, {
+    const verifyRes = await fetch(`${serverUrl}${CLIENT_PUBLISH_API_ENDPOINTS.verify}`, {
         method: "GET",
         headers, // 携带 x-api-key 和 x-client-version
     });
@@ -80,7 +87,7 @@ export async function uploadStyledContent(
     );
 
     const mdEncoder = new FormDataEncoder(mdForm);
-    const mdUploadRes = await fetch(`${serverUrl}/upload`, {
+    const mdUploadRes = await fetch(`${serverUrl}${CLIENT_PUBLISH_API_ENDPOINTS.upload}`, {
         method: "POST",
         headers: { ...headers, ...mdEncoder.headers },
         body: Readable.from(mdEncoder) as any,
@@ -104,7 +111,7 @@ export async function requestServerPublish(
     options: ClientPublishOptions,
 ): Promise<string> {
     const { theme, customTheme, highlight, macStyle, footnote } = options;
-    const publishRes = await fetch(`${serverUrl}/publish`, {
+    const publishRes = await fetch(`${serverUrl}${CLIENT_PUBLISH_API_ENDPOINTS.publish}`, {
         method: "POST",
         headers: {
             ...headers,
@@ -170,7 +177,7 @@ async function uploadLocalImage(
     form.append("file", new File([fileBuffer], filename, { type }));
     const encoder = new FormDataEncoder(form);
 
-    const uploadRes = await fetch(`${serverUrl}/upload`, {
+    const uploadRes = await fetch(`${serverUrl}${CLIENT_PUBLISH_API_ENDPOINTS.upload}`, {
         method: "POST",
         headers: { ...headers, ...encoder.headers },
         body: Readable.from(encoder) as any,

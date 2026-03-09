@@ -1,8 +1,10 @@
 import type { HttpAdapter } from "./http.js";
 
-const tokenUrl = "https://api.weixin.qq.com/cgi-bin/token";
-const publishUrl = "https://api.weixin.qq.com/cgi-bin/draft/add";
-const uploadUrl = "https://api.weixin.qq.com/cgi-bin/material/add_material";
+export const WECHAT_API_ENDPOINTS = {
+    token: "https://api.weixin.qq.com/cgi-bin/token",
+    publishDraft: "https://api.weixin.qq.com/cgi-bin/draft/add",
+    uploadMaterial: "https://api.weixin.qq.com/cgi-bin/material/add_material",
+} as const;
 
 export interface WechatPublishOptions {
     title: string;
@@ -39,7 +41,7 @@ export function createWechatClient(adapter: HttpAdapter) {
     return {
         async fetchAccessToken(appId: string, appSecret: string): Promise<WechatTokenResponse> {
             const res = await adapter.fetch(
-                `${tokenUrl}?grant_type=client_credential&appid=${appId}&secret=${appSecret}`,
+                `${WECHAT_API_ENDPOINTS.token}?grant_type=client_credential&appid=${appId}&secret=${appSecret}`,
             );
             if (!res.ok) throw new Error(await res.text());
 
@@ -56,7 +58,7 @@ export function createWechatClient(adapter: HttpAdapter) {
         ): Promise<WechatUploadResponse> {
             const multipart = adapter.createMultipart("media", file, filename);
 
-            const res = await adapter.fetch(`${uploadUrl}?access_token=${accessToken}&type=${type}`, {
+            const res = await adapter.fetch(`${WECHAT_API_ENDPOINTS.uploadMaterial}?access_token=${accessToken}&type=${type}`, {
                 ...multipart,
                 method: "POST",
             });
@@ -74,7 +76,7 @@ export function createWechatClient(adapter: HttpAdapter) {
         },
 
         async publishArticle(accessToken: string, options: WechatPublishOptions): Promise<WechatPublishResponse> {
-            const res = await adapter.fetch(`${publishUrl}?access_token=${accessToken}`, {
+            const res = await adapter.fetch(`${WECHAT_API_ENDPOINTS.publishDraft}?access_token=${accessToken}`, {
                 method: "POST",
                 body: JSON.stringify({
                     articles: [options],
