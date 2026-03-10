@@ -13,6 +13,25 @@
 * 自动选择封面
 * 发布到公众号草稿箱
 
+## 使用的 API 接口
+
+### 微信公众号官方接口
+
+| 接口 | 方法 | URL |
+| --- | --- | --- |
+| 获取 Access Token | GET | `https://api.weixin.qq.com/cgi-bin/token` |
+| 上传永久素材（图片） | POST | `https://api.weixin.qq.com/cgi-bin/material/add_material` |
+| 新增草稿（图文） | POST | `https://api.weixin.qq.com/cgi-bin/draft/add` |
+
+### 客户端发布服务接口（wenyan-cli server）
+
+| 接口 | 方法 | 路径 |
+| --- | --- | --- |
+| 健康检查 | GET | `/health` |
+| 鉴权校验 | GET | `/verify` |
+| 上传内容/图片 | POST | `/upload` |
+| 触发远端发布 | POST | `/publish` |
+
 首先，请安装下列库：
 
 ```bash
