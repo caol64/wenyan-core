@@ -79,7 +79,7 @@
 
 推荐调用链路：
 
-`switchWechatDraft(checkOnly=true) -> getWechatDraftCount -> getWechatDraftList -> getWechatDraftDetail -> updateWechatDraft -> submitWechatDraft -> getWechatPublishStatus -> getWechatPublishedArticle`
+`switchWechatDraft(true) -> getWechatDraftCount -> getWechatDraftList -> getWechatDraftDetail -> updateWechatDraft -> submitWechatDraft -> getWechatPublishStatus -> getWechatPublishedArticle`
 
 ### 用户故事 S2：素材治理故事（永久素材盘点与清理）
 

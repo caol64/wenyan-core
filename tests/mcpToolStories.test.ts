@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+type MockWechatClient = Record<string, ReturnType<typeof vi.fn>>;
+
 describe("MCP tool user-story chain coverage", () => {
     const originalEnv = {
         appId: process.env.WECHAT_APP_ID,
@@ -18,8 +20,23 @@ describe("MCP tool user-story chain coverage", () => {
         process.env.WECHAT_APP_SECRET = originalEnv.appSecret;
     });
 
-    it("story: 编辑先管理草稿再发布，链路可完整调用", async () => {
+    async function setupPublishModule(clientMocks: MockWechatClient) {
         const tokenCache = new Map<string, string>();
+        vi.doMock("../src/wechat.js", () => ({
+            createWechatClient: () => clientMocks,
+        }));
+        vi.doMock("../src/node/tokenStore.js", () => ({
+            tokenStore: {
+                getToken: vi.fn((appId: string) => tokenCache.get(appId)),
+                setToken: vi.fn(async (appId: string, token: string) => {
+                    tokenCache.set(appId, token);
+                }),
+            },
+        }));
+        return await import("../src/node/publish.js");
+    }
+
+    it("story: editor manages draft then publishes, full chain callable", async () => {
         const lowLevel = {
             fetchAccessToken: vi.fn().mockResolvedValue({ access_token: "token_story", expires_in: 7200 }),
             draftSwitch: vi.fn().mockResolvedValue({ errcode: 0, errmsg: "ok", is_open: 1 }),
@@ -31,20 +48,7 @@ describe("MCP tool user-story chain coverage", () => {
             getPublishStatus: vi.fn().mockResolvedValue({ publish_id: "pub_1", publish_status: 1 }),
             getPublishedArticle: vi.fn().mockResolvedValue({ news_item: [{ title: "done" }] }),
         };
-
-        vi.doMock("../src/wechat.js", () => ({
-            createWechatClient: () => lowLevel,
-        }));
-        vi.doMock("../src/node/tokenStore.js", () => ({
-            tokenStore: {
-                getToken: vi.fn((appId: string) => tokenCache.get(appId)),
-                setToken: vi.fn(async (appId: string, token: string) => {
-                    tokenCache.set(appId, token);
-                }),
-            },
-        }));
-
-        const publish = await import("../src/node/publish.js");
+        const publish = await setupPublishModule(lowLevel);
 
         await publish.switchWechatDraft(true);
         await publish.getWechatDraftCount();
@@ -67,8 +71,7 @@ describe("MCP tool user-story chain coverage", () => {
         expect(lowLevel.submitPublish).toHaveBeenCalledWith("token_story", "d1");
     });
 
-    it("story: 运营维护永久素材，链路可完整调用", async () => {
-        const tokenCache = new Map<string, string>();
+    it("story: operator maintains permanent materials, full chain callable", async () => {
         const lowLevel = {
             fetchAccessToken: vi.fn().mockResolvedValue({ access_token: "token_mat", expires_in: 7200 }),
             getMaterialCount: vi.fn().mockResolvedValue({ voice_count: 1, video_count: 1, image_count: 9, news_count: 2 }),
@@ -76,20 +79,7 @@ describe("MCP tool user-story chain coverage", () => {
             getMaterial: vi.fn().mockResolvedValue({ media_id: "m1" }),
             deleteMaterial: vi.fn().mockResolvedValue({ errcode: 0, errmsg: "ok" }),
         };
-
-        vi.doMock("../src/wechat.js", () => ({
-            createWechatClient: () => lowLevel,
-        }));
-        vi.doMock("../src/node/tokenStore.js", () => ({
-            tokenStore: {
-                getToken: vi.fn((appId: string) => tokenCache.get(appId)),
-                setToken: vi.fn(async (appId: string, token: string) => {
-                    tokenCache.set(appId, token);
-                }),
-            },
-        }));
-
-        const publish = await import("../src/node/publish.js");
+        const publish = await setupPublishModule(lowLevel);
         const count = await publish.getWechatMaterialCount();
         const list = await publish.getWechatMaterialList({ type: "image", offset: 0, count: 1 });
         const material = await publish.getWechatMaterial("m1");
@@ -102,8 +92,7 @@ describe("MCP tool user-story chain coverage", () => {
         expect(lowLevel.fetchAccessToken).toHaveBeenCalledTimes(1);
     });
 
-    it("story: 上传临时素材与图文图片，链路可调用并返回结果", async () => {
-        const tokenCache = new Map<string, string>();
+    it("story: upload temp media and article images, chain callable", async () => {
         const lowLevel = {
             fetchAccessToken: vi.fn().mockResolvedValue({ access_token: "token_tmp", expires_in: 7200 }),
             uploadArticleImage: vi.fn().mockResolvedValue({ url: "https://mmbiz.qpic.cn/article" }),
@@ -111,18 +100,6 @@ describe("MCP tool user-story chain coverage", () => {
             getTemporaryMaterial: vi.fn().mockResolvedValue({ video_url: "https://media/get" }),
             getHdVoice: vi.fn().mockResolvedValue({ video_url: "https://media/hdvoice" }),
         };
-
-        vi.doMock("../src/wechat.js", () => ({
-            createWechatClient: () => lowLevel,
-        }));
-        vi.doMock("../src/node/tokenStore.js", () => ({
-            tokenStore: {
-                getToken: vi.fn((appId: string) => tokenCache.get(appId)),
-                setToken: vi.fn(async (appId: string, token: string) => {
-                    tokenCache.set(appId, token);
-                }),
-            },
-        }));
 
         vi.stubGlobal(
             "fetch",
@@ -134,7 +111,7 @@ describe("MCP tool user-story chain coverage", () => {
             }),
         );
 
-        const publish = await import("../src/node/publish.js");
+        const publish = await setupPublishModule(lowLevel);
         const articleImg = await publish.uploadWechatArticleImage("https://cdn.example.com/a.jpg");
         const tmp = await publish.uploadWechatTemporaryMaterial("voice", "https://cdn.example.com/v.amr");
         const tmpGet = await publish.getWechatTemporaryMaterial("tmp_voice_1");
