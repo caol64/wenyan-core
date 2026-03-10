@@ -23,6 +23,11 @@ describe("API endpoint visibility", () => {
         expect(WECHAT_API_ENDPOINTS).toEqual({
             token: "https://api.weixin.qq.com/cgi-bin/token",
             publishDraft: "https://api.weixin.qq.com/cgi-bin/draft/add",
+            updateDraft: "https://api.weixin.qq.com/cgi-bin/draft/update",
+            deleteDraft: "https://api.weixin.qq.com/cgi-bin/draft/delete",
+            submitPublish: "https://api.weixin.qq.com/cgi-bin/freepublish/submit",
+            getPublishStatus: "https://api.weixin.qq.com/cgi-bin/freepublish/get",
+            getPublishedArticle: "https://api.weixin.qq.com/cgi-bin/freepublish/getarticle",
             uploadMaterial: "https://api.weixin.qq.com/cgi-bin/material/add_material",
         });
         expect(adapter.fetch).toHaveBeenCalledWith(

@@ -1,7 +1,7 @@
 
 # Wenyan Core API 文档：微信公众号发布
 
-> 本文档介绍 Wenyan 在 **纯 Node.js 环境** 下，将内容发布到 **微信公众号草稿箱** 的能力。
+> 本文档介绍 Wenyan 在 **纯 Node.js 环境** 下，将内容发布到 **微信公众号草稿箱与发布链路** 的能力。
 
 ## 能力概览
 
@@ -12,6 +12,7 @@
 * 自动替换 `<img src>`
 * 自动选择封面
 * 发布到公众号草稿箱
+* 提交草稿到发布队列并查询发布状态
 
 ## 使用的 API 接口
 
@@ -22,6 +23,11 @@
 | 获取 Access Token | GET | `https://api.weixin.qq.com/cgi-bin/token` |
 | 上传永久素材（图片） | POST | `https://api.weixin.qq.com/cgi-bin/material/add_material` |
 | 新增草稿（图文） | POST | `https://api.weixin.qq.com/cgi-bin/draft/add` |
+| 更新草稿（图文） | POST | `https://api.weixin.qq.com/cgi-bin/draft/update` |
+| 删除草稿 | POST | `https://api.weixin.qq.com/cgi-bin/draft/delete` |
+| 提交草稿发布 | POST | `https://api.weixin.qq.com/cgi-bin/freepublish/submit` |
+| 查询发布状态 | POST | `https://api.weixin.qq.com/cgi-bin/freepublish/get` |
+| 获取已发布文章详情 | POST | `https://api.weixin.qq.com/cgi-bin/freepublish/getarticle` |
 
 ### 客户端发布服务接口（wenyan-cli server）
 
@@ -103,6 +109,14 @@ await publishToWechatDraft({
   }
 });
 ```
+
+## 发布链路相关 API
+
+- `submitWechatDraft(mediaId, options?)`：提交草稿发布，返回 `publish_id`
+- `getWechatPublishStatus(publishId, options?)`：查询发布任务状态
+- `getWechatPublishedArticle(articleId, options?)`：获取已发布文章详情
+- `updateWechatDraft(options, publishOptions?)`：更新指定草稿内容
+- `deleteWechatDraft(mediaId, publishOptions?)`：删除指定草稿
 
 ## 图片处理逻辑说明
 
