@@ -2,13 +2,25 @@ import type { HttpAdapter } from "./http.js";
 
 export const WECHAT_API_ENDPOINTS = {
     token: "https://api.weixin.qq.com/cgi-bin/token",
+    getMaterial: "https://api.weixin.qq.com/cgi-bin/material/get_material",
+    getMaterialCount: "https://api.weixin.qq.com/cgi-bin/material/get_materialcount",
+    batchGetMaterial: "https://api.weixin.qq.com/cgi-bin/material/batchget_material",
+    uploadArticleImage: "https://api.weixin.qq.com/cgi-bin/media/uploadimg",
     publishDraft: "https://api.weixin.qq.com/cgi-bin/draft/add",
+    getDraftSwitch: "https://api.weixin.qq.com/cgi-bin/draft/switch",
+    getDraftList: "https://api.weixin.qq.com/cgi-bin/draft/batchget",
+    getDraftCount: "https://api.weixin.qq.com/cgi-bin/draft/count",
+    getDraft: "https://api.weixin.qq.com/cgi-bin/draft/get",
     updateDraft: "https://api.weixin.qq.com/cgi-bin/draft/update",
     deleteDraft: "https://api.weixin.qq.com/cgi-bin/draft/delete",
     submitPublish: "https://api.weixin.qq.com/cgi-bin/freepublish/submit",
     getPublishStatus: "https://api.weixin.qq.com/cgi-bin/freepublish/get",
     getPublishedArticle: "https://api.weixin.qq.com/cgi-bin/freepublish/getarticle",
     uploadMaterial: "https://api.weixin.qq.com/cgi-bin/material/add_material",
+    deleteMaterial: "https://api.weixin.qq.com/cgi-bin/material/del_material",
+    uploadTemporaryMaterial: "https://api.weixin.qq.com/cgi-bin/media/upload",
+    getTemporaryMaterial: "https://api.weixin.qq.com/cgi-bin/media/get",
+    getHdVoice: "https://api.weixin.qq.com/cgi-bin/media/get/jssdk",
 } as const;
 
 export interface WechatPublishOptions {
@@ -26,6 +38,10 @@ export interface WechatErrorResponse {
 
 export interface WechatUploadResponse {
     media_id: string;
+    url: string;
+}
+
+export interface WechatUploadArticleImageResponse {
     url: string;
 }
 
@@ -61,6 +77,58 @@ export interface WechatDraftUpdateOptions {
     articles: WechatDraftArticle;
 }
 
+export type WechatMaterialType = "image" | "voice" | "video" | "thumb";
+export type WechatPermanentMaterialType = "image" | "voice" | "video" | "news";
+
+export interface WechatMaterialCountResponse {
+    voice_count: number;
+    video_count: number;
+    image_count: number;
+    news_count: number;
+}
+
+export interface WechatBatchGetMaterialOptions {
+    type: WechatPermanentMaterialType;
+    offset: number;
+    count: number;
+}
+
+export interface WechatBatchGetMaterialResponse {
+    total_count: number;
+    item_count: number;
+    item: object[];
+}
+
+export interface WechatUploadTemporaryMediaResponse {
+    type: string;
+    media_id: string;
+    created_at: number;
+}
+
+export interface WechatDraftSwitchResponse extends WechatOperationResponse {
+    is_open?: number;
+}
+
+export interface WechatDraftListOptions {
+    offset: number;
+    count: number;
+    no_content?: 0 | 1;
+}
+
+export interface WechatDraftListResponse {
+    total_count: number;
+    item_count: number;
+    item: object[];
+}
+
+export interface WechatDraftCountResponse {
+    total_count: number;
+}
+
+export interface WechatDraftDetailResponse {
+    news_item: object[];
+}
+
 export interface WechatOperationResponse {
     errcode: number;
     errmsg: string;
@@ -87,6 +155,14 @@ type UploadResult = WechatUploadResponse | WechatErrorResponse;
 type TokenResult = WechatTokenResponse | WechatErrorResponse;
 type PublishResult = WechatPublishResponse | WechatErrorResponse;
 type OperationResult = WechatOperationResponse | WechatErrorResponse;
+type UploadArticleImageResult = WechatUploadArticleImageResponse | WechatErrorResponse;
+type MaterialCountResult = WechatMaterialCountResponse | WechatErrorResponse;
+type BatchGetMaterialResult = WechatBatchGetMaterialResponse | WechatErrorResponse;
+type UploadTemporaryMediaResult = WechatUploadTemporaryMediaResponse | WechatErrorResponse;
+type DraftSwitchResult = WechatDraftSwitchResponse | WechatErrorResponse;
+type DraftListResult = WechatDraftListResponse | WechatErrorResponse;
+type DraftCountResult = WechatDraftCountResponse | WechatErrorResponse;
+type DraftDetailResult = WechatDraftDetailResponse | WechatErrorResponse;
 type SubmitPublishResult = WechatSubmitPublishResponse | WechatErrorResponse;
 type PublishStatusResult = WechatPublishStatusResponse | WechatErrorResponse;
 type PublishedArticleResult = WechatPublishedArticleResponse | WechatErrorResponse;
@@ -105,7 +181,7 @@ export function createWechatClient(adapter: HttpAdapter) {
         },
 
         async uploadMaterial(
-            type: string,
+            type: WechatMaterialType,
             file: Blob,
             filename: string,
             accessToken: string,
@@ -129,6 +205,98 @@ export function createWechatClient(adapter: HttpAdapter) {
             return data;
         },
 
+        async getMaterial(accessToken: string, mediaId: string): Promise<object | Blob> {
+            const res = await adapter.fetch(`${WECHAT_API_ENDPOINTS.getMaterial}?access_token=${accessToken}`, {
+                method: "POST",
+                body: JSON.stringify({ media_id: mediaId }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            return await parseWechatJsonOrBlob(res);
+        },
+
+        async getMaterialCount(accessToken: string): Promise<WechatMaterialCountResponse> {
+            const res = await adapter.fetch(`${WECHAT_API_ENDPOINTS.getMaterialCount}?access_token=${accessToken}`);
+            if (!res.ok) throw new Error(await res.text());
+            const data: MaterialCountResult = await res.json();
+            assertWechatSuccess(data);
+            return data;
+        },
+
+        async batchGetMaterial(
+            accessToken: string,
+            options: WechatBatchGetMaterialOptions,
+        ): Promise<WechatBatchGetMaterialResponse> {
+            const res = await adapter.fetch(`${WECHAT_API_ENDPOINTS.batchGetMaterial}?access_token=${accessToken}`, {
+                method: "POST",
+                body: JSON.stringify(options),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const data: BatchGetMaterialResult = await res.json();
+            assertWechatSuccess(data);
+            return data;
+        },
+
+        async uploadArticleImage(accessToken: string, file: Blob, filename: string): Promise<WechatUploadArticleImageResponse> {
+            const multipart = adapter.createMultipart("media", file, filename);
+            const res = await adapter.fetch(`${WECHAT_API_ENDPOINTS.uploadArticleImage}?access_token=${accessToken}`, {
+                ...multipart,
+                method: "POST",
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const data: UploadArticleImageResult = await res.json();
+            assertWechatSuccess(data);
+
+            if (data.url.startsWith("http://")) {
+                data.url = data.url.replace(/^http:\/\//i, "https://");
+            }
+            return data;
+        },
+
+        async deleteMaterial(accessToken: string, mediaId: string): Promise<WechatOperationResponse> {
+            const res = await adapter.fetch(`${WECHAT_API_ENDPOINTS.deleteMaterial}?access_token=${accessToken}`, {
+                method: "POST",
+                body: JSON.stringify({ media_id: mediaId }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const data: OperationResult = await res.json();
+            assertWechatSuccess(data);
+            return data;
+        },
+
+        async uploadTemporaryMaterial(
+            accessToken: string,
+            type: WechatMaterialType,
+            file: Blob,
+            filename: string,
+        ): Promise<WechatUploadTemporaryMediaResponse> {
+            const multipart = adapter.createMultipart("media", file, filename);
+            const res = await adapter.fetch(
+                `${WECHAT_API_ENDPOINTS.uploadTemporaryMaterial}?access_token=${accessToken}&type=${type}`,
+                {
+                    ...multipart,
+                    method: "POST",
+                },
+            );
+            if (!res.ok) throw new Error(await res.text());
+            const data: UploadTemporaryMediaResult = await res.json();
+            assertWechatSuccess(data);
+            return data;
+        },
+
+        async getTemporaryMaterial(accessToken: string, mediaId: string): Promise<object | Blob> {
+            const res = await adapter.fetch(
+                `${WECHAT_API_ENDPOINTS.getTemporaryMaterial}?access_token=${accessToken}&media_id=${mediaId}`,
+            );
+            if (!res.ok) throw new Error(await res.text());
+            return await parseWechatJsonOrBlob(res);
+        },
+
+        async getHdVoice(accessToken: string, mediaId: string): Promise<object | Blob> {
+            const res = await adapter.fetch(`${WECHAT_API_ENDPOINTS.getHdVoice}?access_token=${accessToken}&media_id=${mediaId}`);
+            if (!res.ok) throw new Error(await res.text());
+            return await parseWechatJsonOrBlob(res);
+        },
+
         async publishArticle(accessToken: string, options: WechatPublishOptions): Promise<WechatPublishResponse> {
             const res = await adapter.fetch(`${WECHAT_API_ENDPOINTS.publishDraft}?access_token=${accessToken}`, {
                 method: "POST",
@@ -140,6 +308,49 @@ export function createWechatClient(adapter: HttpAdapter) {
             if (!res.ok) throw new Error(await res.text());
 
             const data: PublishResult = await res.json();
+            assertWechatSuccess(data);
+            return data;
+        },
+
+        async draftSwitch(accessToken: string, checkOnly = false): Promise<WechatDraftSwitchResponse> {
+            const checkOnlyArg = checkOnly ? "&checkonly=1" : "";
+            const res = await adapter.fetch(
+                `${WECHAT_API_ENDPOINTS.getDraftSwitch}?access_token=${accessToken}${checkOnlyArg}`,
+                { method: "POST" },
+            );
+
+            if (!res.ok) throw new Error(await res.text());
+            const data: DraftSwitchResult = await res.json();
+            assertWechatSuccess(data);
+            return data;
+        },
+
+        async getDraftList(accessToken: string, options: WechatDraftListOptions): Promise<WechatDraftListResponse> {
+            const res = await adapter.fetch(`${WECHAT_API_ENDPOINTS.getDraftList}?access_token=${accessToken}`, {
+                method: "POST",
+                body: JSON.stringify(options),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const data: DraftListResult = await res.json();
+            assertWechatSuccess(data);
+            return data;
+        },
+
+        async getDraftCount(accessToken: string): Promise<WechatDraftCountResponse> {
+            const res = await adapter.fetch(`${WECHAT_API_ENDPOINTS.getDraftCount}?access_token=${accessToken}`);
+            if (!res.ok) throw new Error(await res.text());
+            const data: DraftCountResult = await res.json();
+            assertWechatSuccess(data);
+            return data;
+        },
+
+        async getDraft(accessToken: string, mediaId: string): Promise<WechatDraftDetailResponse> {
+            const res = await adapter.fetch(`${WECHAT_API_ENDPOINTS.getDraft}?access_token=${accessToken}`, {
+                method: "POST",
+                body: JSON.stringify({ media_id: mediaId }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const data: DraftDetailResult = await res.json();
             assertWechatSuccess(data);
             return data;
         },
@@ -215,6 +426,16 @@ function assertWechatSuccess<T extends object>(data: T | WechatErrorResponse): a
     if ("errcode" in data && data.errcode !== 0) {
         throw new Error(`${data.errcode}: ${data.errmsg}`);
     }
+}
+
+async function parseWechatJsonOrBlob(res: Response): Promise<object | Blob> {
+    const contentType = res.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+        const data = (await res.json()) as object | WechatErrorResponse;
+        assertWechatSuccess(data);
+        return data;
+    }
+    return await res.blob();
 }
 
 export type WechatClient = ReturnType<typeof createWechatClient>;

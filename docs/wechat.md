@@ -22,7 +22,19 @@
 | --- | --- | --- |
 | 获取 Access Token | GET | `https://api.weixin.qq.com/cgi-bin/token` |
 | 上传永久素材（图片） | POST | `https://api.weixin.qq.com/cgi-bin/material/add_material` |
+| 获取永久素材 | POST | `https://api.weixin.qq.com/cgi-bin/material/get_material` |
+| 获取永久素材总数 | GET | `https://api.weixin.qq.com/cgi-bin/material/get_materialcount` |
+| 获取永久素材列表 | POST | `https://api.weixin.qq.com/cgi-bin/material/batchget_material` |
+| 上传图文消息图片 | POST | `https://api.weixin.qq.com/cgi-bin/media/uploadimg` |
+| 删除永久素材 | POST | `https://api.weixin.qq.com/cgi-bin/material/del_material` |
+| 新增临时素材 | POST | `https://api.weixin.qq.com/cgi-bin/media/upload` |
+| 获取临时素材 | GET | `https://api.weixin.qq.com/cgi-bin/media/get` |
+| 获取高清语音素材 | GET | `https://api.weixin.qq.com/cgi-bin/media/get/jssdk` |
 | 新增草稿（图文） | POST | `https://api.weixin.qq.com/cgi-bin/draft/add` |
+| 草稿箱开关设置 | POST | `https://api.weixin.qq.com/cgi-bin/draft/switch` |
+| 获取草稿列表 | POST | `https://api.weixin.qq.com/cgi-bin/draft/batchget` |
+| 获取草稿总数 | GET | `https://api.weixin.qq.com/cgi-bin/draft/count` |
+| 获取草稿详情 | POST | `https://api.weixin.qq.com/cgi-bin/draft/get` |
 | 更新草稿（图文） | POST | `https://api.weixin.qq.com/cgi-bin/draft/update` |
 | 删除草稿 | POST | `https://api.weixin.qq.com/cgi-bin/draft/delete` |
 | 提交草稿发布 | POST | `https://api.weixin.qq.com/cgi-bin/freepublish/submit` |
@@ -115,6 +127,18 @@ await publishToWechatDraft({
 - `submitWechatDraft(mediaId, options?)`：提交草稿发布，返回 `publish_id`
 - `getWechatPublishStatus(publishId, options?)`：查询发布任务状态
 - `getWechatPublishedArticle(articleId, options?)`：获取已发布文章详情
+- `getWechatMaterial(mediaId, options?)`：获取永久素材详情（可能返回 JSON 或二进制）
+- `getWechatMaterialCount(options?)`：获取永久素材总数
+- `getWechatMaterialList(options, publishOptions?)`：分页获取永久素材列表
+- `uploadWechatArticleImage(imagePathOrUrl, options?)`：上传图文消息图片并返回 URL
+- `deleteWechatMaterial(mediaId, options?)`：删除永久素材
+- `uploadWechatTemporaryMaterial(type, filePathOrUrl, options?)`：上传临时素材
+- `getWechatTemporaryMaterial(mediaId, options?)`：获取临时素材（可能返回 JSON 或二进制）
+- `getWechatHdVoice(mediaId, options?)`：获取高清语音素材（可能返回 JSON 或二进制）
+- `switchWechatDraft(checkOnly?, options?)`：设置或查询草稿箱开关
+- `getWechatDraftList(options, publishOptions?)`：获取草稿列表
+- `getWechatDraftCount(options?)`：获取草稿总数
+- `getWechatDraftDetail(mediaId, options?)`：获取草稿详情
 - `updateWechatDraft(options, publishOptions?)`：更新指定草稿内容
 - `deleteWechatDraft(mediaId, publishOptions?)`：删除指定草稿
 

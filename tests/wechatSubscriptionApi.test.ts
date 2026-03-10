@@ -117,4 +117,116 @@ describe("wechat subscription api", () => {
         await expect(client.getPublishStatus("token_1", "pub_1")).rejects.toThrow("40002: invalid argument");
         await expect(client.getPublishedArticle("token_1", "article_1")).rejects.toThrow("53600: invalid article id");
     });
+
+    it("supports material and draft-management endpoints", async () => {
+        const fetch = vi
+            .fn()
+            .mockResolvedValueOnce({
+                ok: true,
+                headers: { get: () => "application/json" },
+                json: async () => ({ media_id: "m1", name: "n" }),
+                blob: async () => new Blob(),
+                text: async () => "",
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ voice_count: 1, video_count: 2, image_count: 3, news_count: 4 }),
+                text: async () => "",
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ total_count: 1, item_count: 1, item: [{ media_id: "m1" }] }),
+                text: async () => "",
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ url: "https://mmbiz.qpic.cn/test" }),
+                text: async () => "",
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ errcode: 0, errmsg: "ok" }),
+                text: async () => "",
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ type: "image", media_id: "tmp1", created_at: 1 }),
+                text: async () => "",
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                headers: { get: () => "application/json" },
+                json: async () => ({ video_url: "https://test/video" }),
+                blob: async () => new Blob(),
+                text: async () => "",
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                headers: { get: () => "application/json" },
+                json: async () => ({ video_url: "https://test/hdvoice" }),
+                blob: async () => new Blob(),
+                text: async () => "",
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ errcode: 0, errmsg: "ok", is_open: 1 }),
+                text: async () => "",
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ total_count: 1, item_count: 1, item: [{ media_id: "d1" }] }),
+                text: async () => "",
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ total_count: 1 }),
+                text: async () => "",
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ news_item: [{ title: "draft" }] }),
+                text: async () => "",
+            });
+
+        const client = createWechatClient({
+            fetch,
+            createMultipart: vi.fn().mockReturnValue({ body: "multipart-body", headers: { "x-test": "1" } }),
+        } as any);
+
+        const material = await client.getMaterial("token_1", "m1");
+        const count = await client.getMaterialCount("token_1");
+        const list = await client.batchGetMaterial("token_1", { type: "image", offset: 0, count: 1 });
+        const uploadImg = await client.uploadArticleImage("token_1", new Blob(["data"]), "test.jpg");
+        const del = await client.deleteMaterial("token_1", "m1");
+        const tmp = await client.uploadTemporaryMaterial("token_1", "image", new Blob(["data"]), "tmp.jpg");
+        const tempFile = await client.getTemporaryMaterial("token_1", "tmp1");
+        const hdVoice = await client.getHdVoice("token_1", "tmp1");
+        const sw = await client.draftSwitch("token_1", true);
+        const drafts = await client.getDraftList("token_1", { offset: 0, count: 1, no_content: 1 });
+        const draftCount = await client.getDraftCount("token_1");
+        const draft = await client.getDraft("token_1", "d1");
+
+        expect(material).toEqual({ media_id: "m1", name: "n" });
+        expect(count.news_count).toBe(4);
+        expect(list.item_count).toBe(1);
+        expect(uploadImg.url).toContain("https://mmbiz.qpic.cn/");
+        expect(del.errcode).toBe(0);
+        expect(tmp.media_id).toBe("tmp1");
+        expect(tempFile).toEqual({ video_url: "https://test/video" });
+        expect(hdVoice).toEqual({ video_url: "https://test/hdvoice" });
+        expect(sw.is_open).toBe(1);
+        expect(drafts.item_count).toBe(1);
+        expect(draftCount.total_count).toBe(1);
+        expect(draft.news_item).toHaveLength(1);
+
+        expect(fetch).toHaveBeenNthCalledWith(1, `${WECHAT_API_ENDPOINTS.getMaterial}?access_token=token_1`, {
+            method: "POST",
+            body: JSON.stringify({ media_id: "m1" }),
+        });
+        expect(fetch).toHaveBeenNthCalledWith(
+            9,
+            `${WECHAT_API_ENDPOINTS.getDraftSwitch}?access_token=token_1&checkonly=1`,
+            { method: "POST" },
+        );
+    });
 });
