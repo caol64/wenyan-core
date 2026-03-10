@@ -412,7 +412,7 @@ export async function getWechatDraftList(
 ): Promise<WechatDraftListResponse> {
     assertNonNegativeInteger("options.offset", options.offset);
     assertCountRange("options.count", options.count, 1, 20);
-    if (options.no_content !== undefined && options.no_content !== 0 && options.no_content !== 1) {
+    if (options.no_content !== undefined && ![0, 1].includes(options.no_content)) {
         throw new Error("options.no_content 仅允许 0 或 1");
     }
     const accessToken = await resolveAccessToken(publishOptions);
