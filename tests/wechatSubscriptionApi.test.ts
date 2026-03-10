@@ -96,4 +96,25 @@ describe("wechat subscription api", () => {
 
         await expect(client.submitPublish("token_1", "media_1")).rejects.toThrow("40013: invalid appid");
     });
+
+    it("throws for error responses in publish status and published article APIs", async () => {
+        const client = createWechatClient({
+            fetch: vi
+                .fn()
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({ errcode: 40002, errmsg: "invalid argument" }),
+                    text: async () => "",
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({ errcode: 53600, errmsg: "invalid article id" }),
+                    text: async () => "",
+                }),
+            createMultipart: vi.fn(),
+        } as any);
+
+        await expect(client.getPublishStatus("token_1", "pub_1")).rejects.toThrow("40002: invalid argument");
+        await expect(client.getPublishedArticle("token_1", "article_1")).rejects.toThrow("53600: invalid article id");
+    });
 });

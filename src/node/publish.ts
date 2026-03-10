@@ -226,7 +226,7 @@ export async function publishToDraft(
  * SPEC:
  * - `media_id` 必须是非空字符串。
  * - `index` 必须是大于等于 0 的整数。
- * - 若填写 `articles.pic_crop_235_1` 或 `articles.pic_crop_1_1`，格式必须为 `X1_Y1_X2_Y2`（下划线分隔的 4 个数字）。
+ * - 若填写 `articles.pic_crop_235_1` 或 `articles.pic_crop_1_1`，格式必须为 `X1_Y1_X2_Y2`（下划线分隔的 4 个数值，可含小数）。
  */
 export async function updateWechatDraft(
     options: WechatDraftUpdateOptions,
