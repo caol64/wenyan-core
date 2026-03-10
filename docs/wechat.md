@@ -116,9 +116,8 @@ await publishToWechatDraft({
   title: "我的第一篇文章",
   content: htmlContent,
   cover: "", // 不指定封面，自动使用正文第一张图片
-  {
-    relativePath: process.cwd(),
-  }
+}, {
+  relativePath: process.cwd(),
 });
 ```
 
@@ -141,6 +140,50 @@ await publishToWechatDraft({
 - `getWechatDraftDetail(mediaId, options?)`：获取草稿详情
 - `updateWechatDraft(options, publishOptions?)`：更新指定草稿内容
 - `deleteWechatDraft(mediaId, publishOptions?)`：删除指定草稿
+
+## 参数与约束（与当前实现保持一致）
+
+### 类型约束
+
+```ts
+type WechatMaterialType = "image" | "voice" | "video" | "thumb";
+type WechatPermanentMaterialType = "image" | "voice" | "video" | "news";
+
+interface WechatBatchGetMaterialOptions {
+  type: WechatPermanentMaterialType;
+  offset: number; // >= 0
+  count: number;  // 1..20
+}
+
+interface WechatDraftListOptions {
+  offset: number; // >= 0
+  count: number;  // 1..20
+  no_content?: 0 | 1;
+}
+```
+
+### 调用参数校验规则
+
+- `getWechatMaterial(mediaId)` / `deleteWechatMaterial(mediaId)` / `getWechatTemporaryMaterial(mediaId)` / `getWechatHdVoice(mediaId)`  
+  `mediaId` 必须是非空字符串。
+- `submitWechatDraft(mediaId)`：`mediaId` 必须是非空字符串。
+- `getWechatPublishStatus(publishId)`：`publishId` 必须是非空字符串。
+- `getWechatPublishedArticle(articleId)`：`articleId` 必须是非空字符串。
+- `getWechatMaterialList(options)`：`options.offset >= 0` 且 `options.count` 只能是 `1..20`。
+- `getWechatDraftList(options)`：`offset/count` 同上，`no_content` 仅允许 `0 | 1`。
+- `switchWechatDraft(checkOnly)`：
+  - `true`：仅查询状态（请求将携带微信查询参数 `checkonly=1`）
+  - `false`：执行开关设置请求（用于设置草稿能力开关，具体开关结果可从返回值中的 `is_open` 判断）
+- `updateWechatDraft(options)`：
+  - `options.media_id` 非空
+  - `options.index >= 0`
+  - `articles.pic_crop_235_1 / articles.pic_crop_1_1`（若传）必须是 `X1_Y1_X2_Y2`（下划线分隔四个坐标数值 `X1, Y1, X2, Y2`，例如 `0_0_100_100`）
+
+### 返回类型说明
+
+- `getWechatMaterial` / `getWechatTemporaryMaterial` / `getWechatHdVoice`  
+  可能返回 `object | Blob`（JSON 或二进制内容）。
+- 其余查询与操作接口返回结构化 JSON（包含 `media_id`、`publish_id`、`errcode/errmsg` 等字段）。
 
 ## 图片处理逻辑说明
 
