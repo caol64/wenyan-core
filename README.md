@@ -36,6 +36,7 @@ npm install @wenyan-md/core
 - [Wenyan Core API 文档](docs/api.md)
 - [Wenyan Core API 文档：Node 环境渲染](docs/node.md)
 - [Wenyan Core API 文档：微信公众号发布](docs/wechat.md)
+- [MCP 工具清单与用户故事覆盖](docs/mcp_tools_ux_stories.md)
 
 ## 内置主题
 

@@ -1,7 +1,7 @@
 
 # Wenyan Core API 文档：微信公众号发布
 
-> 本文档介绍 Wenyan 在 **纯 Node.js 环境** 下，将内容发布到 **微信公众号草稿箱** 的能力。
+> 本文档介绍 Wenyan 在 **纯 Node.js 环境** 下，将内容发布到 **微信公众号草稿箱与发布链路** 的能力。
 
 ## 能力概览
 
@@ -12,6 +12,7 @@
 * 自动替换 `<img src>`
 * 自动选择封面
 * 发布到公众号草稿箱
+* 提交草稿到发布队列并查询发布状态
 
 ## 使用的 API 接口
 
@@ -21,7 +22,24 @@
 | --- | --- | --- |
 | 获取 Access Token | GET | `https://api.weixin.qq.com/cgi-bin/token` |
 | 上传永久素材（图片） | POST | `https://api.weixin.qq.com/cgi-bin/material/add_material` |
+| 获取永久素材 | POST | `https://api.weixin.qq.com/cgi-bin/material/get_material` |
+| 获取永久素材总数 | GET | `https://api.weixin.qq.com/cgi-bin/material/get_materialcount` |
+| 获取永久素材列表 | POST | `https://api.weixin.qq.com/cgi-bin/material/batchget_material` |
+| 上传图文消息图片 | POST | `https://api.weixin.qq.com/cgi-bin/media/uploadimg` |
+| 删除永久素材 | POST | `https://api.weixin.qq.com/cgi-bin/material/del_material` |
+| 新增临时素材 | POST | `https://api.weixin.qq.com/cgi-bin/media/upload` |
+| 获取临时素材 | GET | `https://api.weixin.qq.com/cgi-bin/media/get` |
+| 获取高清语音素材 | GET | `https://api.weixin.qq.com/cgi-bin/media/get/jssdk` |
 | 新增草稿（图文） | POST | `https://api.weixin.qq.com/cgi-bin/draft/add` |
+| 草稿箱开关设置 | POST | `https://api.weixin.qq.com/cgi-bin/draft/switch` |
+| 获取草稿列表 | POST | `https://api.weixin.qq.com/cgi-bin/draft/batchget` |
+| 获取草稿总数 | GET | `https://api.weixin.qq.com/cgi-bin/draft/count` |
+| 获取草稿详情 | POST | `https://api.weixin.qq.com/cgi-bin/draft/get` |
+| 更新草稿（图文） | POST | `https://api.weixin.qq.com/cgi-bin/draft/update` |
+| 删除草稿 | POST | `https://api.weixin.qq.com/cgi-bin/draft/delete` |
+| 提交草稿发布 | POST | `https://api.weixin.qq.com/cgi-bin/freepublish/submit` |
+| 查询发布状态 | POST | `https://api.weixin.qq.com/cgi-bin/freepublish/get` |
+| 获取已发布文章详情 | POST | `https://api.weixin.qq.com/cgi-bin/freepublish/getarticle` |
 
 ### 客户端发布服务接口（wenyan-cli server）
 
@@ -98,11 +116,74 @@ await publishToWechatDraft({
   title: "我的第一篇文章",
   content: htmlContent,
   cover: "", // 不指定封面，自动使用正文第一张图片
-  {
-    relativePath: process.cwd(),
-  }
+}, {
+  relativePath: process.cwd(),
 });
 ```
+
+## 发布链路相关 API
+
+- `submitWechatDraft(mediaId, options?)`：提交草稿发布，返回 `publish_id`
+- `getWechatPublishStatus(publishId, options?)`：查询发布任务状态
+- `getWechatPublishedArticle(articleId, options?)`：获取已发布文章详情
+- `getWechatMaterial(mediaId, options?)`：获取永久素材详情（可能返回 JSON 或二进制）
+- `getWechatMaterialCount(options?)`：获取永久素材总数
+- `getWechatMaterialList(options, publishOptions?)`：分页获取永久素材列表
+- `uploadWechatArticleImage(imagePathOrUrl, options?)`：上传图文消息图片并返回 URL
+- `deleteWechatMaterial(mediaId, options?)`：删除永久素材
+- `uploadWechatTemporaryMaterial(type, filePathOrUrl, options?)`：上传临时素材
+- `getWechatTemporaryMaterial(mediaId, options?)`：获取临时素材（可能返回 JSON 或二进制）
+- `getWechatHdVoice(mediaId, options?)`：获取高清语音素材（可能返回 JSON 或二进制）
+- `switchWechatDraft(checkOnly?, options?)`：设置或查询草稿箱开关
+- `getWechatDraftList(options, publishOptions?)`：获取草稿列表
+- `getWechatDraftCount(options?)`：获取草稿总数
+- `getWechatDraftDetail(mediaId, options?)`：获取草稿详情
+- `updateWechatDraft(options, publishOptions?)`：更新指定草稿内容
+- `deleteWechatDraft(mediaId, publishOptions?)`：删除指定草稿
+
+## 参数与约束（与当前实现保持一致）
+
+### 类型约束
+
+```ts
+type WechatMaterialType = "image" | "voice" | "video" | "thumb";
+type WechatPermanentMaterialType = "image" | "voice" | "video" | "news";
+
+interface WechatBatchGetMaterialOptions {
+  type: WechatPermanentMaterialType;
+  offset: number; // >= 0
+  count: number;  // 1..20
+}
+
+interface WechatDraftListOptions {
+  offset: number; // >= 0
+  count: number;  // 1..20
+  no_content?: 0 | 1;
+}
+```
+
+### 调用参数校验规则
+
+- `getWechatMaterial(mediaId)` / `deleteWechatMaterial(mediaId)` / `getWechatTemporaryMaterial(mediaId)` / `getWechatHdVoice(mediaId)`  
+  `mediaId` 必须是非空字符串。
+- `submitWechatDraft(mediaId)`：`mediaId` 必须是非空字符串。
+- `getWechatPublishStatus(publishId)`：`publishId` 必须是非空字符串。
+- `getWechatPublishedArticle(articleId)`：`articleId` 必须是非空字符串。
+- `getWechatMaterialList(options)`：`options.offset >= 0` 且 `options.count` 只能是 `1..20`。
+- `getWechatDraftList(options)`：`offset/count` 同上，`no_content` 仅允许 `0 | 1`。
+- `switchWechatDraft(checkOnly)`：
+  - `true`：仅查询状态（请求将携带微信查询参数 `checkonly=1`）
+  - `false`：执行开关设置请求（用于设置草稿能力开关，具体开关结果可从返回值中的 `is_open` 判断）
+- `updateWechatDraft(options)`：
+  - `options.media_id` 非空
+  - `options.index >= 0`
+  - `articles.pic_crop_235_1 / articles.pic_crop_1_1`（若传）必须是 `X1_Y1_X2_Y2`（下划线分隔四个坐标数值 `X1, Y1, X2, Y2`，例如 `0_0_100_100`）
+
+### 返回类型说明
+
+- `getWechatMaterial` / `getWechatTemporaryMaterial` / `getWechatHdVoice`  
+  可能返回 `object | Blob`（JSON 或二进制内容）。
+- 其余查询与操作接口返回结构化 JSON（包含 `media_id`、`publish_id`、`errcode/errmsg` 等字段）。
 
 ## 图片处理逻辑说明
 
