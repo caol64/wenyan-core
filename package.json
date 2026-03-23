@@ -1,6 +1,6 @@
 {
   "name": "@wenyan-md/core",
-  "version": "2.0.8",
+  "version": "3.0.0",
   "description": "Core library for Wenyan markdown rendering & publishing",
   "author": "Lei <caol64@gmail.com> (https://github.com/caol64)",
   "license": "Apache-2.0",
@@ -32,7 +32,7 @@
     },
     "./publish": {
       "import": "./dist/publish.js",
-      "types": "./dist/types/node/publish.d.ts"
+      "types": "./dist/types/publish.d.ts"
     },
     "./wrapper": {
       "import": "./dist/wrapper.js",

@@ -1,7 +1,7 @@
 import { HttpAdapter } from "../http.js";
 
 export const browserHttpAdapter: HttpAdapter = {
-    fetch: window.fetch.bind(window),
+    fetch,
 
     createMultipart(field, file, filename) {
         const form = new FormData();

@@ -3,27 +3,18 @@ import { fileFromPath } from "formdata-node/file-from-path";
 import path from "node:path";
 import { stat } from "node:fs/promises";
 import { RuntimeEnv } from "./runtimeEnv.js";
-import { createWechatClient, WechatPublishResponse, WechatUploadResponse } from "../wechat.js";
+import { WechatPublishResponse, WechatUploadResponse } from "../wechat.js";
 import { nodeHttpAdapter } from "./nodeHttpAdapter.js";
-import { tokenStore } from "./tokenStore.js";
-import { md5FromBuffer, md5FromFile } from "./utils.js";
-import { uploadCacheStore } from "./uploadCacheStore.js";
+import { NodeTokenStorageAdapter } from "./tokenStoreNodeAdapter.js";
+import { NodeUploadCacheAdapter } from "./uploadCacheNodeAdapter.js";
+import { ArticleOptions, WechatPublisher } from "../publish.js";
 
-const { uploadMaterial, publishArticle, fetchAccessToken } = createWechatClient(nodeHttpAdapter);
 const mediaIdMapping = new Map<string, string>(); // 微信 url 和 media_id 的映射
-
-export interface WechatPublishOptions {
+const wechatPublisher = new WechatPublisher(nodeHttpAdapter, new NodeTokenStorageAdapter(), new NodeUploadCacheAdapter());
+interface PublishOptions {
     appId?: string;
     appSecret?: string;
     relativePath?: string;
-}
-
-export interface ArticleOptions {
-    title: string;
-    content: string;
-    cover?: string;
-    author?: string;
-    source_url?: string;
 }
 
 async function uploadImage(
@@ -34,7 +25,6 @@ async function uploadImage(
 ): Promise<WechatUploadResponse> {
     let fileData: Blob;
     let finalName: string;
-    let md5: string;
 
     if (imageUrl.startsWith("http")) {
         // 远程 URL
@@ -46,44 +36,18 @@ async function uploadImage(
         if (arrayBuffer.byteLength === 0) {
             throw new Error(`远程图片大小为0，无法上传: ${imageUrl}`);
         }
-        const buffer = Buffer.from(arrayBuffer);
-        md5 = md5FromBuffer(buffer);
-        // 先查缓存
-        const cached = await uploadCacheStore.get(md5);
-        if (cached) {
-            // 写入映射
-            mediaIdMapping.set(cached.url, cached.media_id);
-            return {
-                media_id: cached.media_id,
-                url: cached.url,
-            };
-        }
-
         const fileNameFromUrl = path.basename(imageUrl.split("?")[0]);
         const ext = path.extname(fileNameFromUrl);
         finalName = fileName ?? (ext === "" ? `${fileNameFromUrl}.jpg` : fileNameFromUrl);
 
         const contentType = response.headers.get("content-type") || "image/jpeg";
-        fileData = new Blob([buffer], { type: contentType });
+        fileData = new Blob([arrayBuffer], { type: contentType });
     } else {
         // 本地路径
         const resolvedPath = RuntimeEnv.resolveLocalPath(imageUrl, relativePath);
         const stats = await stat(resolvedPath);
         if (stats.size === 0) {
             throw new Error(`本地图片大小为0，无法上传: ${resolvedPath}`);
-        }
-
-        md5 = await md5FromFile(resolvedPath);
-
-        // 查缓存
-        const cached = await uploadCacheStore.get(md5);
-        if (cached) {
-            // 写入映射
-            mediaIdMapping.set(cached.url, cached.media_id);
-            return {
-                media_id: cached.media_id,
-                url: cached.url,
-            };
         }
 
         const fileNameFromLocal = path.basename(resolvedPath);
@@ -94,9 +58,7 @@ async function uploadImage(
     }
 
     // 上传
-    const data = await uploadMaterial("image", fileData, finalName, accessToken);
-    // 写入缓存
-    await uploadCacheStore.set(md5, data.media_id, data.url);
+    const data = await wechatPublisher.uploadImage(fileData, finalName, accessToken);
     // 写入映射
     mediaIdMapping.set(data.url, data.media_id);
     return data;
@@ -138,7 +100,7 @@ async function uploadImages(
 
 export async function publishToWechatDraft(
     articleOptions: ArticleOptions,
-    publishOptions: WechatPublishOptions = {},
+    publishOptions: PublishOptions = {},
 ): Promise<WechatPublishResponse> {
     const { title, content, cover, author, source_url } = articleOptions;
     const { appId, appSecret, relativePath } = publishOptions;
@@ -150,7 +112,7 @@ export async function publishToWechatDraft(
         throw new Error("请通过参数或环境变量 WECHAT_APP_ID / WECHAT_APP_SECRET 提供公众号凭据");
     }
 
-    const accessToken = await getAccessTokenWithCache(appIdFinal, appSecretFinal);
+    const accessToken = await wechatPublisher.getAccessTokenWithCache(appIdFinal, appSecretFinal);
 
     // 上传正文图片
     const { html, firstImageId } = await uploadImages(content, accessToken, relativePath);
@@ -186,7 +148,7 @@ export async function publishToWechatDraft(
         throw new Error("你必须指定一张封面图或者在正文中至少出现一张图片。");
     }
 
-    const data = await publishArticle(accessToken, {
+    const data = await wechatPublisher.publishToDraft(accessToken, {
         title,
         content: html,
         thumb_media_id: thumbMediaId,
@@ -205,23 +167,7 @@ export async function publishToDraft(
     title: string,
     content: string,
     cover: string = "",
-    options: WechatPublishOptions = {},
+    options: PublishOptions = {},
 ): Promise<WechatPublishResponse> {
     return publishToWechatDraft({ title, content, cover }, options);
-}
-
-async function getAccessTokenWithCache(appId: string, appSecret: string) {
-    // 1. 先尝试从本地缓存获取
-    const cached = tokenStore.getToken(appId);
-    if (cached) {
-        return cached;
-    }
-
-    // 2. 缓存不存在或已过期，调用微信接口
-    const result = await fetchAccessToken(appId, appSecret);
-
-    // 3. 写入缓存
-    await tokenStore.setToken(appId, result.access_token, result.expires_in);
-
-    return result.access_token;
 }

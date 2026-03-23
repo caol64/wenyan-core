@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
             lib: {
                 entry: {
                     core: resolve(__dirname, "src/core/index.ts"),
-                    publish: resolve(__dirname, "src/node/publish.ts"),
+                    publish: resolve(__dirname, "src/publish.ts"),
                     wrapper: resolve(__dirname, "src/node/wrapper.ts"),
                     wechat: resolve(__dirname, "src/wechat.ts"),
                 },

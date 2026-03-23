@@ -35,10 +35,10 @@ type UploadResult = WechatUploadResponse | WechatErrorResponse;
 type TokenResult = WechatTokenResponse | WechatErrorResponse;
 type PublishResult = WechatPublishResponse | WechatErrorResponse;
 
-export function createWechatClient(adapter: HttpAdapter) {
+export function createWechatClient(httpAdapter: HttpAdapter) {
     return {
         async fetchAccessToken(appId: string, appSecret: string): Promise<WechatTokenResponse> {
-            const res = await adapter.fetch(
+            const res = await httpAdapter.fetch(
                 `${tokenUrl}?grant_type=client_credential&appid=${appId}&secret=${appSecret}`,
             );
             if (!res.ok) throw new Error(await res.text());
@@ -54,9 +54,9 @@ export function createWechatClient(adapter: HttpAdapter) {
             filename: string,
             accessToken: string,
         ): Promise<WechatUploadResponse> {
-            const multipart = adapter.createMultipart("media", file, filename);
+            const multipart = httpAdapter.createMultipart("media", file, filename);
 
-            const res = await adapter.fetch(`${uploadUrl}?access_token=${accessToken}&type=${type}`, {
+            const res = await httpAdapter.fetch(`${uploadUrl}?access_token=${accessToken}&type=${type}`, {
                 ...multipart,
                 method: "POST",
             });
@@ -74,7 +74,7 @@ export function createWechatClient(adapter: HttpAdapter) {
         },
 
         async publishArticle(accessToken: string, options: WechatPublishOptions): Promise<WechatPublishResponse> {
-            const res = await adapter.fetch(`${publishUrl}?access_token=${accessToken}`, {
+            const res = await httpAdapter.fetch(`${publishUrl}?access_token=${accessToken}`, {
                 method: "POST",
                 body: JSON.stringify({
                     articles: [options],
