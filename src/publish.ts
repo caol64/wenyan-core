@@ -76,3 +76,6 @@ export class WechatPublisher {
         return await this.publishArticle(accessToken, options);
     }
 }
+
+export * from "./tokenStore.js";
+export * from "./uploadCacheStore.js";

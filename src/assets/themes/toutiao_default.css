@@ -43,12 +43,23 @@
     background-size: cover;
     background-position-y: 8px;
 }
+#wenyan > ul,
+#wenyan > ol {
+    padding-left: 1rem;
+}
 #wenyan ul,
 #wenyan ol {
-    padding-left: 1.2em;
+    margin-left: 1rem;
+    font-size: 0.9rem;
 }
-#wenyan li {
-    margin-left: 1.2em;
+#wenyan ul {
+    list-style-type: disc;
+}
+#wenyan ul ul {
+    list-style-type: circle;
+}
+#wenyan ol {
+    list-style-type: decimal;
 }
 #wenyan img {
     max-width: 100%;

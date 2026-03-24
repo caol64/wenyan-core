@@ -77,17 +77,26 @@
 #wenyan h6 {
     font-size: 1.2em;
 }
+#wenyan > ul,
+#wenyan > ol {
+    padding-left: 1rem;
+}
+#wenyan ul,
+#wenyan ol {
+    margin-left: 1rem;
+    font-size: 0.9rem;
+}
 #wenyan ul {
     list-style-type: disc;
 }
-#wenyan em {
-    padding: 0 3px 0 0;
-}
 #wenyan ul ul {
-    list-style-type: square;
+    list-style-type: circle;
 }
 #wenyan ol {
     list-style-type: decimal;
+}
+#wenyan em {
+    padding: 0 3px 0 0;
 }
 #wenyan blockquote {
     display: block;
