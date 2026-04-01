@@ -1,5 +1,6 @@
 import path from "node:path";
 import http from "node:http";
+import https from "node:https";
 import { JSDOM } from "jsdom";
 import { ClientPublishOptions, StyledContent } from "./types.js";
 import { readBinaryFile } from "./utils.js";
@@ -7,7 +8,6 @@ import { RuntimeEnv } from "./runtimeEnv.js";
 
 /**
  * 使用 node:http 分块上传，避免 Windows 下 fetch/大 payload 触发 EPERM
- * @see https://github.com/caol64/wenyan-core/issues/TODO
  */
 async function chunkedUpload(
     serverUrl: string,
@@ -24,10 +24,12 @@ async function chunkedUpload(
     const footerBuf = Buffer.from(footerPart, "utf-8");
 
     return new Promise((resolve, reject) => {
-        const req = http.request(
+        const requestModule = url.protocol === "https:" ? https : http;
+        const defaultPort = url.protocol === "https:" ? 443 : 80;
+        const req = requestModule.request(
             {
                 hostname: url.hostname,
-                port: url.port || 80,
+                port: url.port || defaultPort,
                 path: url.pathname,
                 method: "POST",
                 headers: {
@@ -40,6 +42,10 @@ async function chunkedUpload(
                 let body = "";
                 res.on("data", (chunk: Buffer) => (body += chunk));
                 res.on("end", () => {
+                    if (res.statusCode && (res.statusCode < 200 || res.statusCode >= 300)) {
+                        reject(new Error(`Server returned status ${res.statusCode}: ${body}`));
+                        return;
+                    }
                     try {
                         resolve(JSON.parse(body));
                     } catch (e) {
