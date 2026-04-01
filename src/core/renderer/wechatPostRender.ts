@@ -51,4 +51,8 @@ export function wechatPostRender(element: HTMLElement): void {
         }
         li.appendChild(section);
     });
+
+    // 4. 设置字体颜色为黑色，防止黑暗模式影响
+    element.style.color = "rgb(0, 0, 0)";
+    element.style.caretColor = "rgb(0, 0, 0)";
 }

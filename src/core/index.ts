@@ -166,3 +166,4 @@ export * from "./platform/medium.js";
 export * from "./platform/zhihu.js";
 export * from "./platform/toutiao.js";
 export { addFootnotes } from "./renderer/footnotesRender.js";
+export type WenyanCoreInstance = Awaited<ReturnType<typeof createWenyanCore>>;
