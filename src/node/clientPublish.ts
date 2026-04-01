@@ -1,11 +1,76 @@
 import path from "node:path";
-import { Readable } from "node:stream";
-import { FormData, File } from "formdata-node";
-import { FormDataEncoder } from "form-data-encoder";
+import http from "node:http";
 import { JSDOM } from "jsdom";
 import { ClientPublishOptions, StyledContent } from "./types.js";
 import { readBinaryFile } from "./utils.js";
 import { RuntimeEnv } from "./runtimeEnv.js";
+
+/**
+ * 使用 node:http 分块上传，避免 Windows 下 fetch/大 payload 触发 EPERM
+ * @see https://github.com/caol64/wenyan-core/issues/TODO
+ */
+async function chunkedUpload(
+    serverUrl: string,
+    headers: Record<string, string>,
+    fileBuffer: Buffer,
+    filename: string,
+    mimeType: string,
+): Promise<any> {
+    const url = new URL(`${serverUrl}/upload`);
+    const boundary = "----FormBoundary" + Math.random().toString(36).substring(2);
+    const headerPart = `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`;
+    const footerPart = `\r\n--${boundary}--\r\n`;
+    const headerBuf = Buffer.from(headerPart, "utf-8");
+    const footerBuf = Buffer.from(footerPart, "utf-8");
+
+    return new Promise((resolve, reject) => {
+        const req = http.request(
+            {
+                hostname: url.hostname,
+                port: url.port || 80,
+                path: url.pathname,
+                method: "POST",
+                headers: {
+                    "Content-Type": `multipart/form-data; boundary=${boundary}`,
+                    "Transfer-Encoding": "chunked",
+                    ...headers,
+                },
+            },
+            (res) => {
+                let body = "";
+                res.on("data", (chunk: Buffer) => (body += chunk));
+                res.on("end", () => {
+                    try {
+                        resolve(JSON.parse(body));
+                    } catch (e) {
+                        reject(new Error(`Invalid server response: ${body}`));
+                    }
+                });
+            },
+        );
+        req.on("error", reject);
+
+        req.write(headerBuf);
+        const CHUNK = 65536; // 64KB chunks
+        let offset = 0;
+        function writeNext() {
+            if (offset >= fileBuffer.length) {
+                req.write(footerBuf);
+                req.end();
+                return;
+            }
+            const end = Math.min(offset + CHUNK, fileBuffer.length);
+            if (req.write(fileBuffer.subarray(offset, end))) {
+                offset = end;
+                writeNext();
+            } else {
+                offset = end;
+                req.once("drain", writeNext);
+            }
+        }
+        writeNext();
+    });
+}
 
 export function getServerUrl(options: ClientPublishOptions): string {
     let serverUrl = options.server || "http://localhost:3000";
@@ -72,25 +137,12 @@ export async function uploadStyledContent(
     serverUrl: string,
     headers: Record<string, string>,
 ): Promise<string> {
-    const mdFilename = "publish_target.json"; // 这个文件名对服务器来说没有实际意义，只是一个标识
-    const mdForm = new FormData();
-    mdForm.append(
-        "file",
-        new File([Buffer.from(JSON.stringify(gzhContent), "utf-8")], mdFilename, { type: "application/json" }),
-    );
+    const mdFilename = "publish_target.json";
+    const fileBuffer = Buffer.from(JSON.stringify(gzhContent), "utf-8");
+    const mdUploadData: any = await chunkedUpload(serverUrl, headers, fileBuffer, mdFilename, "application/json");
 
-    const mdEncoder = new FormDataEncoder(mdForm);
-    const mdUploadRes = await fetch(`${serverUrl}/upload`, {
-        method: "POST",
-        headers: { ...headers, ...mdEncoder.headers },
-        body: Readable.from(mdEncoder) as any,
-        duplex: "half",
-    } as RequestInit);
-
-    const mdUploadData: any = await mdUploadRes.json();
-
-    if (!mdUploadRes.ok || !mdUploadData.success) {
-        throw new Error(`Upload Document Failed: ${mdUploadData.error || mdUploadData.desc || mdUploadRes.statusText}`);
+    if (!mdUploadData.success) {
+        throw new Error(`Upload Document Failed: ${mdUploadData.error || mdUploadData.desc}`);
     }
 
     const mdFileId = mdUploadData.data.fileId;
@@ -165,22 +217,10 @@ async function uploadLocalImage(
     };
     const type = mimeTypes[ext] || "application/octet-stream";
 
-    // 构建图片上传表单
-    const form = new FormData();
-    form.append("file", new File([fileBuffer], filename, { type }));
-    const encoder = new FormDataEncoder(form);
+    // 使用分块上传，兼容 Windows 大文件场景
+    const uploadData: any = await chunkedUpload(serverUrl, headers, fileBuffer, filename, type);
 
-    const uploadRes = await fetch(`${serverUrl}/upload`, {
-        method: "POST",
-        headers: { ...headers, ...encoder.headers },
-        body: Readable.from(encoder) as any,
-        duplex: "half",
-    } as RequestInit);
-
-    const uploadData: any = await uploadRes.json();
-
-    if (uploadRes.ok && uploadData.success) {
-        // 返回可供 Server 直接使用的协议路径
+    if (uploadData.success) {
         return `asset://${uploadData.data.fileId}`;
     } else {
         console.error(`[Client] Warning: Failed to upload ${filename}: ${uploadData.error || uploadData.desc}`);
