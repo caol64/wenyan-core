@@ -19,6 +19,7 @@ export class UploadCacheStore {
     private cache: CacheData = {};
     private adapter: UploadCacheStorageAdapter;
     private initPromise: Promise<void>;
+    private _saveQueue: Promise<void> = Promise.resolve();
 
     constructor(adapter: UploadCacheStorageAdapter) {
         this.adapter = adapter;
@@ -33,12 +34,15 @@ export class UploadCacheStore {
         }
     }
 
-    private async save(): Promise<void> {
-        try {
-            await this.adapter.saveCache(this.cache);
-        } catch (error) {
-            throw new Error(`无法保存上传缓存: ${error instanceof Error ? error.message : String(error)}`);
-        }
+    private save(): Promise<void> {
+        this._saveQueue = this._saveQueue.then(async () => {
+            try {
+                await this.adapter.saveCache(this.cache);
+            } catch (error) {
+                throw new Error(`无法保存上传缓存: ${error instanceof Error ? error.message : String(error)}`);
+            }
+        });
+        return this._saveQueue;
     }
 
     public async waitForInit(): Promise<void> {
