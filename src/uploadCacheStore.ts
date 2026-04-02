@@ -35,13 +35,9 @@ export class UploadCacheStore {
     }
 
     private save(): Promise<void> {
-        this._saveQueue = this._saveQueue.then(async () => {
-            try {
-                await this.adapter.saveCache(this.cache);
-            } catch (error) {
-                throw new Error(`无法保存上传缓存: ${error instanceof Error ? error.message : String(error)}`);
-            }
-        });
+        this._saveQueue = this._saveQueue
+            .then(async () => { await this.adapter.saveCache(this.cache); })
+            .catch((err) => { console.error(err); }); // 保证链条不因异常而断裂
         return this._saveQueue;
     }
 
