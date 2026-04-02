@@ -1,0 +1,187 @@
+:root {
+    /* Claude 风格配色变量 —— 温润燕麦卡其色底 */
+    --claude-bg: #f8f6f0;
+    --claude-text: #2b2b2b;
+    --claude-accent: #b75c3d;
+    --claude-accent-light: rgba(183, 92, 61, 0.08);
+    --claude-accent-bg: rgba(183, 92, 61, 0.04);
+    --claude-code-bg: #f0ece4;
+    --claude-border: #e0ddd6;
+    --claude-hr: #eaeaea;
+    --claude-muted: #555;
+    --claude-em: #666;
+}
+
+#wenyan {
+    font-size: 16px;
+    color: var(--claude-text);
+    background-color: var(--claude-bg);
+    padding: 24px 20px 48px 20px;
+    line-height: 1.7;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    word-wrap: break-word;
+}
+
+#wenyan * {
+    box-sizing: border-box;
+}
+
+/* --- 标题 --- */
+#wenyan h1 {
+    font-size: 2em;
+    font-weight: 700;
+    color: var(--claude-accent);
+    line-height: 1.3;
+    margin: 38px 0 16px;
+    letter-spacing: -0.015em;
+}
+
+#wenyan h2 {
+    font-size: 1.625em;
+    font-weight: 600;
+    color: var(--claude-accent);
+    line-height: 1.35;
+    margin: 32px 0 16px;
+}
+
+#wenyan h3 {
+    font-size: 1.3125em;
+    font-weight: 600;
+    color: var(--claude-text);
+    line-height: 1.4;
+    margin: 28px 0 14px;
+}
+
+#wenyan h4 {
+    font-size: 1.125em;
+    font-weight: 600;
+    color: var(--claude-text);
+    line-height: 1.4;
+    margin: 24px 0 12px;
+}
+
+/* --- 正文 --- */
+#wenyan p {
+    margin: 18px 0;
+    line-height: 1.7;
+    color: var(--claude-text);
+}
+
+#wenyan p strong {
+    font-weight: 700;
+    color: var(--claude-accent);
+    background-color: var(--claude-accent-light);
+    padding: 0 4px;
+    border-radius: 4px;
+}
+
+#wenyan em {
+    font-style: italic;
+    color: var(--claude-em);
+}
+
+/* --- 链接 --- */
+#wenyan a {
+    color: var(--claude-accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--claude-accent);
+    padding-bottom: 1px;
+}
+
+/* --- 列表 --- */
+#wenyan ul,
+#wenyan ol {
+    margin: 16px 0;
+    padding-left: 28px;
+}
+
+#wenyan li {
+    margin: 8px 0;
+    line-height: 1.7;
+    color: var(--claude-text);
+}
+
+/* --- 引用 --- */
+#wenyan blockquote {
+    margin: 24px 0;
+    padding: 16px 20px;
+    background-color: var(--claude-accent-bg);
+    border-left: 4px solid var(--claude-accent);
+    color: var(--claude-muted);
+    border-radius: 4px;
+}
+
+/* --- 行内代码 --- */
+#wenyan code {
+    font-family: "SF Mono", Consolas, monospace;
+    padding: 2px 6px;
+    background-color: var(--claude-code-bg);
+    color: var(--claude-accent);
+    border-radius: 4px;
+    font-size: 0.85em;
+    line-height: 1.5;
+}
+
+/* --- 代码块 --- */
+#wenyan pre {
+    margin: 24px 0;
+    padding: 20px;
+    background-color: var(--claude-code-bg);
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.85em;
+    line-height: 1.5;
+}
+
+#wenyan pre code {
+    padding: 0;
+    background-color: transparent;
+    color: var(--claude-text);
+    border-radius: 0;
+    font-size: 1em;
+}
+
+/* --- 分割线 --- */
+#wenyan hr {
+    margin: 36px auto;
+    border: none;
+    height: 1px;
+    background-color: var(--claude-hr);
+    width: 100%;
+}
+
+/* --- 图片 --- */
+#wenyan img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 24px auto;
+    border-radius: 4px;
+}
+
+/* --- 表格 --- */
+#wenyan table {
+    width: 100%;
+    margin: 24px 0;
+    border-collapse: collapse;
+    font-size: 0.9375em;
+}
+
+#wenyan th {
+    background-color: var(--claude-code-bg);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--claude-text);
+    border: 1px solid var(--claude-border);
+}
+
+#wenyan td {
+    padding: 12px 16px;
+    border: 1px solid var(--claude-border);
+    color: var(--claude-text);
+}
+
+#wenyan tr {
+    border: none;
+}

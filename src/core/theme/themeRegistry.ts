@@ -84,6 +84,13 @@ const gzhBuiltInThemeMetas: ThemeMeta[] = [
         appName: "物理猫-薄荷",
         author: "sumruler",
     },
+    {
+        id: "claude",
+        name: "Claude",
+        description: "A warm oatmeal-toned theme with terracotta accents, ideal for long-form reading.",
+        appName: "Claude",
+        author: "jrtxio",
+    },
 ];
 
 const otherThemeIds = ["juejin_default", "medium_default", "toutiao_default", "zhihu_default"];
