@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createWenyanCore, HlTheme, registerHlTheme, registerTheme, Theme } from "../src/core";
+import { createWenyanCore, HlTheme, registerHlTheme, registerTheme, Theme } from "../../src/core";
 import { JSDOM } from "jsdom";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -16,7 +16,7 @@ const dom = new JSDOM(html);
 const document = dom.window.document;
 const wenyan = document.getElementById("wenyan");
 
-const defaultTheme = readFileSync(resolve(__dirname, "../src/assets/themes/default.css"), "utf-8");
+const defaultTheme = readFileSync(resolve(__dirname, "../../src/assets/themes/default.css"), "utf-8");
 const theme: Theme = {
     meta: {
         id: "default",
@@ -30,7 +30,7 @@ const theme: Theme = {
     },
 };
 
-const defaultHlTheme = readFileSync(resolve(__dirname, "../src/assets/highlight/styles/github.min.css"), "utf-8");
+const defaultHlTheme = readFileSync(resolve(__dirname, "../../src/assets/highlight/styles/github.min.css"), "utf-8");
 const hlTheme: HlTheme = {
     id: "github",
     getCss: async () => {

@@ -2,12 +2,12 @@ import { describe, it, expect } from "vitest";
 import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { getGzhContent } from "../src/node/wrapper";
+import { getGzhContent } from "../../src/node/wrapper";
 import { readFileSync } from "node:fs";
-import { Theme, HlTheme, registerHlTheme, registerTheme } from "../src/core";
-import { MacStyle, registerMacStyle } from "../src/core/theme/macStyleRegistry";
+import { Theme, HlTheme, registerHlTheme, registerTheme } from "../../src/core";
+import { MacStyle, registerMacStyle } from "../../src/core/theme/macStyleRegistry";
 
-const defaultTheme = readFileSync(resolve(__dirname, "../src/assets/themes/phycat.css"), "utf-8");
+const defaultTheme = readFileSync(resolve(__dirname, "../../src/assets/themes/phycat.css"), "utf-8");
 const theme: Theme = {
     meta: {
         id: "phycat",
@@ -21,7 +21,7 @@ const theme: Theme = {
     },
 };
 
-const defaultHlTheme = readFileSync(resolve(__dirname, "../src/assets/highlight/styles/solarized-light.min.css"), "utf-8");
+const defaultHlTheme = readFileSync(resolve(__dirname, "../../src/assets/highlight/styles/solarized-light.min.css"), "utf-8");
 const hlTheme: HlTheme = {
     id: "solarized-light",
     getCss: async () => {
@@ -29,7 +29,7 @@ const hlTheme: HlTheme = {
     },
 };
 
-const defaultMacStyle = readFileSync(resolve(__dirname, "../src/assets/mac_style.css"), "utf-8");
+const defaultMacStyle = readFileSync(resolve(__dirname, "../../src/assets/mac_style.css"), "utf-8");
 const macStyle: MacStyle = {
     getCss: () => {
         return defaultMacStyle;
@@ -43,10 +43,10 @@ registerMacStyle(macStyle);
 describe("wrapper.ts tests", () => {
     it("should return GzhContent", async () => {
         const __dirname = dirname(fileURLToPath(import.meta.url));
-        const md = await readFile(join(__dirname, "publish.md"), "utf8");
+        const md = await readFile(join(__dirname, "../publish.md"), "utf8");
         const gzhContent = await getGzhContent(md, "phycat", "solarized-light", true, true);
 
-        const outputPath = join(__dirname, "publish.html");
+        const outputPath = join(__dirname, "../publish.html");
         await writeFile(outputPath, gzhContent.content, "utf8");
 
         expect(gzhContent).toHaveProperty("title");

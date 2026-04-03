@@ -15,14 +15,14 @@ const { mockWechatClient } = vi.hoisted(() => {
     };
 });
 
-vi.mock("../src/wechat.js", () => {
+vi.mock("../../src/wechat.js", () => {
     return {
         createWechatClient: vi.fn(() => mockWechatClient),
     };
 });
 
 // Mock cache to ensure we always call the actual upload during tests
-vi.mock("../src/node/uploadCacheNodeAdapter.js", () => {
+vi.mock("../../src/node/uploadCacheNodeAdapter.js", () => {
     return {
         NodeUploadCacheAdapter: vi.fn().mockImplementation(() => {
             return {
@@ -39,7 +39,7 @@ vi.mock("../src/node/uploadCacheNodeAdapter.js", () => {
 });
 
 // Mock TokenStorage to avoid reading/writing to disk
-vi.mock("../src/node/tokenStoreNodeAdapter.js", () => {
+vi.mock("../../src/node/tokenStoreNodeAdapter.js", () => {
     return {
         NodeTokenStorageAdapter: vi.fn().mockImplementation(() => {
             return {
@@ -52,7 +52,7 @@ vi.mock("../src/node/tokenStoreNodeAdapter.js", () => {
 });
 
 // 在 mock 之后导入
-import { publishToDraft, wechatPublisher } from "../src/node/publish.js";
+import { publishToDraft, wechatPublisher } from "../../src/node/publish.js";
 
 describe("publish.ts tests", () => {
     beforeEach(async () => {
@@ -93,7 +93,7 @@ describe("publish.ts tests", () => {
     });
 
     it("should publish article successfully", async () => {
-        const imgPath = path.join(__dirname, "wenyan.jpg");
+        const imgPath = path.join(__dirname, "../wenyan.jpg");
         const result = await publishToDraft("自动化测试", "<p>正文</p>", imgPath);
         expect(result).toHaveProperty("media_id", "mock_article_media_id");
         expect(mockWechatClient.fetchAccessToken).toHaveBeenCalled();
@@ -104,25 +104,25 @@ describe("publish.ts tests", () => {
     it("should throw error when publishArticle fails", async () => {
         mockWechatClient.publishArticle.mockRejectedValueOnce(new Error("41005: mock error"));
 
-        const imgPath = path.join(__dirname, "wenyan.jpg");
+        const imgPath = path.join(__dirname, "../wenyan.jpg");
         await expect(
             publishToDraft("失败测试", "<p>正文</p>", imgPath)
         ).rejects.toThrow(/41005: mock error/);
     });
 
     it("should use first image in content if cover is not provided", async () => {
-        const imgPath = path.join(__dirname, "wenyan.jpg");
+        const imgPath = path.join(__dirname, "../wenyan.jpg");
         const content = `<p>正文</p><img src="${imgPath}">`;
         const result = await publishToDraft("无封面测试", content);
-        
+
         expect(result).toHaveProperty("media_id", "mock_article_media_id");
         expect(mockWechatClient.uploadMaterial).toHaveBeenCalled();
     });
 
     it("should handle remote images in content", async () => {
         const content = `<p>正文</p><img src="https://example.com/test.png">`;
-        const result = await publishToDraft("远程图片测试", content, path.join(__dirname, "wenyan.jpg"));
-        
+        const result = await publishToDraft("远程图片测试", content, path.join(__dirname, "../wenyan.jpg"));
+
         expect(result).toHaveProperty("media_id", "mock_article_media_id");
         // Should upload both remote image and cover
         expect(mockWechatClient.uploadMaterial).toHaveBeenCalledTimes(2);

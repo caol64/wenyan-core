@@ -1,5 +1,13 @@
-import { describe, it, expect } from "vitest";
-import { normalizeCssLoader, stringToMap, replaceCSSVariables, sansSerif, monospace } from "../src/core/utils";
+import { describe, it, expect, vi } from "vitest";
+import {
+    normalizeCssLoader,
+    stringToMap,
+    replaceCSSVariables,
+    sansSerif,
+    monospace,
+    resolveCssContent,
+    loadCssBySource,
+} from "../../src/core/utils";
 
 describe("utils", () => {
     describe("normalizeCssLoader", () => {
@@ -59,6 +67,20 @@ describe("utils", () => {
             expect(map.has("width")).toBe(true);
             expect(map.has("height")).toBe(true);
             expect(map.has("invalid")).toBe(false);
+        });
+
+        it("should handle empty string", () => {
+            const input = "";
+            const map = stringToMap(input);
+            expect(map.size).toBe(0);
+        });
+
+        it("should handle key without value", () => {
+            const input = "width=100 height";
+            const map = stringToMap(input);
+            expect(map.size).toBe(1);
+            expect(map.get("width")).toBe("100");
+            expect(map.has("height")).toBe(false);
         });
     });
 
@@ -166,5 +188,156 @@ describe("utils", () => {
             // 代码中有 .trim().replaceAll("\n", "")
             expect(result).toContain("p { color: blue; }");
         });
+
+        it("should handle empty CSS input", () => {
+            const result = replaceCSSVariables("");
+            expect(result).toBe("");
+        });
+
+        it("should handle CSS without variables", () => {
+            const css = "body { color: red; }";
+            const result = replaceCSSVariables(css);
+            expect(result).toContain("color: red;");
+        });
+    });
+
+    describe("resolveCssContent", () => {
+        it("should return direct CSS when provided", async () => {
+            const directCss = "body { color: red; }";
+            const result = await resolveCssContent(
+                directCss,
+                "test-id",
+                () => undefined,
+                () => undefined,
+                "Theme not found",
+            );
+
+            expect(result).toBe(directCss);
+        });
+
+        it("should find theme by exact ID", async () => {
+            const mockTheme = {
+                getCss: async () => "body { color: blue; }",
+            };
+
+            const finder = vi.fn().mockReturnValue(mockTheme);
+            const fallbackFinder = vi.fn().mockReturnValue(undefined);
+
+            const result = await resolveCssContent(
+                undefined,
+                "my-theme",
+                finder,
+                fallbackFinder,
+                "Theme not found",
+            );
+
+            expect(result).toBe("body { color: blue; }");
+            expect(finder).toHaveBeenCalledWith("my-theme");
+        });
+
+        it("should fallback to name search when ID not found", async () => {
+            const mockTheme = {
+                getCss: async () => "body { color: green; }",
+            };
+
+            const finder = vi.fn().mockReturnValue(undefined);
+            const fallbackFinder = vi.fn().mockReturnValue(mockTheme);
+
+            const result = await resolveCssContent(
+                undefined,
+                "My Theme Name",
+                finder,
+                fallbackFinder,
+                "Theme not found",
+            );
+
+            expect(result).toBe("body { color: green; }");
+            expect(fallbackFinder).toHaveBeenCalledWith("My Theme Name");
+        });
+
+        it("should throw error when theme not found", async () => {
+            const finder = vi.fn().mockReturnValue(undefined);
+            const fallbackFinder = vi.fn().mockReturnValue(undefined);
+
+            await expect(
+                resolveCssContent(
+                    undefined,
+                    "non-existent",
+                    finder,
+                    fallbackFinder,
+                    "Theme not found: non-existent",
+                ),
+            ).rejects.toThrow("Theme not found: non-existent");
+        });
+
+        it("should process CSS variables", async () => {
+            const mockTheme = {
+                getCss: async () => `
+                    :root { --color: red; }
+                    body { color: var(--color); }
+                `,
+            };
+
+            const finder = vi.fn().mockReturnValue(mockTheme);
+            const fallbackFinder = vi.fn().mockReturnValue(undefined);
+
+            const result = await resolveCssContent(
+                undefined,
+                "my-theme",
+                finder,
+                fallbackFinder,
+                "Theme not found",
+            );
+
+            expect(result).toContain("color: red;");
+            expect(result).not.toContain(":root");
+        });
+    });
+
+    describe("loadCssBySource", () => {
+        it("should return inline CSS", async () => {
+            const source = { type: "inline" as const, css: "body { color: red; }" };
+            const result = await loadCssBySource(source);
+
+            expect(result).toBe("body { color: red; }");
+        });
+
+        it("should load CSS from asset loader", async () => {
+            const source = {
+                type: "asset" as const,
+                loader: async () => "body { color: blue; }",
+            };
+            const result = await loadCssBySource(source);
+
+            expect(result).toBe("body { color: blue; }");
+        });
+
+        it("should load CSS from URL", async () => {
+            const mockFetch = vi.fn().mockResolvedValue({
+                ok: true,
+                text: async () => "body { color: green; }",
+            });
+            global.fetch = mockFetch;
+
+            const source = { type: "url" as const, url: "https://example.com/theme.css" };
+            const result = await loadCssBySource(source);
+
+            expect(result).toBe("body { color: green; }");
+            expect(mockFetch).toHaveBeenCalledWith("https://example.com/theme.css");
+        });
+
+        it("should throw error when URL fetch fails", async () => {
+            const mockFetch = vi.fn().mockResolvedValue({
+                ok: false,
+            });
+            global.fetch = mockFetch;
+
+            const source = { type: "url" as const, url: "https://example.com/invalid.css" };
+
+            await expect(loadCssBySource(source)).rejects.toThrow(
+                "Failed to load CSS from https://example.com/invalid.css",
+            );
+        });
+
     });
 });

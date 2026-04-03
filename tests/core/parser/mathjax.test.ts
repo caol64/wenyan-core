@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createMathJaxParser } from "../src/core/parser/mathjaxParser";
+import { createMathJaxParser } from "../../../src/core/parser/mathjaxParser";
 
 describe("MathJaxRenderer", () => {
     // 实例化一个默认渲染器

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createWenyanCore } from "../src/core";
+import { createWenyanCore } from "../../src/core";
 
 const markdown = `# title
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { handleFrontMatter } from "../src/core/parser/frontMatterParser";
+import { handleFrontMatter } from "../../../src/core/parser/frontMatterParser";
 
 describe("handleFrontMatter", () => {
     it("should parse all fields and prepend description to body", async () => {
