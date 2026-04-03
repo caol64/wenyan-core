@@ -51,13 +51,9 @@
     "typecheck": "tsc --noEmit",
     "build": "vite build && tsc",
     "lint": "eslint . --fix",
-    "test": "pnpm build && vitest",
-    "test:watch": "pnpm build && vitest --watch",
-    "test:wrapper": "vitest run tests/wrapper.test.ts",
-    "test:publish": "vitest run tests/publish.test.ts",
-    "test:realPublish": "vitest run tests/realPublish.test.ts",
-    "test:runtimeEnv": "vitest run tests/runtimeEnv.test.ts",
-    "prepublishOnly": "pnpm build"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm typecheck && pnpm build"
   },
   "packageManager": "pnpm@10.7.1",
   "devDependencies": {

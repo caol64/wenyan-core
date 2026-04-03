@@ -75,6 +75,15 @@ export class WechatPublisher {
     public async publishToDraft(accessToken: string, options: WechatPublishOptions): Promise<WechatPublishResponse> {
         return await this.publishArticle(accessToken, options);
     }
+
+    public async clearCache(): Promise<void> {
+        if (this.tokenStore) {
+            await this.tokenStore.clear();
+        }
+        if (this.uploadCacheStore) {
+            await this.uploadCacheStore.clear();
+        }
+    }
 }
 
 export * from "./tokenStore.js";

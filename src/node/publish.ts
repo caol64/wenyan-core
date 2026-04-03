@@ -10,7 +10,7 @@ import { NodeUploadCacheAdapter } from "./uploadCacheNodeAdapter.js";
 import { ArticleOptions, WechatPublisher } from "../publish.js";
 
 const mediaIdMapping = new Map<string, string>(); // 微信 url 和 media_id 的映射
-const wechatPublisher = new WechatPublisher(nodeHttpAdapter, new NodeTokenStorageAdapter(), new NodeUploadCacheAdapter());
+export const wechatPublisher = new WechatPublisher(nodeHttpAdapter, new NodeTokenStorageAdapter(), new NodeUploadCacheAdapter());
 interface PublishOptions {
     appId?: string;
     appSecret?: string;
