@@ -118,7 +118,7 @@ export async function publishToWechatDraft(
     const { html, firstImageId } = await uploadImages(content, accessToken, relativePath);
 
     // 处理封面图
-    let thumbMediaId = "";
+    let thumbMediaId: string | undefined;
 
     if (cover) {
         const cachedThumbMediaId = mediaIdMapping.get(cover);

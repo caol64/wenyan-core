@@ -112,7 +112,7 @@ export async function createWenyanCore(options: WenyanOptions = {}) {
                 return `${wenyanElement.outerHTML
                     .replace(/class="mjx-solid"/g, 'fill="none" stroke-width="70"')
                     .replace(/\n<li/g, "<li")
-                    .replace(/<\/li>\n/g, "<\/li>")}`;
+                    .replace(/<\/li>\n/g, "</li>")}`;
             }
             return wenyanElement.outerHTML;
         },

@@ -102,7 +102,7 @@ export function createCssApplier(css: string) {
                     targets.forEach((el) => {
                         declarations.forEach((decl) => {
                             if (decl.type !== "Declaration") return;
-                            let value = csstree.generate(decl.value);
+                            const value = csstree.generate(decl.value);
                             // csstree 解析出的 value 可能不包含 !important，它在 decl.important 字段里
                             // 如果 value 字符串里包含了 !important，需要手动清理一下传给 setProperty
 

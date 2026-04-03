@@ -48,7 +48,7 @@ async function chunkedUpload(
                     }
                     try {
                         resolve(JSON.parse(body));
-                    } catch (e) {
+                    } catch (_e) {
                         reject(new Error(`Invalid server response: ${body}`));
                     }
                 });
