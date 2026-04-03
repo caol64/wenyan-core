@@ -48,9 +48,11 @@
     }
   },
   "scripts": {
-    "check": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "build": "vite build && tsc",
+    "lint": "eslint . --fix",
     "test": "pnpm build && vitest",
+    "test:watch": "pnpm build && vitest --watch",
     "test:wrapper": "vitest run tests/wrapper.test.ts",
     "test:publish": "vitest run tests/publish.test.ts",
     "test:realPublish": "vitest run tests/realPublish.test.ts",
@@ -59,9 +61,12 @@
   },
   "packageManager": "pnpm@10.7.1",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/css-tree": "^2.3.11",
     "@types/jsdom": "^27.0.0",
     "@types/node": "^24.3.0",
+    "eslint": "^10.1.0",
+    "globals": "^17.4.0",
     "typescript": "^5.9.2",
     "vite": "^7.1.4",
     "vitest": "^3.2.4"

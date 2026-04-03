@@ -15,6 +15,7 @@
     "declarationDir": "dist/types",
     "emitDeclarationOnly": true,
     "outDir": "dist",
+    "rootDir": "src",
     "noImplicitAny": false,
     "allowJs": true,
     "checkJs": true
