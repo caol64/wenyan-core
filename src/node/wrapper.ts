@@ -52,6 +52,7 @@ export async function renderAndPublish(
         },
         {
             relativePath: absoluteDirPath,
+            proxy: options.proxy, // 传递代理配置
         },
     );
 

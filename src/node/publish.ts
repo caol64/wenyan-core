@@ -4,17 +4,49 @@ import path from "node:path";
 import { stat } from "node:fs/promises";
 import { RuntimeEnv } from "./runtimeEnv.js";
 import { WechatPublishResponse, WechatUploadResponse } from "../wechat.js";
-import { nodeHttpAdapter } from "./nodeHttpAdapter.js";
+import { createNodeHttpAdapter, NodeHttpAdapterOptions } from "./nodeHttpAdapter.js";
 import { NodeTokenStorageAdapter } from "./tokenStoreNodeAdapter.js";
 import { NodeUploadCacheAdapter } from "./uploadCacheNodeAdapter.js";
 import { ArticleOptions, WechatPublisher } from "../publish.js";
 
 const mediaIdMapping = new Map<string, string>(); // 微信 url 和 media_id 的映射
-export const wechatPublisher = new WechatPublisher(nodeHttpAdapter, new NodeTokenStorageAdapter(), new NodeUploadCacheAdapter());
+
+// 导出默认的无代理 publisher（保持向后兼容）
+export const wechatPublisher = new WechatPublisher(
+    createNodeHttpAdapter(),
+    new NodeTokenStorageAdapter(),
+    new NodeUploadCacheAdapter()
+);
+
 interface PublishOptions {
     appId?: string;
     appSecret?: string;
     relativePath?: string;
+    /**
+     * 代理服务器地址
+     * 支持格式:
+     * - http://127.0.0.1:7890
+     * - https://127.0.0.1:7890
+     * - socks5://127.0.0.1:1080
+     * - socks4://127.0.0.1:1080
+     */
+    proxy?: string;
+}
+
+/**
+ * 创建带代理配置的 WechatPublisher 实例
+ */
+function createWechatPublisherWithProxy(proxy?: string): WechatPublisher {
+    if (!proxy) {
+        return wechatPublisher; // 如果没有代理，返回默认实例
+    }
+    
+    const adapterOptions: NodeHttpAdapterOptions = { proxy };
+    return new WechatPublisher(
+        createNodeHttpAdapter(adapterOptions),
+        new NodeTokenStorageAdapter(),
+        new NodeUploadCacheAdapter()
+    );
 }
 
 async function uploadImage(
@@ -22,6 +54,7 @@ async function uploadImage(
     accessToken: string,
     fileName?: string,
     relativePath?: string,
+    publisher: WechatPublisher = wechatPublisher,
 ): Promise<WechatUploadResponse> {
     let fileData: Blob;
     let finalName: string;
@@ -58,7 +91,7 @@ async function uploadImage(
     }
 
     // 上传
-    const data = await wechatPublisher.uploadImage(fileData, finalName, accessToken);
+    const data = await publisher.uploadImage(fileData, finalName, accessToken);
     // 写入映射
     mediaIdMapping.set(data.url, data.media_id);
     return data;
@@ -68,6 +101,7 @@ async function uploadImages(
     content: string,
     accessToken: string,
     relativePath?: string,
+    publisher: WechatPublisher = wechatPublisher,
 ): Promise<{ html: string; firstImageId: string }> {
     if (!content.includes("<img")) {
         return { html: content, firstImageId: "" };
@@ -81,7 +115,7 @@ async function uploadImages(
         const dataSrc = element.getAttribute("src");
         if (dataSrc) {
             if (!dataSrc.startsWith("https://mmbiz.qpic.cn")) {
-                const resp = await uploadImage(dataSrc, accessToken, undefined, relativePath);
+                const resp = await uploadImage(dataSrc, accessToken, undefined, relativePath, publisher);
                 element.setAttribute("src", resp.url);
                 return resp.media_id;
             } else {
@@ -103,7 +137,7 @@ export async function publishToWechatDraft(
     publishOptions: PublishOptions = {},
 ): Promise<WechatPublishResponse> {
     const { title, content, cover, author, source_url } = articleOptions;
-    const { appId, appSecret, relativePath } = publishOptions;
+    const { appId, appSecret, relativePath, proxy } = publishOptions;
 
     const appIdFinal = appId ?? process.env.WECHAT_APP_ID;
     const appSecretFinal = appSecret ?? process.env.WECHAT_APP_SECRET;
@@ -112,10 +146,13 @@ export async function publishToWechatDraft(
         throw new Error("请通过参数或环境变量 WECHAT_APP_ID / WECHAT_APP_SECRET 提供公众号凭据");
     }
 
-    const accessToken = await wechatPublisher.getAccessTokenWithCache(appIdFinal, appSecretFinal);
+    // 根据代理配置创建 publisher 实例
+    const currentPublisher = createWechatPublisherWithProxy(proxy);
+
+    const accessToken = await currentPublisher.getAccessTokenWithCache(appIdFinal, appSecretFinal);
 
     // 上传正文图片
-    const { html, firstImageId } = await uploadImages(content, accessToken, relativePath);
+    const { html, firstImageId } = await uploadImages(content, accessToken, relativePath, currentPublisher);
 
     // 处理封面图
     let thumbMediaId: string | undefined;
@@ -125,7 +162,7 @@ export async function publishToWechatDraft(
         if (cachedThumbMediaId) {
             thumbMediaId = cachedThumbMediaId;
         } else {
-            const resp = await uploadImage(cover, accessToken, "cover.jpg", relativePath);
+            const resp = await uploadImage(cover, accessToken, "cover.jpg", relativePath, currentPublisher);
             thumbMediaId = resp.media_id;
         }
     } else {
@@ -135,7 +172,7 @@ export async function publishToWechatDraft(
             if (cachedThumbMediaId) {
                 thumbMediaId = cachedThumbMediaId;
             } else {
-                const resp = await uploadImage(firstImageId, accessToken, "cover.jpg", relativePath);
+                const resp = await uploadImage(firstImageId, accessToken, "cover.jpg", relativePath, currentPublisher);
                 thumbMediaId = resp.media_id;
             }
         } else {
@@ -148,7 +185,7 @@ export async function publishToWechatDraft(
         throw new Error("你必须指定一张封面图或者在正文中至少出现一张图片。");
     }
 
-    const data = await wechatPublisher.publishToDraft(accessToken, {
+    const data = await currentPublisher.publishToDraft(accessToken, {
         title,
         content: html,
         thumb_media_id: thumbMediaId,

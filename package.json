@@ -74,7 +74,9 @@
     "highlight.js": "11.10.0",
     "marked": "^15.0.12",
     "marked-highlight": "^2.2.1",
-    "mathjax-full": "3.2.2"
+    "mathjax-full": "3.2.2",
+    "proxy-agent": "^8.0.1",
+    "undici": "6"
   },
   "peerDependencies": {
     "form-data-encoder": "^4.1.0",
