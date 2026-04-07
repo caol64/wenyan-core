@@ -8,9 +8,14 @@ import { nodeHttpAdapter } from "./nodeHttpAdapter.js";
 import { NodeTokenStorageAdapter } from "./tokenStoreNodeAdapter.js";
 import { NodeUploadCacheAdapter } from "./uploadCacheNodeAdapter.js";
 import { ArticleOptions, WechatPublisher } from "../publish.js";
+import { credentialStore } from "./credentialStore.js";
 
 const mediaIdMapping = new Map<string, string>(); // 微信 url 和 media_id 的映射
-export const wechatPublisher = new WechatPublisher(nodeHttpAdapter, new NodeTokenStorageAdapter(), new NodeUploadCacheAdapter());
+export const wechatPublisher = new WechatPublisher(
+    nodeHttpAdapter,
+    new NodeTokenStorageAdapter(),
+    new NodeUploadCacheAdapter(),
+);
 interface PublishOptions {
     appId?: string;
     appSecret?: string;
@@ -105,13 +110,7 @@ export async function publishToWechatDraft(
     const { title, content, cover, author, source_url } = articleOptions;
     const { appId, appSecret, relativePath } = publishOptions;
 
-    const appIdFinal = appId ?? process.env.WECHAT_APP_ID;
-    const appSecretFinal = appSecret ?? process.env.WECHAT_APP_SECRET;
-
-    if (!appIdFinal || !appSecretFinal) {
-        throw new Error("请通过参数或环境变量 WECHAT_APP_ID / WECHAT_APP_SECRET 提供公众号凭据");
-    }
-
+    const { appId: appIdFinal, appSecret: appSecretFinal } = await getAppIdAndSecret(appId, appSecret);
     const accessToken = await wechatPublisher.getAccessTokenWithCache(appIdFinal, appSecretFinal);
 
     // 上传正文图片
@@ -170,4 +169,27 @@ export async function publishToDraft(
     options: PublishOptions = {},
 ): Promise<WechatPublishResponse> {
     return publishToWechatDraft({ title, content, cover }, options);
+}
+
+async function getAppIdAndSecret(
+    appId: string | undefined,
+    appSecret: string | undefined,
+): Promise<{ appId: string; appSecret: string }> {
+    if (appId && appSecret) {
+        return { appId, appSecret };
+    }
+
+    const envAppId = process.env.WECHAT_APP_ID;
+    const envAppSecret = process.env.WECHAT_APP_SECRET;
+
+    if (envAppId && envAppSecret) {
+        return { appId: envAppId, appSecret: envAppSecret };
+    }
+
+    const credential = await credentialStore.getWechatCredential(appId ?? "");
+    if (credential?.appId && credential?.appSecret) {
+        return { appId: credential.appId, appSecret: credential.appSecret };
+    }
+
+    throw new Error("请通过参数、环境变量 WECHAT_APP_ID / WECHAT_APP_SECRET 或配置文件提供公众号凭据");
 }

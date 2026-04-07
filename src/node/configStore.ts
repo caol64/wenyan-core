@@ -1,7 +1,6 @@
 import path from "node:path";
-import os from "node:os";
 import fs from "node:fs/promises";
-import { ensureDir, safeReadJson, safeWriteJson } from "./utils.js";
+import { ensureDir, safeReadJson, safeWriteJson, configDir } from "./utils.js";
 
 export interface WenyanConfig {
     themes?: Record<string, ThemeConfigOptions>;
@@ -15,10 +14,6 @@ export interface ThemeConfigOptions {
 }
 
 const defaultConfig: WenyanConfig = {};
-
-export const configDir = process.env.APPDATA
-    ? path.join(process.env.APPDATA, "wenyan-md")
-    : path.join(os.homedir(), ".config", "wenyan-md");
 
 export const configPath = path.join(configDir, "config.json");
 
