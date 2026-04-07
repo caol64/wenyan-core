@@ -88,3 +88,4 @@ export class WechatPublisher {
 
 export * from "./tokenStore.js";
 export * from "./uploadCacheStore.js";
+export * from "./credentialStore.js";

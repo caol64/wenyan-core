@@ -8,7 +8,8 @@ import { nodeHttpAdapter } from "./nodeHttpAdapter.js";
 import { NodeTokenStorageAdapter } from "./tokenStoreNodeAdapter.js";
 import { NodeUploadCacheAdapter } from "./uploadCacheNodeAdapter.js";
 import { ArticleOptions, WechatPublisher } from "../publish.js";
-import { credentialStore } from "./credentialStore.js";
+import { CredentialStore } from "../credentialStore.js";
+import { NodeCredentialStorageAdapter } from "./credentialStoreNodeAdapter.js";
 
 const mediaIdMapping = new Map<string, string>(); // 微信 url 和 media_id 的映射
 export const wechatPublisher = new WechatPublisher(
@@ -16,6 +17,9 @@ export const wechatPublisher = new WechatPublisher(
     new NodeTokenStorageAdapter(),
     new NodeUploadCacheAdapter(),
 );
+
+export const credentialStore = new CredentialStore(new NodeCredentialStorageAdapter());
+
 interface PublishOptions {
     appId?: string;
     appSecret?: string;

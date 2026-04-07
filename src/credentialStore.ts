@@ -1,31 +1,39 @@
-import path from "node:path";
-import { configDir, ensureDir, safeReadJson, safeWriteJson } from "./utils.js";
-
 export interface WenyanCredential {
     wechat?: Record<string, string>;
 }
 
-const defaultCredential: WenyanCredential = {};
+export const defaultCredential: WenyanCredential = {};
 
-export const credentialPath = path.join(configDir, "credential.json");
+export interface CredentialStorageAdapter {
+    loadCredential(): Promise<WenyanCredential | null>;
+    saveCredential(credential: WenyanCredential): Promise<void>;
+    clearCredential(): Promise<void>;
+}
 
-class CredentialStore {
+export class CredentialStore {
     private credential: WenyanCredential = { ...defaultCredential };
+    private adapter: CredentialStorageAdapter;
     private initPromise: Promise<void>;
 
-    constructor() {
+    constructor(adapter: CredentialStorageAdapter) {
+        this.adapter = adapter;
         this.initPromise = this.load();
     }
 
     private async load() {
-        await ensureDir(configDir);
-        this.credential = await safeReadJson<WenyanCredential>(credentialPath, defaultCredential);
+        try {
+            const loadedData = await this.adapter.loadCredential();
+            if (loadedData) {
+                this.credential = loadedData;
+            }
+        } catch (error) {
+            throw new Error(`无法加载 credential: ${error instanceof Error ? error.message : String(error)}`);
+        }
     }
 
     private async save() {
         try {
-            await ensureDir(configDir);
-            await safeWriteJson(credentialPath, this.credential);
+            await this.adapter.saveCredential(this.credential);
         } catch (error) {
             throw new Error(`无法保存凭据文件: ${error instanceof Error ? error.message : String(error)}`);
         }
@@ -58,7 +66,4 @@ class CredentialStore {
             await this.save();
         }
     }
-
 }
-
-export const credentialStore = new CredentialStore();
