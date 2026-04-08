@@ -161,7 +161,7 @@ export async function requestServerPublish(
     headers: Record<string, string>,
     options: ClientPublishOptions,
 ): Promise<string> {
-    const { theme, customTheme, highlight, macStyle, footnote } = options;
+    const { theme, customTheme, highlight, macStyle, footnote, appId } = options;
     const publishRes = await fetch(`${serverUrl}/publish`, {
         method: "POST",
         headers: {
@@ -175,6 +175,7 @@ export async function requestServerPublish(
             customTheme,
             macStyle,
             footnote,
+            appId,
         }),
     });
 

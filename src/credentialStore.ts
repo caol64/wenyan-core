@@ -27,7 +27,7 @@ export class CredentialStore {
                 this.credential = loadedData;
             }
         } catch (error) {
-            throw new Error(`无法加载 credential: ${error instanceof Error ? error.message : String(error)}`);
+            throw new Error(`无法加载凭据: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 
@@ -35,7 +35,7 @@ export class CredentialStore {
         try {
             await this.adapter.saveCredential(this.credential);
         } catch (error) {
-            throw new Error(`无法保存凭据文件: ${error instanceof Error ? error.message : String(error)}`);
+            throw new Error(`无法保存凭据: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 
@@ -44,11 +44,11 @@ export class CredentialStore {
         return this.credential.wechat ?? {};
     }
 
-    async getWechatCredential(appId: string): Promise<{ appId: string; appSecret: string } | undefined> {
+    async getWechatCredential(appId: string): Promise<{ appId: string; appSecret: string } | null> {
         const wechat = await this._getWechatCredential();
-        if (!wechat) return undefined;
+        if (!wechat) return null;
         const appSecret = wechat[appId];
-        if (!appSecret) return undefined;
+        if (!appSecret) return null;
         return { appId, appSecret };
     }
 
