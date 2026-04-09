@@ -147,7 +147,7 @@ function tableToAsciiArt(table: HTMLTableElement): string {
 
     // 提取数据二维数组
     const rows = rowsElements.map((tr) =>
-        Array.from(tr.querySelectorAll("th, td")).map((td) => (td as HTMLElement).innerText.trim()),
+        Array.from(tr.querySelectorAll("th, td")).map((td) => (td?.textContent || "").trim()),
     );
 
     if (rows.length === 0) return "";

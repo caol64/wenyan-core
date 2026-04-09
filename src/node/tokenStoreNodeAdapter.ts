@@ -1,7 +1,6 @@
 import path from "node:path";
 import fs from "node:fs/promises";
-import { configDir } from "./configStore.js";
-import { ensureDir, safeReadJson, safeWriteJson } from "./utils.js";
+import { ensureDir, safeReadJson, safeWriteJson, configDir } from "./utils.js";
 import { TokenCache, TokenStorageAdapter, defaultTokenCache } from "../tokenStore.js";
 
 export const tokenPath = path.join(configDir, "token.json");

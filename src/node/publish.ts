@@ -8,6 +8,8 @@ import { createNodeHttpAdapter, NodeHttpAdapterOptions } from "./nodeHttpAdapter
 import { NodeTokenStorageAdapter } from "./tokenStoreNodeAdapter.js";
 import { NodeUploadCacheAdapter } from "./uploadCacheNodeAdapter.js";
 import { ArticleOptions, WechatPublisher } from "../publish.js";
+import { CredentialStore } from "../credentialStore.js";
+import { NodeCredentialStorageAdapter } from "./credentialStoreNodeAdapter.js";
 
 const mediaIdMapping = new Map<string, string>(); // 微信 url 和 media_id 的映射
 
@@ -207,4 +209,33 @@ export async function publishToDraft(
     options: PublishOptions = {},
 ): Promise<WechatPublishResponse> {
     return publishToWechatDraft({ title, content, cover }, options);
+}
+
+async function getAppIdAndSecret(
+    appId: string | undefined,
+    appSecret: string | undefined,
+): Promise<{ appId: string; appSecret: string }> {
+    if (appId && appSecret) {
+        return { appId, appSecret };
+    }
+
+    const envAppId = process.env.WECHAT_APP_ID;
+    const envAppSecret = process.env.WECHAT_APP_SECRET;
+
+    // 优先使用环境变量中的凭据（如果 appId 匹配或者未提供 appId），其次使用配置文件中的凭据
+    if (envAppId && envAppSecret && (envAppId === appId || !appId)) {
+        return { appId: envAppId, appSecret: envAppSecret };
+    }
+
+    // 如果参数和环境变量中都没有提供 appId，则无法确定凭据来源，抛出错误
+    if (!appId) {
+        throw new Error("未提供 AppID：请通过参数、环境变量或配置文件指定。");
+    }
+
+    const credential = await credentialStore.getWechatCredential(appId);
+    if (credential?.appId && credential?.appSecret) {
+        return { appId: credential.appId, appSecret: credential.appSecret };
+    }
+
+    throw new Error(`未能找到 AppID 为 "${appId}" 的公众号凭据，请检查配置文件。`);
 }

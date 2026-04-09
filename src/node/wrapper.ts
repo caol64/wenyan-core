@@ -51,6 +51,7 @@ export async function renderAndPublish(
             source_url: gzhContent.source_url,
         },
         {
+            appId: options.appId,
             relativePath: absoluteDirPath,
             proxy: options.proxy, // 传递代理配置
         },

@@ -1,8 +1,7 @@
 import path from "node:path";
 import fs from "node:fs/promises";
 import crypto from "node:crypto";
-import { configDir } from "./configStore.js";
-import { ensureDir, safeReadJson, safeWriteJson } from "./utils.js";
+import { ensureDir, safeReadJson, safeWriteJson, configDir } from "./utils.js";
 import type { CacheData, UploadCacheStorageAdapter } from "../uploadCacheStore.js";
 
 export const cachePath = path.join(configDir, "upload-cache.json");

@@ -16,9 +16,11 @@ export interface RenderOptions {
     proxy?: string;
 }
 
-export interface PublishOptions extends RenderOptions {}
+export interface PublishOptions extends RenderOptions {
+    appId?: string;
+}
 
-export interface ClientPublishOptions extends RenderOptions {
+export interface ClientPublishOptions extends PublishOptions {
     server?: string;
     apiKey?: string;
     clientVersion?: string;
