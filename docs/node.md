@@ -125,3 +125,50 @@ const result = await getGzhContent(
   * 文件写入
   * 微信 API
   * 静态站点生成
+
+## 六、微信公众号发布（带代理支持）
+
+如果你需要在受限网络环境下发布到微信公众号，可以使用代理功能。
+
+### 安装依赖
+
+```bash
+npm install jsdom form-data-encoder formdata-node proxy-agent
+```
+
+### 使用示例
+
+```ts
+import { publishToWechatDraft } from "@wenyan-md/core/node";
+
+// 使用 HTTP 代理
+const result = await publishToWechatDraft({
+  title: "文章标题",
+  content: htmlContent,
+}, {
+  appId: "your-app-id",
+  appSecret: "your-app-secret",
+  proxy: "http://127.0.0.1:7890"  // HTTP 代理
+});
+
+// 使用 SOCKS5 代理
+const result2 = await publishToWechatDraft({
+  title: "文章标题",
+  content: htmlContent,
+}, {
+  proxy: "socks5://127.0.0.1:1080"  // SOCKS5 代理
+});
+
+console.log("草稿 ID:", result.media_id);
+```
+
+### 支持的代理格式
+
+| 代理类型 | 格式示例 |
+|---------|---------|
+| HTTP | `http://127.0.0.1:7890` |
+| HTTPS | `https://127.0.0.1:7890` |
+| SOCKS5 | `socks5://127.0.0.1:1080` |
+| SOCKS4 | `socks4://127.0.0.1:1080` |
+
+更多详细信息请参考 [微信公众号发布文档](wechat.md)。

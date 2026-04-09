@@ -53,6 +53,7 @@ export async function renderAndPublish(
         {
             appId: options.appId,
             relativePath: absoluteDirPath,
+            proxy: options.proxy, // 传递代理配置
         },
     );
 
