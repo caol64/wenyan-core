@@ -66,10 +66,10 @@ export function createMathJaxParser(options: MathJaxParserOptions = {}) {
     /* ---------- helpers ---------- */
 
     function addContainer(math: MathItem<any, any, any>, doc: MathDocument<any, any, any>) {
+        const container = math.typesetRoot;
         const tag = math.display ? "section" : "span";
         const cls = math.display ? "block-equation" : "inline-equation";
 
-        const container = math.typesetRoot;
 
         if (math.math) {
             doc.adaptor.setAttribute(container, "math", math.math);
