@@ -54,6 +54,7 @@ export interface PublishOptions {
   appId?: string;
   appSecret?: string;
   relativePath?: string;
+  proxy?: string;
 }
 ```
 
@@ -62,6 +63,36 @@ export interface PublishOptions {
 | appId        | 微信公众号 AppID     |
 | appSecret    | 微信公众号 AppSecret |
 | relativePath | 本地图片的相对路径       |
+| proxy        | 代理服务器地址（可选）    |
+
+#### 代理配置说明
+
+`proxy` 参数支持以下格式的代理服务器：
+
+- **HTTP 代理**: `http://127.0.0.1:7890`
+- **HTTPS 代理**: `https://127.0.0.1:7890`
+- **SOCKS5 代理**: `socks5://127.0.0.1:1080`
+- **SOCKS4 代理**: `socks4://127.0.0.1:1080`
+
+**使用示例：**
+
+```ts
+// 使用 HTTP 代理
+await publishToWechatDraft({
+  title: "我的第一篇文章",
+  content: htmlContent,
+}, {
+  proxy: "http://127.0.0.1:7890"
+});
+
+// 使用 SOCKS5 代理
+await publishToWechatDraft({
+  title: "我的第一篇文章",
+  content: htmlContent,
+}, {
+  proxy: "socks5://127.0.0.1:1080"
+});
+```
 
 > [!NOTE]
 > 
@@ -94,7 +125,7 @@ await publishToWechatDraft({
 
 ### 自动处理流程
 
-```text
+```
 HTML
   ↓
 解析 <img>
@@ -125,7 +156,7 @@ HTML
 
 ## 典型完整流程
 
-```ts
+```
 import {
   renderStyledContent,
   publishToWechatDraft
@@ -161,7 +192,7 @@ await publishToWechatDraft({
 
 使用`publishToWechatDraft`接口发布文章时，每篇文章顶部需包含 frontmatter：
 
-```md
+```
 ---
 title: 示例文章
 cover: /path/to/cover.jpg

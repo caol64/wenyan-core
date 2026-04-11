@@ -9,6 +9,15 @@ export interface RenderOptions {
 
 export interface PublishOptions extends RenderOptions {
     appId?: string;
+    /**
+     * 代理服务器地址（可选）
+     * 支持格式:
+     * - http://127.0.0.1:7890
+     * - https://127.0.0.1:7890
+     * - socks5://127.0.0.1:1080
+     * - socks4://127.0.0.1:1080
+     */
+    proxy?: string;
 }
 
 export interface ClientPublishOptions extends PublishOptions {
