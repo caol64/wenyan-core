@@ -14,6 +14,8 @@ export interface PublishOptions extends RenderOptions {
 export interface ClientPublishOptions extends PublishOptions {
     server?: string;
     apiKey?: string;
+    appId?: string;
+    appSecret?: string;
     clientVersion?: string;
 }
 

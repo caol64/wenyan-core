@@ -169,6 +169,8 @@ export async function requestServerPublish(
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
+            appId: options.appId,
+            appSecret: options.appSecret,
             fileId: mdFileId,
             theme,
             highlight,
