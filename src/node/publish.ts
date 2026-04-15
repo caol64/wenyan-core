@@ -31,6 +31,7 @@ async function uploadImage(
     accessToken: string,
     fileName?: string,
     relativePath?: string,
+    appId?: string,
 ): Promise<WechatUploadResponse> {
     let fileData: Blob;
     let finalName: string;
@@ -67,7 +68,7 @@ async function uploadImage(
     }
 
     // 上传
-    const data = await wechatPublisher.uploadImage(fileData, finalName, accessToken);
+    const data = await wechatPublisher.uploadImage(fileData, finalName, accessToken, appId);
     // 写入映射
     mediaIdMapping.set(data.url, data.media_id);
     return data;
@@ -77,6 +78,7 @@ async function uploadImages(
     content: string,
     accessToken: string,
     relativePath?: string,
+    appId?: string,
 ): Promise<{ html: string; firstImageId: string }> {
     if (!content.includes("<img")) {
         return { html: content, firstImageId: "" };
@@ -90,7 +92,7 @@ async function uploadImages(
         const dataSrc = element.getAttribute("src");
         if (dataSrc) {
             if (!dataSrc.startsWith("https://mmbiz.qpic.cn")) {
-                const resp = await uploadImage(dataSrc, accessToken, undefined, relativePath);
+                const resp = await uploadImage(dataSrc, accessToken, undefined, relativePath, appId);
                 element.setAttribute("src", resp.url);
                 return resp.media_id;
             } else {
@@ -118,7 +120,7 @@ export async function publishToWechatDraft(
     const accessToken = await wechatPublisher.getAccessTokenWithCache(appIdFinal, appSecretFinal);
 
     // 上传正文图片
-    const { html, firstImageId } = await uploadImages(content, accessToken, relativePath);
+    const { html, firstImageId } = await uploadImages(content, accessToken, relativePath, appIdFinal);
 
     // 处理封面图
     let thumbMediaId: string | undefined;
@@ -128,7 +130,7 @@ export async function publishToWechatDraft(
         if (cachedThumbMediaId) {
             thumbMediaId = cachedThumbMediaId;
         } else {
-            const resp = await uploadImage(cover, accessToken, "cover.jpg", relativePath);
+            const resp = await uploadImage(cover, accessToken, "cover.jpg", relativePath, appIdFinal);
             thumbMediaId = resp.media_id;
         }
     } else {
@@ -138,7 +140,7 @@ export async function publishToWechatDraft(
             if (cachedThumbMediaId) {
                 thumbMediaId = cachedThumbMediaId;
             } else {
-                const resp = await uploadImage(firstImageId, accessToken, "cover.jpg", relativePath);
+                const resp = await uploadImage(firstImageId, accessToken, "cover.jpg", relativePath, appIdFinal);
                 thumbMediaId = resp.media_id;
             }
         } else {
