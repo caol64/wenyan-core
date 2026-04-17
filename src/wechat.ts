@@ -4,12 +4,27 @@ const tokenUrl = "https://api.weixin.qq.com/cgi-bin/token";
 const publishUrl = "https://api.weixin.qq.com/cgi-bin/draft/add";
 const uploadUrl = "https://api.weixin.qq.com/cgi-bin/material/add_material";
 
+export interface ImageCropPercent {
+    ratio: string;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+}
+
+export interface ImageInfo {
+    image_media_id: string;
+    crop_percent_list?: ImageCropPercent[];
+}
+
 export interface WechatPublishOptions {
     title: string;
     author?: string;
     content: string;
     thumb_media_id: string;
     content_source_url?: string;
+    article_type?: "news" | "newspic";
+    image_info?: ImageInfo[];
 }
 
 export interface WechatErrorResponse {
