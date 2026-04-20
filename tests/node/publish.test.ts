@@ -110,6 +110,22 @@ describe("publish.ts tests", () => {
         ).rejects.toThrow(/41005: mock error/);
     });
 
+    it("should pass comment options to publishArticle", async () => {
+        const imgPath = path.join(__dirname, "../wenyan.jpg");
+        await publishToDraft("评论测试", "<p>正文</p>", imgPath, {
+            need_open_comment: 1,
+            only_fans_can_comment: 1,
+        } as any);
+
+        expect(mockWechatClient.publishArticle).toHaveBeenCalledWith(
+            "mock_token",
+            expect.objectContaining({
+                need_open_comment: 1,
+                only_fans_can_comment: 1,
+            }),
+        );
+    });
+
     it("should use first image in content if cover is not provided", async () => {
         const imgPath = path.join(__dirname, "../wenyan.jpg");
         const content = `<p>正文</p><img src="${imgPath}">`;

@@ -24,6 +24,8 @@ interface PublishOptions {
     appId?: string;
     appSecret?: string;
     relativePath?: string;
+    need_open_comment?: 0 | 1;
+    only_fans_can_comment?: 0 | 1;
 }
 
 async function uploadImage(
@@ -114,7 +116,7 @@ export async function publishToWechatDraft(
     publishOptions: PublishOptions = {},
 ): Promise<WechatPublishResponse> {
     const { title, content, cover, author, source_url } = articleOptions;
-    const { appId, appSecret, relativePath } = publishOptions;
+    const { appId, appSecret, relativePath, need_open_comment, only_fans_can_comment } = publishOptions;
 
     const { appId: appIdFinal, appSecret: appSecretFinal } = await getAppIdAndSecret(appId, appSecret);
     const accessToken = await wechatPublisher.getAccessTokenWithCache(appIdFinal, appSecretFinal);
@@ -159,6 +161,8 @@ export async function publishToWechatDraft(
         thumb_media_id: thumbMediaId,
         author,
         content_source_url: source_url,
+        need_open_comment,
+        only_fans_can_comment,
     });
 
     if (data.media_id) {
@@ -211,7 +215,7 @@ export async function publishImageTextToWechatDraft(
     publishOptions: PublishOptions = {},
 ): Promise<WechatPublishResponse> {
     const { title, content, images, cover, author } = articleOptions;
-    const { appId, appSecret, relativePath } = publishOptions;
+    const { appId, appSecret, relativePath, need_open_comment, only_fans_can_comment } = publishOptions;
 
     const { appId: appIdFinal, appSecret: appSecretFinal } = await getAppIdAndSecret(appId, appSecret);
 
@@ -254,6 +258,8 @@ export async function publishImageTextToWechatDraft(
         author,
         article_type: "newspic",
         image_info: imageInfoList,
+        need_open_comment,
+        only_fans_can_comment,
     });
 
     if (data.media_id) {

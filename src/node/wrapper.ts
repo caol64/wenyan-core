@@ -53,6 +53,8 @@ export async function renderAndPublish(
         {
             appId: options.appId,
             relativePath: absoluteDirPath,
+            need_open_comment: options.need_open_comment,
+            only_fans_can_comment: options.only_fans_can_comment,
         },
     );
 
