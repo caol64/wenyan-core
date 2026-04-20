@@ -3,11 +3,11 @@ import { fileFromPath } from "formdata-node/file-from-path";
 import path from "node:path";
 import { stat } from "node:fs/promises";
 import { RuntimeEnv } from "./runtimeEnv.js";
-import { WechatPublishResponse, WechatUploadResponse } from "../wechat.js";
+import { WechatPublishResponse, WechatUploadResponse, type ImageInfo } from "../wechat.js";
 import { nodeHttpAdapter } from "./nodeHttpAdapter.js";
 import { NodeTokenStorageAdapter } from "./tokenStoreNodeAdapter.js";
 import { NodeUploadCacheAdapter } from "./uploadCacheNodeAdapter.js";
-import { ArticleOptions, WechatPublisher } from "../publish.js";
+import { ArticleOptions, ImageTextArticleOptions, WechatPublisher } from "../publish.js";
 import { CredentialStore } from "../credentialStore.js";
 import { NodeCredentialStorageAdapter } from "./credentialStoreNodeAdapter.js";
 
@@ -204,4 +204,61 @@ async function getAppIdAndSecret(
     }
 
     throw new Error(`未能找到 AppID 为 "${appId}" 的公众号凭据，请检查配置文件。`);
+}
+
+export async function publishImageTextToWechatDraft(
+    articleOptions: ImageTextArticleOptions,
+    publishOptions: PublishOptions = {},
+): Promise<WechatPublishResponse> {
+    const { title, content, images, cover, author } = articleOptions;
+    const { appId, appSecret, relativePath } = publishOptions;
+
+    const { appId: appIdFinal, appSecret: appSecretFinal } = await getAppIdAndSecret(appId, appSecret);
+
+    if (!images || images.length === 0) {
+        throw new Error("图片消息至少需要一张图片");
+    }
+
+    const accessToken = await wechatPublisher.getAccessTokenWithCache(appIdFinal, appSecretFinal);
+
+    // 上传所有图片获取 media_id
+    const imageInfoList: ImageInfo[] = [];
+    for (const img of images) {
+        const resp = await uploadImage(img, accessToken, undefined, relativePath);
+        imageInfoList.push({ image_media_id: resp.media_id });
+    }
+
+    // 封面图：优先使用 cover，否则用第一张图（已经上传过了）
+    let thumbMediaId = "";
+    if (cover) {
+        const cachedThumbMediaId = mediaIdMapping.get(cover);
+        if (cachedThumbMediaId) {
+            thumbMediaId = cachedThumbMediaId;
+        } else {
+            const resp = await uploadImage(cover, accessToken, "cover.jpg", relativePath);
+            thumbMediaId = resp.media_id;
+        }
+    } else {
+        thumbMediaId = imageInfoList[0].image_media_id;
+    }
+
+    if (!thumbMediaId) {
+        throw new Error("未能获取封面图的 media_id");
+    }
+
+    const data = await wechatPublisher.publishToDraft(
+        accessToken, {
+        title,
+        content,
+        thumb_media_id: thumbMediaId,
+        author,
+        article_type: "newspic",
+        image_info: imageInfoList,
+    });
+
+    if (data.media_id) {
+        return data;
+    }
+
+    throw new Error(`上传图片消息到公众号草稿失败: ${JSON.stringify(data)}`);
 }

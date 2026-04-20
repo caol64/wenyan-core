@@ -17,6 +17,10 @@ export interface ArticleOptions {
     source_url?: string;
 }
 
+export interface ImageTextArticleOptions extends ArticleOptions {
+    images: string[];
+}
+
 export class WechatPublisher {
     private tokenStore: TokenStore | undefined;
     private uploadCacheStore: UploadCacheStore | undefined;
