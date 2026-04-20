@@ -6,7 +6,6 @@ import {
     WechatPublishOptions,
     WechatPublishResponse,
     WechatUploadResponse,
-    type ImageInfo,
     type WechatClient,
 } from "./wechat.js";
 
@@ -18,11 +17,8 @@ export interface ArticleOptions {
     source_url?: string;
 }
 
-export interface ImageTextArticleOptions {
-    content: string;
+export interface ImageTextArticleOptions extends ArticleOptions {
     images: string[];
-    cover?: string;
-    author?: string;
 }
 
 export class WechatPublisher {
@@ -93,24 +89,6 @@ export class WechatPublisher {
         if (this.uploadCacheStore) {
             await this.uploadCacheStore.clear();
         }
-    }
-
-    public async publishImageTextToDraft(
-        accessToken: string,
-        title: string,
-        content: string,
-        thumbMediaId: string,
-        imageInfo: ImageInfo[],
-        author?: string,
-    ): Promise<WechatPublishResponse> {
-        return await this.publishArticle(accessToken, {
-            title,
-            content,
-            thumb_media_id: thumbMediaId,
-            author,
-            article_type: "newspic",
-            image_info: imageInfo,
-        });
     }
 }
 

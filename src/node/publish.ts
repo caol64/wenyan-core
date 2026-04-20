@@ -210,7 +210,7 @@ export async function publishImageTextToWechatDraft(
     articleOptions: ImageTextArticleOptions,
     publishOptions: PublishOptions = {},
 ): Promise<WechatPublishResponse> {
-    const { content, images, cover, author } = articleOptions;
+    const { title, content, images, cover, author } = articleOptions;
     const { appId, appSecret, relativePath } = publishOptions;
 
     const { appId: appIdFinal, appSecret: appSecretFinal } = await getAppIdAndSecret(appId, appSecret);
@@ -246,14 +246,15 @@ export async function publishImageTextToWechatDraft(
         throw new Error("未能获取封面图的 media_id");
     }
 
-    const data = await wechatPublisher.publishImageTextToDraft(
-        accessToken,
-        "",
+    const data = await wechatPublisher.publishToDraft(
+        accessToken, {
+        title,
         content,
-        thumbMediaId,
-        imageInfoList,
+        thumb_media_id: thumbMediaId,
         author,
-    );
+        article_type: "newspic",
+        image_info: imageInfoList,
+    });
 
     if (data.media_id) {
         return data;
