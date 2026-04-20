@@ -3,7 +3,9 @@ import {
     getServerUrl,
     healthCheck,
     requestServerPublish,
+    requestServerPublishImage,
     uploadCover,
+    uploadImageFile,
     uploadLocalImages,
     uploadStyledContent,
     verifyAuth,
@@ -101,6 +103,49 @@ export async function renderAndPublishToServer(
     // 5. 此时服务器上有渲染后的 HTML 文件、发布元数据、图片，调用服务端接口发布文章
     // ==========================================
     return await requestServerPublish(mdFileId, serverUrl, headers, options);
+}
+
+export async function publishImageTextToServer(
+    images: string[],
+    options: { server: string; apiKey?: string; clientVersion?: string; appId?: string; content?: string; author?: string; cover?: string },
+): Promise<string> {
+    const serverUrl = options.server.replace(/\/$/, "");
+    const headers: Record<string, string> = {};
+    if (options.clientVersion) headers["x-client-version"] = options.clientVersion;
+    if (options.apiKey) headers["x-api-key"] = options.apiKey;
+
+    // ==========================================
+    // 0. 连通性与鉴权测试
+    // ==========================================
+    await healthCheck(serverUrl);
+    await verifyAuth(serverUrl, headers);
+
+    // ==========================================
+    // 1. 上传所有图片文件到服务器
+    // ==========================================
+    const imageFileIds: string[] = [];
+    for (const imagePath of images) {
+        const fileId = await uploadImageFile(imagePath, serverUrl, headers);
+        imageFileIds.push(fileId);
+    }
+
+    // ==========================================
+    // 2. 处理封面图（如果指定且为本地文件）
+    // ==========================================
+    let coverFileId: string | undefined;
+    if (options.cover) {
+        coverFileId = await uploadImageFile(options.cover, serverUrl, headers);
+    }
+
+    // ==========================================
+    // 3. 请求服务器发布小绿书
+    // ==========================================
+    return await requestServerPublishImage(imageFileIds, serverUrl, headers, {
+        appId: options.appId,
+        coverFileId,
+        content: options.content,
+        author: options.author,
+    });
 }
 
 export * from "./configStore.js";

@@ -230,3 +230,63 @@ export async function uploadCover(
     }
     return cover;
 }
+
+/**
+ * 上传本地图片文件到服务器，返回 fileId
+ */
+export async function uploadImageFile(
+    imagePath: string,
+    serverUrl: string,
+    headers: Record<string, string>,
+): Promise<string> {
+    const fileBuffer = await readBinaryFile(imagePath);
+    const filename = path.basename(imagePath);
+    const ext = path.extname(filename).toLowerCase();
+    const mimeTypes: Record<string, string> = {
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+        ".svg": "image/svg+xml",
+    };
+    const mimeType = mimeTypes[ext] || "application/octet-stream";
+    const uploadData: any = await chunkedUpload(serverUrl, headers, fileBuffer, filename, mimeType);
+    if (!uploadData.success) {
+        throw new Error(`上传图片失败 (${filename}): ${uploadData.error || uploadData.desc}`);
+    }
+    return uploadData.data.fileId;
+}
+
+/**
+ * 请求服务器发布小绿书（图片消息）
+ */
+export async function requestServerPublishImage(
+    imageFileIds: string[],
+    serverUrl: string,
+    headers: Record<string, string>,
+    options: { appId?: string; coverFileId?: string; content?: string; author?: string },
+): Promise<string> {
+    const publishRes = await fetch(`${serverUrl}/publish-image`, {
+        method: "POST",
+        headers: {
+            ...headers,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            imageFileIds,
+            coverFileId: options.coverFileId,
+            content: options.content,
+            author: options.author,
+            appId: options.appId,
+        }),
+    });
+
+    const publishData: any = await publishRes.json();
+
+    if (!publishRes.ok || publishData.code === -1) {
+        throw new Error(`Remote Publish Failed: ${publishData.desc || publishRes.statusText}`);
+    }
+
+    return publishData.media_id;
+}
