@@ -25,6 +25,8 @@ export interface WechatPublishOptions {
     content_source_url?: string;
     article_type?: "news" | "newspic";
     image_info?: ImageInfo[];
+    need_open_comment?: 0 | 1;
+    only_fans_can_comment?: 0 | 1;
 }
 
 export interface WechatErrorResponse {

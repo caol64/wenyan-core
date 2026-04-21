@@ -52,6 +52,8 @@ export async function renderStyledContent(content: string, options: ApplyStylesO
         description: preHandlerContent.description,
         author: preHandlerContent.author,
         source_url: preHandlerContent.source_url,
+        need_open_comment: preHandlerContent.need_open_comment,
+        only_fans_can_comment: preHandlerContent.only_fans_can_comment,
     };
 }
 

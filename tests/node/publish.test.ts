@@ -59,7 +59,7 @@ describe("publish.ts tests", () => {
         vi.clearAllMocks();
         // Clear wechatPublisher cache between tests
         await wechatPublisher.clearCache();
-        
+
         process.env.WECHAT_APP_ID = "mock_app_id";
         process.env.WECHAT_APP_SECRET = "mock_app_secret";
 
@@ -80,7 +80,7 @@ describe("publish.ts tests", () => {
             if (url.includes("example.com")) {
                 return Promise.resolve({
                     ok: true,
-                    body: {}, 
+                    body: {},
                     arrayBuffer: () => Promise.resolve(new ArrayBuffer(10)),
                     headers: {
                         get: (name: string) => name === "content-type" ? "image/png" : null
@@ -108,6 +108,22 @@ describe("publish.ts tests", () => {
         await expect(
             publishToDraft("失败测试", "<p>正文</p>", imgPath)
         ).rejects.toThrow(/41005: mock error/);
+    });
+
+    it("should pass comment options to publishArticle", async () => {
+        const imgPath = path.join(__dirname, "../wenyan.jpg");
+        await publishToDraft("评论测试", "<p>正文</p>", imgPath, {
+            need_open_comment: true,
+            only_fans_can_comment: true,
+        } as any);
+
+        expect(mockWechatClient.publishArticle).toHaveBeenCalledWith(
+            "mock_token",
+            expect.objectContaining({
+                need_open_comment: true,
+                only_fans_can_comment: true,
+            }),
+        );
     });
 
     it("should use first image in content if cover is not provided", async () => {

@@ -6,6 +6,7 @@ import {
     getHeaders,
     healthCheck,
     verifyAuth,
+    requestServerPublish,
     uploadStyledContent,
     uploadLocalImages,
     uploadCover,
@@ -209,6 +210,41 @@ describe("clientPublish.ts tests", () => {
             );
 
             mockHttpRequest.mockRestore();
+        });
+    });
+
+    describe("requestServerPublish", () => {
+        it("should include comment options in publish request body", async () => {
+            const mockFetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve({ media_id: "remote-media-id" }),
+            });
+            global.fetch = mockFetch;
+
+            const mediaId = await requestServerPublish("file-123", "http://localhost:3000", { "x-api-key": "test-key" }, {
+                theme: "default",
+                highlight: "solarized-light",
+                macStyle: true,
+                footnote: true,
+            } as any);
+
+            expect(mediaId).toBe("remote-media-id");
+            expect(mockFetch).toHaveBeenCalledWith(
+                "http://localhost:3000/publish",
+                expect.objectContaining({
+                    method: "POST",
+                    headers: expect.objectContaining({
+                        "x-api-key": "test-key",
+                        "Content-Type": "application/json",
+                    }),
+                    body: expect.any(String),
+                }),
+            );
+
+            const requestInit = mockFetch.mock.calls[0][1];
+            expect(JSON.parse(String(requestInit.body))).toMatchObject({
+                fileId: "file-123",
+            });
         });
     });
 

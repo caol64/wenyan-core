@@ -36,6 +36,8 @@ export interface ArticleOptions {
   cover?: string;
   author?: string;
   source_url?: string;
+  need_open_comment?: boolean;
+  only_fans_can_comment?: boolean;
 }
 ```
 
@@ -46,6 +48,8 @@ export interface ArticleOptions {
 | cover        | 文章封面       |
 | author       | 作者       |
 | source_url   | 原文地址       |
+| need_open_comment   | 是否打开评论       |
+| only_fans_can_comment   | 是否粉丝才可评论       |
 
 ### PublishOptions
 

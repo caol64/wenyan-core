@@ -15,6 +15,8 @@ export interface ArticleOptions {
     cover?: string;
     author?: string;
     source_url?: string;
+    need_open_comment?: boolean;
+    only_fans_can_comment?: boolean;
 }
 
 export interface ImageTextArticleOptions extends ArticleOptions {
