@@ -226,8 +226,6 @@ describe("clientPublish.ts tests", () => {
                 highlight: "solarized-light",
                 macStyle: true,
                 footnote: true,
-                need_open_comment: 1,
-                only_fans_can_comment: 1,
             } as any);
 
             expect(mediaId).toBe("remote-media-id");
@@ -246,8 +244,6 @@ describe("clientPublish.ts tests", () => {
             const requestInit = mockFetch.mock.calls[0][1];
             expect(JSON.parse(String(requestInit.body))).toMatchObject({
                 fileId: "file-123",
-                need_open_comment: 1,
-                only_fans_can_comment: 1,
             });
         });
     });

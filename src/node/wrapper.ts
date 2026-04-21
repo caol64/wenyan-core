@@ -49,12 +49,12 @@ export async function renderAndPublish(
             cover: gzhContent.cover,
             author: gzhContent.author,
             source_url: gzhContent.source_url,
+            need_open_comment: gzhContent.need_open_comment,
+            only_fans_can_comment: gzhContent.only_fans_can_comment,
         },
         {
             appId: options.appId,
             relativePath: absoluteDirPath,
-            need_open_comment: options.need_open_comment,
-            only_fans_can_comment: options.only_fans_can_comment,
         },
     );
 

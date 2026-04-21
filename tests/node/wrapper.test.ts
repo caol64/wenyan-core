@@ -55,6 +55,10 @@ describe("wrapper.ts tests", () => {
         expect(gzhContent).toHaveProperty("title");
         expect(gzhContent).toHaveProperty("cover");
         expect(gzhContent).toHaveProperty("content");
+        expect(gzhContent).toHaveProperty("author");
+        expect(gzhContent).toHaveProperty("source_url");
+        expect(gzhContent).toHaveProperty("need_open_comment");
+        expect(gzhContent).toHaveProperty("only_fans_can_comment");
         expect(gzhContent.content).toContain("</h2>");
         expect(gzhContent.content).toContain("linear-gradient");
     });
@@ -80,8 +84,6 @@ describe("wrapper.ts tests", () => {
             macStyle: true,
             footnote: true,
             appId: "wx-app-id",
-            need_open_comment: 1,
-            only_fans_can_comment: 1,
         }, vi.fn());
 
         expect(mediaId).toBe("wrapper-media-id");
@@ -126,8 +128,8 @@ describe("wrapper.ts tests", () => {
             macStyle: true,
             footnote: true,
             appId: "wx-app-id",
-            need_open_comment: 1,
-            only_fans_can_comment: 1,
+            need_open_comment: true,
+            only_fans_can_comment: true,
         }, vi.fn());
 
         expect(mediaId).toBe("remote-media-id");

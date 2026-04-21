@@ -9,8 +9,6 @@ export interface RenderOptions {
 
 export interface PublishOptions extends RenderOptions {
     appId?: string;
-    need_open_comment?: 0 | 1;
-    only_fans_can_comment?: 0 | 1;
 }
 
 export interface ClientPublishOptions extends PublishOptions {
@@ -31,6 +29,8 @@ export interface StyledContent {
     description?: string;
     author?: string;
     source_url?: string;
+    need_open_comment?: boolean;
+    only_fans_can_comment?: boolean;
 }
 
 export type GetInputContentFn = (
