@@ -1,11 +1,22 @@
 import fm from "front-matter";
-import { StyledContent } from "../../node/wrapper.js";
 
-export async function handleFrontMatter(markdown: string): Promise<StyledContent> {
+export interface FrontMatterResult {
+    content: string;
+    title?: string;
+    description?: string;
+    cover?: string;
+    author?: string;
+    source_url?: string;
+    need_open_comment?: boolean;
+    only_fans_can_comment?: boolean;
+    image_list?: string[];
+}
+
+export async function handleFrontMatter(markdown: string): Promise<FrontMatterResult> {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     const { attributes, body } = fm(markdown);
-    const result: StyledContent = { content: body || "" };
+    const result: FrontMatterResult = { content: body || "" };
     let head = "";
     const { title, description, cover, author, source_url, need_open_comment, only_fans_can_comment, image_list } = attributes;
     if (title) {

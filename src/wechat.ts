@@ -12,9 +12,13 @@ export interface ImageCropPercent {
     y2: number;
 }
 
-export interface ImageInfo {
+export interface ImageListItem {
     image_media_id: string;
     crop_percent_list?: ImageCropPercent[];
+}
+
+export interface ImageInfo {
+    image_list: ImageListItem[];
 }
 
 export interface WechatPublishOptions {
@@ -24,7 +28,7 @@ export interface WechatPublishOptions {
     thumb_media_id: string;
     content_source_url?: string;
     article_type?: "news" | "newspic";
-    image_info?: ImageInfo[];
+    image_info?: ImageInfo;
     need_open_comment?: 0 | 1;
     only_fans_can_comment?: 0 | 1;
 }

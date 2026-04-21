@@ -32,8 +32,9 @@ describe("nodeHttpAdapter.ts tests", () => {
 
             const result = nodeHttpAdapter.createMultipart(field, file, filename);
 
+            expect(result.headers).toBeDefined();
             expect(result.headers).toHaveProperty("content-type");
-            expect(result.headers["content-type"]).toContain("multipart/form-data");
+            expect(result.headers!["content-type"]).toContain("multipart/form-data");
         });
 
         it("should create readable stream body", () => {

@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import http from "node:http";
-import https from "node:https";
 import {
     getServerUrl,
     getHeaders,

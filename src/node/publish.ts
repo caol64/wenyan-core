@@ -3,7 +3,7 @@ import { fileFromPath } from "formdata-node/file-from-path";
 import path from "node:path";
 import { stat } from "node:fs/promises";
 import { RuntimeEnv } from "./runtimeEnv.js";
-import { WechatPublishResponse, WechatUploadResponse, type ImageInfo } from "../wechat.js";
+import type { WechatPublishResponse, WechatUploadResponse, ImageListItem } from "../wechat.js";
 import { nodeHttpAdapter } from "./nodeHttpAdapter.js";
 import { NodeTokenStorageAdapter } from "./tokenStoreNodeAdapter.js";
 import { NodeUploadCacheAdapter } from "./uploadCacheNodeAdapter.js";
@@ -227,7 +227,7 @@ export async function publishImageTextToWechatDraft(
     const accessToken = await wechatPublisher.getAccessTokenWithCache(appIdFinal, appSecretFinal);
 
     // 上传所有图片获取 media_id
-    const imageInfoList: ImageInfo[] = [];
+    const imageInfoList: ImageListItem[] = [];
     for (const img of images) {
         const resp = await uploadImage(img, accessToken, undefined, relativePath);
         imageInfoList.push({ image_media_id: resp.media_id });
@@ -258,7 +258,7 @@ export async function publishImageTextToWechatDraft(
         thumb_media_id: thumbMediaId,
         author,
         article_type: "newspic",
-        image_info: imageInfoList,
+        image_info: { image_list: imageInfoList },
         need_open_comment: need_open_comment ? 1 : 0,
         only_fans_can_comment: only_fans_can_comment ? 1 : 0,
     });

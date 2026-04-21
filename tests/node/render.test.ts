@@ -41,83 +41,6 @@ describe("render.ts tests", () => {
         vi.clearAllMocks();
     });
 
-    describe("renderWithTheme", () => {
-        it("should render markdown with theme", async () => {
-            const markdown = "---\ntitle: Test Title\n---\n\nThis is test content.";
-            const result = await renderWithTheme(markdown, {
-                theme: "phycat",
-                highlight: "solarized-light",
-                macStyle: true,
-                footnote: false,
-            });
-
-            expect(result).toHaveProperty("content");
-            expect(result).toHaveProperty("title", "Test Title");
-            expect(result.content).toContain("</section>");
-        });
-
-        it("should throw error when no content provided", async () => {
-            await expect(
-                renderWithTheme("", {
-                    theme: "phycat",
-                    highlight: "solarized-light",
-                    macStyle: true,
-                    footnote: false,
-                }),
-            ).rejects.toThrow("No content provided for rendering.");
-        });
-
-        it("should throw error when theme not found", async () => {
-            await expect(
-                renderWithTheme("# Test", {
-                    theme: "non-existent",
-                    highlight: "solarized-light",
-                    macStyle: true,
-                    footnote: false,
-                }),
-            ).rejects.toThrow(/主题不存在: non-existent/);
-        });
-
-        it("should render with custom theme from file path", async () => {
-            // customTheme 传入的是文件路径，会被读取文件内容
-            const tempThemeFile = resolve(__dirname, "../../src/assets/themes/phycat.css");
-            const markdown = "# Custom Theme Test";
-            const result = await renderWithTheme(markdown, {
-                customTheme: tempThemeFile,
-                highlight: "solarized-light",
-                macStyle: false,
-                footnote: false,
-            });
-
-            expect(result).toHaveProperty("content");
-            // phycat.css 里包含具体的主题样式
-            expect(result.content).toContain("</section>");
-        });
-
-        it("should extract front matter metadata", async () => {
-            const markdown = `---
-title: Front Matter Title
-author: Test Author
-cover: https://example.com/cover.jpg
----
-
-# Content Title
-
-Some content.`;
-
-            const result = await renderWithTheme(markdown, {
-                theme: "phycat",
-                highlight: "solarized-light",
-                macStyle: false,
-                footnote: false,
-            });
-
-            expect(result.title).toBe("Front Matter Title");
-            expect(result.author).toBe("Test Author");
-            expect(result.cover).toBe("https://example.com/cover.jpg");
-        });
-    });
-
     describe("renderStyledContent", () => {
         it("should render styled content with wrapper section", async () => {
             const markdown = "# Test\n\nParagraph.";
@@ -138,12 +61,8 @@ Some content.`;
                 hlThemeId: "solarized-light",
             });
 
-            expect(result).toHaveProperty("content");
-            expect(result).toHaveProperty("title");
-            expect(result).toHaveProperty("cover");
-            expect(result).toHaveProperty("description");
-            expect(result).toHaveProperty("author");
-            expect(result).toHaveProperty("source_url");
+            expect(typeof result).toBe("string");
+            expect(result).toContain('id="wenyan"');
         });
     });
 

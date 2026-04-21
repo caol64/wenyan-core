@@ -40,7 +40,7 @@ Content here`;
 
             expect(result.title).toBe("Test Post");
             expect(result.description).toBe("A test post");
-            expect(result.body).toContain("Content here");
+            expect(result.content).toContain("Content here");
         });
 
         it("should handle markdown without front matter", async () => {
@@ -49,7 +49,7 @@ Content here`;
             const result = await instance.handleFrontMatter(markdown);
 
             expect(result.title).toBeUndefined();
-            expect(result.body).toBe(markdown);
+            expect(result.content).toBe(markdown);
         });
     });
 

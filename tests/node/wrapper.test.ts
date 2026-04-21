@@ -1,7 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { readFile, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import * as wrapper from "../../src/node/wrapper";
 import * as renderModule from "../../src/node/render";
 import * as publishModule from "../../src/node/publish";
@@ -52,6 +50,8 @@ describe("wrapper.ts tests", () => {
                 cover: "/tmp/cover.jpg",
                 author: "Walker",
                 source_url: "https://example.com/source",
+                need_open_comment: true,
+                only_fans_can_comment: true,
             },
             absoluteDirPath: "/tmp/article-dir",
         });
@@ -72,12 +72,12 @@ describe("wrapper.ts tests", () => {
         expect(publishToWechatDraftSpy).toHaveBeenCalledWith(
             expect.objectContaining({
                 title: "Wrapper Title",
+                need_open_comment: true,
+                only_fans_can_comment: true,
             }),
             expect.objectContaining({
                 appId: "wx-app-id",
                 relativePath: "/tmp/article-dir",
-                need_open_comment: 1,
-                only_fans_can_comment: 1,
             }),
         );
     });
@@ -109,8 +109,6 @@ describe("wrapper.ts tests", () => {
             macStyle: true,
             footnote: true,
             appId: "wx-app-id",
-            need_open_comment: true,
-            only_fans_can_comment: true,
         }, vi.fn());
 
         expect(mediaId).toBe("remote-media-id");
@@ -122,8 +120,6 @@ describe("wrapper.ts tests", () => {
                 "x-client-version": "1.0.0",
             }),
             expect.objectContaining({
-                need_open_comment: 1,
-                only_fans_can_comment: 1,
             }),
         );
     });

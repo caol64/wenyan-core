@@ -52,7 +52,7 @@ vi.mock("../../src/node/tokenStoreNodeAdapter.js", () => {
 });
 
 // 在 mock 之后导入
-import { publishToDraft, wechatPublisher } from "../../src/node/publish.js";
+import { publishToDraft, publishToWechatDraft, wechatPublisher } from "../../src/node/publish.js";
 
 describe("publish.ts tests", () => {
     beforeEach(async () => {
@@ -112,16 +112,19 @@ describe("publish.ts tests", () => {
 
     it("should pass comment options to publishArticle", async () => {
         const imgPath = path.join(__dirname, "../wenyan.jpg");
-        await publishToDraft("评论测试", "<p>正文</p>", imgPath, {
+        await publishToWechatDraft({
+            title: "评论测试",
+            content: "<p>正文</p>",
+            cover: imgPath,
             need_open_comment: true,
             only_fans_can_comment: true,
-        } as any);
+        });
 
         expect(mockWechatClient.publishArticle).toHaveBeenCalledWith(
             "mock_token",
             expect.objectContaining({
-                need_open_comment: true,
-                only_fans_can_comment: true,
+                need_open_comment: 1,
+                only_fans_can_comment: 1,
             }),
         );
     });
