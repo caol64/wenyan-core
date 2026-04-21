@@ -46,4 +46,23 @@ describe("createWenyanCore", async () => {
         expect(result).toContain('style="x:100px"');
 
     });
+
+    it("should render image with spaces in URL", async () => {
+        const md = "![](../0.asset/media/Pasted image 20250712230833.png)";
+        const result = await instance.renderMarkdown(md);
+        expect(result).toContain('src="../0.asset/media/Pasted image 20250712230833.png"');
+    });
+
+    it("should render image with spaces and alt text", async () => {
+        const md = "![diagram](D:/Notes/media/my image.png)";
+        const result = await instance.renderMarkdown(md);
+        expect(result).toContain('src="D:/Notes/media/my image.png"');
+        expect(result).toContain('alt="diagram"');
+    });
+
+    it("should not break image URLs without spaces", async () => {
+        const md = "![](../0.asset/media/autosar-arch-overview.png)";
+        const result = await instance.renderMarkdown(md);
+        expect(result).toContain('src="../0.asset/media/autosar-arch-overview.png"');
+    });
 });

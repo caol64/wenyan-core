@@ -112,8 +112,19 @@ export function createMarkedClient() {
          */
         async parse(markdown: string): Promise<string> {
             await configure();
-            // marked.parse 返回可能是 string | Promise<string>，这里强制转为 Promise 处理
-            return md.parse(markdown) as Promise<string>;
+            // Preprocess: wrap image URLs containing spaces in angle brackets
+            // so marked doesn't truncate them per CommonMark spec.
+            // Transforms ![alt](path with spaces.png) into ![alt](<path with spaces.png>)
+            const processed = markdown.replace(
+                /(!\[[^\]]*\]\()([^)\n"']+)(\))/g,
+                (_match, prefix, url, suffix) => {
+                    if (url.includes(' ')) {
+                        return `${prefix}<${url}>${suffix}`;
+                    }
+                    return _match;
+                }
+            );
+            return md.parse(processed) as Promise<string>;
         },
     };
 }
