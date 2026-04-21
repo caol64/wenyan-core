@@ -1,7 +1,7 @@
 import { monospace, resolveCssContent, sansSerif } from "./utils.js";
 import { registerBuiltInHlThemes, getHlTheme, getAllHlThemes } from "./theme/hlThemeRegistry.js";
 import { addFootnotes } from "./renderer/footnotesRender.js";
-import { FrontMatterResult, handleFrontMatter } from "./parser/frontMatterParser.js";
+import { handleFrontMatter } from "./parser/frontMatterParser.js";
 import { renderHighlightTheme } from "./renderer/highlightApplyRender.js";
 import { renderMacStyle } from "./renderer/macStyleRender.js";
 import { createMarkedClient } from "./parser/markedParser.js";
@@ -12,6 +12,7 @@ import { registerAllBuiltInThemes, getTheme, getAllGzhThemes } from "./theme/the
 import { applyPseudoElements } from "./renderer/pseudoApplyRender.js";
 import { createCssModifier, CssUpdateMap } from "./parser/cssParser.js";
 import { registerBuiltInMacStyle } from "./theme/macStyleRegistry.js";
+import { StyledContent } from "../node/types.js";
 
 export interface WenyanOptions {
     isConvertMathJax?: boolean;
@@ -35,7 +36,7 @@ export async function createWenyanCore(options: WenyanOptions = {}) {
     registerBuiltInHlThemes();
     registerBuiltInMacStyle();
     return {
-        async handleFrontMatter(markdown: string): Promise<FrontMatterResult> {
+        async handleFrontMatter(markdown: string): Promise<StyledContent> {
             return await handleFrontMatter(markdown);
         },
         async renderMarkdown(markdown: string): Promise<string> {

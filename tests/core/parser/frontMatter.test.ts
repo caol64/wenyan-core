@@ -7,6 +7,16 @@ describe("handleFrontMatter", () => {
 title: My Awesome Post
 description: This is a short summary.
 cover: https://example.com/image.png
+author: author_name
+source_url: http://source.com
+need_open_comment: true
+only_fans_can_comment: true
+image_list:
+  - wenyan1.jpg
+  - wenyan2.jpg
+  - wenyan3.jpg
+  - wenyan4.jpg
+  - wenyan5.jpg
 ---
 # Main Content
 Here is the rest of the post.`;
@@ -18,7 +28,18 @@ Here is the rest of the post.`;
             description: "This is a short summary.",
             cover: "https://example.com/image.png",
             // 验证 description 被添加到了头部，且有换行
-            body: "> This is a short summary.\n\n# Main Content\nHere is the rest of the post.",
+            content: "> This is a short summary.\n\n# Main Content\nHere is the rest of the post.",
+            author: "author_name",
+            source_url: "http://source.com",
+            need_open_comment: true,
+            only_fans_can_comment: true,
+            image_list: [
+                "wenyan1.jpg",
+                "wenyan2.jpg",
+                "wenyan3.jpg",
+                "wenyan4.jpg",
+                "wenyan5.jpg",
+            ],
         });
     });
 
@@ -33,22 +54,22 @@ Just some text.`;
         expect(result.title).toBe("No Description Post");
         expect(result.description).toBeUndefined();
         expect(result.cover).toBeUndefined();
-        // 验证没有 description 时，body 保持原样，没有多余的换行或引用符号
-        expect(result.body).toBe("Just some text.");
+        // 验证没有 description 时，content 保持原样，没有多余的换行或引用符号
+        expect(result.content).toBe("Just some text.");
     });
 
-    it("should handle content with only front matter (empty body)", async () => {
+    it("should handle content with only front matter (empty content)", async () => {
         const markdown = `---
-title: Empty Body
+title: Empty Content
 description: Summary only
 ---`;
 
         const result = await handleFrontMatter(markdown);
 
-        expect(result.title).toBe("Empty Body");
+        expect(result.title).toBe("Empty Content");
         expect(result.description).toBe("Summary only");
-        // 验证 body 仅包含生成的引用块
-        expect(result.body).toBe("> Summary only\n\n");
+        // 验证 content 仅包含生成的引用块
+        expect(result.content).toBe("> Summary only\n\n");
     });
 
     it("should handle plain markdown without front matter", async () => {
@@ -60,7 +81,7 @@ description: Summary only
         expect(result.description).toBeUndefined();
         expect(result.cover).toBeUndefined();
         // 验证原始内容被完整保留
-        expect(result.body).toBe(markdown);
+        expect(result.content).toBe(markdown);
     });
 
     it("should handle extra attributes gracefully (ignore them)", async () => {
@@ -76,14 +97,14 @@ Content`;
         expect(result.title).toBe("Test");
         expect((result as any).date).toBeUndefined();
         expect((result as any).tags).toBeUndefined();
-        expect(result.body).toBe("Content");
+        expect(result.content).toBe("Content");
     });
 
     it("should handle empty string input", async () => {
         const result = await handleFrontMatter("");
 
         expect(result).toEqual({
-            body: "",
+            content: "",
         });
     });
 });

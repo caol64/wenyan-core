@@ -21,7 +21,6 @@ npm install jsdom
 
 ```ts
 renderStyledContent()
-getGzhContent() // 兼容旧版本
 ```
 
 ## StyledContent 数据结构
@@ -86,34 +85,6 @@ console.log(result.title);
 > [!NOTE]
 > 
 > Node 版本与浏览器版本使用 **完全一致的 ApplyStylesOptions**
-
-## 四、getGzhContent（兼容旧版本）
-
-```ts
-async function getGzhContent(
-  content: string,
-  themeId: string,
-  hlThemeId: string,
-  isMacStyle?: boolean,
-  isAddFootnote?: boolean
-): Promise<StyledContent>
-```
-
-### 说明
-
-* 这是旧版 API 的兼容封装
-* 内部直接调用 `renderStyledContent`
-* **不推荐新项目使用**
-
-### 示例
-
-```ts
-const result = await getGzhContent(
-  markdown,
-  "default",
-  "solarized-light"
-);
-```
 
 ## 五、设计说明（Node 渲染）
 

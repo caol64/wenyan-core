@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderWithTheme, renderStyledContent, prepareRenderContext } from "../../src/node/render.js";
+import { renderStyledContent, prepareRenderContext } from "../../src/node/render.js";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Theme, HlTheme, registerHlTheme, registerTheme } from "../../src/core";
@@ -128,8 +128,7 @@ Some content.`;
                 isAddFootnote: false,
             });
 
-            expect(result).toHaveProperty("content");
-            expect(result.content).toContain('id="wenyan"');
+            expect(result).toContain('id="wenyan"');
         });
 
         it("should return default StyledContent structure", async () => {

@@ -1,12 +1,12 @@
 import { ApplyStylesOptions, createWenyanCore } from "../core/index.js";
 import { configStore } from "./configStore.js";
-import { GetInputContentFn, RenderContext, RenderOptions, StyledContent } from "./types.js";
+import { GetInputContentFn, RenderContext, RenderOptions } from "./types.js";
 import { getNormalizeFilePath, readFileContent } from "./utils.js";
 import { JSDOM } from "jsdom";
 
 const wenyanCoreInstance = await createWenyanCore();
 
-export async function renderWithTheme(markdownContent: string, options: RenderOptions): Promise<StyledContent> {
+async function renderWithTheme(markdownContent: string, options: RenderOptions): Promise<string> {
     if (!markdownContent) {
         throw new Error("No content provided for rendering.");
     }
@@ -38,23 +38,13 @@ export async function renderWithTheme(markdownContent: string, options: RenderOp
     return gzhContent;
 }
 
-export async function renderStyledContent(content: string, options: ApplyStylesOptions = {}): Promise<StyledContent> {
-    const preHandlerContent = await wenyanCoreInstance.handleFrontMatter(content);
-    const html = await wenyanCoreInstance.renderMarkdown(preHandlerContent.body);
+export async function renderStyledContent(content: string, options: ApplyStylesOptions = {}): Promise<string> {
+    const html = await wenyanCoreInstance.renderMarkdown(content);
     const dom = new JSDOM(`<body><section id="wenyan">${html}</section></body>`);
     const document = dom.window.document;
     const wenyan = document.getElementById("wenyan");
     const result = await wenyanCoreInstance.applyStylesWithTheme(wenyan!, options);
-    return {
-        content: result,
-        title: preHandlerContent.title,
-        cover: preHandlerContent.cover,
-        description: preHandlerContent.description,
-        author: preHandlerContent.author,
-        source_url: preHandlerContent.source_url,
-        need_open_comment: preHandlerContent.need_open_comment,
-        only_fans_can_comment: preHandlerContent.only_fans_can_comment,
-    };
+    return result;
 }
 
 // --- 处理输入源、文件路径和主题 ---
@@ -64,7 +54,12 @@ export async function prepareRenderContext(
     getInputContent: GetInputContentFn,
 ): Promise<RenderContext> {
     const { content, absoluteDirPath } = await getInputContent(inputContent, options.file);
-    const gzhContent = await renderWithTheme(content, options);
-
-    return { gzhContent, absoluteDirPath };
+    const preHandlerContent = await wenyanCoreInstance.handleFrontMatter(content);
+    if (preHandlerContent.image_list && preHandlerContent.image_list.length > 0) {
+        // 图片文章（小绿书）不需要应用主题样式，直接返回内容
+        return { gzhContent: preHandlerContent, absoluteDirPath };
+    }
+    const styledContent = await renderWithTheme(preHandlerContent.content, options);
+    preHandlerContent.content = styledContent;
+    return { gzhContent: preHandlerContent, absoluteDirPath };
 }

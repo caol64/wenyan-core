@@ -6,3 +6,4 @@ dist/
 *.tsbuildinfo
 pnpm-lock.yaml
 tests/**/__snapshots__/
+.github/copilot-instructions.md

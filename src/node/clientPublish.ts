@@ -277,3 +277,22 @@ export async function uploadCover(
     }
     return cover;
 }
+
+export async function uploadImageList(
+    serverUrl: string,
+    headers: Record<string, string>,
+    imageList?: string[],
+    relativePath?: string,
+): Promise<string[]> {
+    if (imageList && imageList.length > 0) {
+        const uploadPromises = imageList.map(async (image) => {
+            if (needUpload(image)) {
+                const newImageUrl = await uploadLocalImage(image, serverUrl, headers, relativePath);
+                return newImageUrl || image;
+            }
+            return image;
+        });
+        return await Promise.all(uploadPromises);
+    }
+    return imageList || [];
+}

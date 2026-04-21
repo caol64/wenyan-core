@@ -65,7 +65,7 @@ interface WenyanOptions {
 ### handleFrontMatter
 
 ```ts
-handleFrontMatter(markdown: string): Promise<FrontMatterResult>
+handleFrontMatter(markdown: string): Promise<StyledContent>
 ```
 
 解析 Markdown 中的 Front Matter（YAML 头信息）。
@@ -76,7 +76,7 @@ handleFrontMatter(markdown: string): Promise<FrontMatterResult>
 const result = await wenyan.handleFrontMatter(markdown);
 
 console.log(result.title);
-console.log(result.body);
+console.log(result.content);
 console.log(result.cover);
 ```
 
@@ -84,10 +84,15 @@ console.log(result.cover);
 
 ```ts
 interface FrontMatterResult {
-  body: string;
+  content: string;
   title?: string;
   description?: string;
   cover?: string;
+  author?: string;
+  source_url?: string;
+  need_open_comment?: boolean;
+  only_fans_can_comment?: boolean;
+  image_list?: string[];
 }
 ```
 

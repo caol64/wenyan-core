@@ -22,15 +22,19 @@ export interface RenderContext {
     absoluteDirPath: string | undefined;
 }
 
-export interface StyledContent {
-    content: string;
+export interface FrontMatterResult {
     title?: string;
-    cover?: string;
     description?: string;
+    cover?: string;
     author?: string;
     source_url?: string;
     need_open_comment?: boolean;
     only_fans_can_comment?: boolean;
+    image_list?: string[];
+}
+
+export interface StyledContent extends FrontMatterResult {
+    content: string;
 }
 
 export type GetInputContentFn = (

@@ -1,23 +1,13 @@
 import fm from "front-matter";
+import { StyledContent } from "../../node/wrapper.js";
 
-export interface FrontMatterResult {
-    body: string;
-    title?: string;
-    cover?: string;
-    description?: string;
-    author?: string;
-    source_url?: string;
-    need_open_comment?: boolean;
-    only_fans_can_comment?: boolean;
-}
-
-export async function handleFrontMatter(markdown: string): Promise<FrontMatterResult> {
+export async function handleFrontMatter(markdown: string): Promise<StyledContent> {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     const { attributes, body } = fm(markdown);
-    const result: FrontMatterResult = { body: body || "" };
+    const result: StyledContent = { content: body || "" };
     let head = "";
-    const { title, description, cover, author, source_url, need_open_comment, only_fans_can_comment } = attributes;
+    const { title, description, cover, author, source_url, need_open_comment, only_fans_can_comment, image_list } = attributes;
     if (title) {
         result.title = title;
     }
@@ -29,7 +19,7 @@ export async function handleFrontMatter(markdown: string): Promise<FrontMatterRe
         result.cover = cover;
     }
     if (head) {
-        result.body = head + result.body;
+        result.content = head + result.content;
     }
     if (author) {
         result.author = author;
@@ -42,6 +32,9 @@ export async function handleFrontMatter(markdown: string): Promise<FrontMatterRe
     }
     if (only_fans_can_comment !== undefined) {
         result.only_fans_can_comment = only_fans_can_comment;
+    }
+    if (image_list) {
+        result.image_list = image_list;
     }
     return result;
 }

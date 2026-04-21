@@ -44,25 +44,6 @@ registerHlTheme(hlTheme);
 registerMacStyle(macStyle);
 
 describe("wrapper.ts tests", () => {
-    it("should return GzhContent", async () => {
-        const __dirname = dirname(fileURLToPath(import.meta.url));
-        const md = await readFile(join(__dirname, "../publish.md"), "utf8");
-        const gzhContent = await wrapper.getGzhContent(md, "phycat", "solarized-light", true, true);
-
-        const outputPath = join(__dirname, "../publish.html");
-        await writeFile(outputPath, gzhContent.content, "utf8");
-
-        expect(gzhContent).toHaveProperty("title");
-        expect(gzhContent).toHaveProperty("cover");
-        expect(gzhContent).toHaveProperty("content");
-        expect(gzhContent).toHaveProperty("author");
-        expect(gzhContent).toHaveProperty("source_url");
-        expect(gzhContent).toHaveProperty("need_open_comment");
-        expect(gzhContent).toHaveProperty("only_fans_can_comment");
-        expect(gzhContent.content).toContain("</h2>");
-        expect(gzhContent.content).toContain("linear-gradient");
-    });
-
     it("should pass comment options to direct publish flow", async () => {
         const prepareRenderContextSpy = vi.spyOn(renderModule, "prepareRenderContext").mockResolvedValue({
             gzhContent: {
