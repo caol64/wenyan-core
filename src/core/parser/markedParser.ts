@@ -26,9 +26,33 @@ export function createMarkedClient() {
 
             md.use(highlightExtension);
 
-            // ----------- 2. 自定义图片语法扩展 ![](){...} -----------
+            // ----------- 2. 自定义语法扩展 -----------
             md.use({
                 extensions: [
+                    // 宽松 link/image tokenizer，允许 URL 中包含空格（不要求用 <> 包裹）
+                    {
+                        name: "looseLink",
+                        level: "inline",
+                        start(src) {
+                            return src.match(/!?\[/)?.index;
+                        },
+                        tokenizer(src) {
+                            const rule = /^(!?)\[([^\]]*)\]\(([^)]+)\)/;
+                            const match = rule.exec(src);
+                            if (!match) return;
+
+                            const isImage = !!match[1];
+
+                            return {
+                                type: isImage ? "image" : "link",
+                                raw: match[0],
+                                text: match[2],
+                                href: match[3],
+                                tokens: this.lexer.inlineTokens(match[2]),
+                            };
+                        },
+                    },
+                    // 自定义图片语法扩展 ![](){...}
                     {
                         name: "attributeImage",
                         level: "inline",
@@ -58,10 +82,12 @@ export function createMarkedClient() {
                             const styleStr = Array.from(attrs)
                                 .map(([k, v]) => (/^\d+$/.test(v) ? `${k}:${v}px` : `${k}:${v}`))
                                 .join("; ");
+                            const href = normalizeHref(token.href);
 
-                            return `<img src="${token.href}" alt="${token.text || ""}" title="${token.text || ""}" style="${styleStr}">`;
+                            return `<img src="${href}" alt="${token.text || ""}" title="${token.text || ""}" style="${styleStr}">`;
                         },
                     },
+
                 ],
             });
 
@@ -97,7 +123,13 @@ export function createMarkedClient() {
 
                     // 重写普通图片 (处理标准 Markdown 图片)
                     image(this: Renderer, token: Tokens.Image) {
-                        return `<img src="${token.href}" alt="${token.text || ""}" title="${token.title || token.text || ""}">`;
+                        const href = normalizeHref(token.href);
+                        return `<img src="${href}" alt="${token.text || ""}" title="${token.title || token.text || ""}">`;
+                    },
+
+                    link(this: Renderer, token: Tokens.Link) {
+                        const href = normalizeHref(token.href);
+                        return `<a href="${href}">${this.parser.parseInline(token.tokens)}</a>`;
                     },
                 },
             });
@@ -113,7 +145,21 @@ export function createMarkedClient() {
         async parse(markdown: string): Promise<string> {
             await configure();
             // marked.parse 返回可能是 string | Promise<string>，这里强制转为 Promise 处理
-            return md.parse(markdown) as Promise<string>;
+            return await md.parse(markdown);
         },
     };
+}
+
+function normalizeHref(href: string): string {
+    href = href.trim();
+    if (href.startsWith("<") && href.endsWith(">")) {
+        // 如果 href 被尖括号包裹，去掉尖括号
+        href = href.slice(1, -1);
+    }
+
+    try {
+        return encodeURI(href);
+    } catch {
+        return href;
+    }
 }

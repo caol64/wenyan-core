@@ -32,10 +32,9 @@ describe("createWenyanCore", async () => {
 
         // 5. 验证代码内容是否保留
         expect(result).toContain("sys");
-
     });
 
-    it("should render markdown with image", async () => {
+    it("should render markdown with image and custom attributes", async () => {
         const md = "![](C:/Users/lei/Downloads/1_0D7dkNntY-hlvNXAHzHr2g.jpg){x=100}";
         const result = await instance.renderMarkdown(md);
 
@@ -44,6 +43,49 @@ describe("createWenyanCore", async () => {
 
         // 验证自定义属性是否正确渲染
         expect(result).toContain('style="x:100px"');
+    });
 
+    it("should render markdown with image and custom attributes with spaces in URL", async () => {
+        const md = "![](C:/Users/lei/Downloads/1_0D7dkNntY-hlvNXA HzHr2g.jpg){x=100}";
+        const result = await instance.renderMarkdown(md);
+        expect(result).toContain('src="C:/Users/lei/Downloads/1_0D7dkNntY-hlvNXA%20HzHr2g.jpg');
+        expect(result).toContain('style="x:100px"');
+    });
+
+    it("should render image with spaces in URL", async () => {
+        const md = "![](../0.asset/media/Pasted image 20250712230833.png)";
+        const result = await instance.renderMarkdown(md);
+        expect(result).toContain('src="../0.asset/media/Pasted%20image%2020250712230833.png"');
+    });
+
+    it("should render image with spaces and alt text", async () => {
+        const md = "![diagram](D:/Notes/media/my image.png)";
+        const result = await instance.renderMarkdown(md);
+        expect(result).toContain('src="D:/Notes/media/my%20image.png"');
+        expect(result).toContain('alt="diagram"');
+    });
+
+    it("should not break image URLs without spaces", async () => {
+        const md = "![](../0.asset/media/autosar-arch-overview.png)";
+        const result = await instance.renderMarkdown(md);
+        expect(result).toContain('src="../0.asset/media/autosar-arch-overview.png"');
+    });
+
+    it("should render link with spaces in URL", async () => {
+        const md = "[link](../0.asset/media/Pasted image 20250712230833.md)";
+        const result = await instance.renderMarkdown(md);
+        expect(result).toContain('href="../0.asset/media/Pasted%20image%2020250712230833.md"');
+    });
+
+    it("should render link", async () => {
+        const md = "[link](../0.asset/media/Pasted_image_20250712230833.md)";
+        const result = await instance.renderMarkdown(md);
+        expect(result).toContain('href="../0.asset/media/Pasted_image_20250712230833.md"');
+    });
+
+    it("should render link with angle brackets and spaces in URL", async () => {
+        const md = "[link](<../0.asset/media/Pasted image 20250712230833.md>)";
+        const result = await instance.renderMarkdown(md);
+        expect(result).toContain('href="../0.asset/media/Pasted%20image%2020250712230833.md"');
     });
 });
