@@ -29,6 +29,7 @@ export default defineConfig(({ mode }) => {
                     "formdata-node",
                     "css-tree",
                     "jsdom",
+                    "mermaid",
                     "mathjax-full/js/mathjax.js",
                     "mathjax-full/js/input/tex.js",
                     "mathjax-full/js/output/svg.js",

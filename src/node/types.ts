@@ -1,3 +1,5 @@
+import { FrontMatterResult } from "../core/parser/frontMatterParser.js";
+
 export interface RenderOptions {
     file?: string;
     theme?: string;
@@ -5,6 +7,7 @@ export interface RenderOptions {
     highlight: string;
     macStyle: boolean;
     footnote: boolean;
+    mermaid?: boolean;
 }
 
 export interface PublishOptions extends RenderOptions {
@@ -22,17 +25,7 @@ export interface RenderContext {
     absoluteDirPath: string | undefined;
 }
 
-export interface StyledContent {
-    content: string;
-    title?: string;
-    description?: string;
-    cover?: string;
-    author?: string;
-    source_url?: string;
-    need_open_comment?: boolean;
-    only_fans_can_comment?: boolean;
-    image_list?: string[];
-}
+export type StyledContent = FrontMatterResult;
 
 export type GetInputContentFn = (
     inputContent?: string,

@@ -1,10 +1,18 @@
-import { ApplyStylesOptions, createWenyanCore } from "../core/index.js";
+import { ApplyStylesOptions, createWenyanCore, WenyanCoreInstance } from "../core/index.js";
 import { configStore } from "./configStore.js";
 import { GetInputContentFn, RenderContext, RenderOptions } from "./types.js";
 import { getNormalizeFilePath, readFileContent } from "./utils.js";
 import { JSDOM } from "jsdom";
+import { createNodeMermaidRenderer } from "./mermaidRenderer.js";
 
-const wenyanCoreInstance = await createWenyanCore();
+const nodeMermaidRenderer = createNodeMermaidRenderer();
+const wenyanCoreInstance = await createWenyanCore({
+    mermaid: {
+        enabled: true,
+        renderer: nodeMermaidRenderer,
+    },
+});
+const wenyanCoreInstanceWithoutMermaid = await createWenyanCore();
 
 async function renderWithTheme(markdownContent: string, options: RenderOptions): Promise<string> {
     if (!markdownContent) {
@@ -26,6 +34,8 @@ async function renderWithTheme(markdownContent: string, options: RenderOptions):
         throw new Error(`theme "${theme}" not found.`);
     }
 
+    const coreInstance = options.mermaid === false ? wenyanCoreInstanceWithoutMermaid : wenyanCoreInstance;
+
     // 5. 执行核心渲染
     const gzhContent = await renderStyledContent(markdownContent, {
         themeId: theme,
@@ -33,17 +43,21 @@ async function renderWithTheme(markdownContent: string, options: RenderOptions):
         isMacStyle: macStyle,
         isAddFootnote: footnote,
         themeCss: handledCustomTheme,
-    });
+    }, coreInstance);
 
     return gzhContent;
 }
 
-export async function renderStyledContent(content: string, options: ApplyStylesOptions = {}): Promise<string> {
-    const html = await wenyanCoreInstance.renderMarkdown(content);
+export async function renderStyledContent(
+    content: string,
+    options: ApplyStylesOptions = {},
+    coreInstance: WenyanCoreInstance = wenyanCoreInstance,
+): Promise<string> {
+    const html = await coreInstance.renderMarkdown(content);
     const dom = new JSDOM(`<body><section id="wenyan">${html}</section></body>`);
     const document = dom.window.document;
     const wenyan = document.getElementById("wenyan");
-    const result = await wenyanCoreInstance.applyStylesWithTheme(wenyan!, options);
+    const result = await coreInstance.applyStylesWithTheme(wenyan!, options);
     return result;
 }
 

@@ -1,17 +1,18 @@
 # Wenyan Core API 文档
 
-> Wenyan Core 是一个 **Markdown → HTML → 样式渲染** 的核心引擎，支持主题、代码高亮、数学公式（MathJax）、微信公众号渲染等能力。
+> Wenyan Core 是一个 **Markdown → HTML → 样式渲染** 的核心引擎，支持主题、代码高亮、数学公式（MathJax）、Mermaid 图表、微信公众号渲染等能力。
 >
 > 本文档介绍 Wenyan Core 的核心 API 及其使用方式。
 
 ## 快速开始（Quick Start）
 
 ```ts
-import { createWenyanCore } from "@wenyan-md/core";
+import { createWenyanCore, createBrowserMermaidRenderer } from "@wenyan-md/core";
 
 const wenyan = await createWenyanCore({
   isConvertMathJax: true,
   isWechat: true,
+  mermaid: { enabled: true, renderer: createBrowserMermaidRenderer() },
 });
 
 // 1. Markdown → HTML
@@ -44,6 +45,9 @@ interface WenyanOptions {
 
   /** 是否启用微信公众号专用后处理 */
   isWechat?: boolean;
+
+  /** 是否将 Mermaid 转换为 SVG / HTML */
+  mermaid?: boolean | MermaidOptions;
 }
 ```
 
@@ -51,6 +55,7 @@ interface WenyanOptions {
 | ---------------- | ------ | --------------- |
 | isConvertMathJax | `true` | 是否解析并渲染 MathJax |
 | isWechat         | `true` | 是否执行微信文章兼容处理    |
+| mermaid         | `undefined` | 是否解析并渲染 Mermaid    |
 
 > [!NOTE]
 >

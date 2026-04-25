@@ -1,6 +1,6 @@
 {
   "name": "@wenyan-md/core",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "description": "Core library for Wenyan markdown rendering & publishing",
   "author": "Lei <caol64@gmail.com> (https://github.com/caol64)",
   "license": "Apache-2.0",
@@ -74,7 +74,8 @@
     "highlight.js": "11.10.0",
     "marked": "^15.0.12",
     "marked-highlight": "^2.2.1",
-    "mathjax-full": "3.2.2"
+    "mathjax-full": "3.2.2",
+    "mermaid": "11.14.0"
   },
   "peerDependencies": {
     "form-data-encoder": "^4.1.0",
