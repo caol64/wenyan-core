@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createWenyanCore, WenyanCoreInstance, registerAllBuiltInThemes } from "../../src/core";
+import { createWenyanCore, WenyanCoreInstance, registerAllBuiltInThemes, HlTheme, registerHlTheme, ThemeMeta, Theme, registerTheme } from "../../src/core";
 
 describe("core/index", () => {
     let instance: WenyanCoreInstance;
@@ -103,6 +103,26 @@ console.log(x);
 
     describe("applyStylesWithTheme", () => {
         it("should apply styles with default theme", async () => {
+            const hltheme: HlTheme = {
+                id: "github",
+                getCss: async () => ".hljs { color: black; }",
+            };
+
+            registerHlTheme(hltheme);
+            const meta: ThemeMeta = {
+                id: "default",
+                name: "Test Theme",
+                description: "A test theme",
+                appName: "Test",
+                author: "Tester",
+            };
+
+            const theme: Theme = {
+                meta,
+                getCss: async () => "#wenyan { color: black; }",
+            };
+
+            registerTheme(theme);
             // Create a mock HTMLElement using JSDOM
             const { JSDOM } = await import("jsdom");
             const dom = new JSDOM("<!DOCTYPE html><section id='wenyan'><p>Test</p></section>");

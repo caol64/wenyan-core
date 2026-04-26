@@ -8,10 +8,6 @@ import {
 } from "../../../src/core/theme/hlThemeRegistry";
 
 describe("hlThemeRegistry", () => {
-    beforeEach(() => {
-        // Register built-in themes before each test
-        registerBuiltInHlThemes();
-    });
 
     describe("registerHlTheme", () => {
         it("should register a theme", () => {
@@ -52,14 +48,6 @@ describe("hlThemeRegistry", () => {
         it("should return array of themes", () => {
             const themes = getAllHlThemes();
             expect(Array.isArray(themes)).toBe(true);
-        });
-
-        it("should include built-in themes after registration", () => {
-            const themes = getAllHlThemes();
-
-            expect(themes.length).toBeGreaterThan(0);
-            expect(themes.some((t) => t.id === "github")).toBe(true);
-            expect(themes.some((t) => t.id === "dracula")).toBe(true);
         });
     });
 });

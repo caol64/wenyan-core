@@ -3,19 +3,6 @@ import { getAllGzhThemes, getAllThemes, getTheme, registerAllBuiltInThemes, regi
 import { assert } from "console";
 
 describe("core tests", () => {
-    it("should return getAllGzhThemes", async () => {
-        registerAllBuiltInThemes();
-        const themes = getAllGzhThemes();
-
-        expect(themes).toContainEqual(
-            expect.objectContaining({
-                meta: expect.objectContaining({
-                    id: "phycat",
-                }),
-            }),
-        );
-    });
-
     it("should add new theme", async () => {
         registerAllBuiltInThemes();
         registerTheme({

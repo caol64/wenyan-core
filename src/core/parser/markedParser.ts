@@ -42,13 +42,28 @@ export function createMarkedClient() {
                             if (!match) return;
 
                             const isImage = !!match[1];
+                            const text = match[2];
+                            const inner = match[3].trim();
+
+                            let href = "";
+                            let title = "";
+
+                            // 尝试分离末尾的 title
+                            const titleMatch = inner.match(/(.*?)\s+["']([^"']*)["']$/);
+                            if (titleMatch) {
+                                href = titleMatch[1].trim();
+                                title = titleMatch[2];
+                            } else {
+                                href = inner;
+                            }
 
                             return {
                                 type: isImage ? "image" : "link",
                                 raw: match[0],
-                                text: match[2],
-                                href: match[3],
-                                tokens: this.lexer.inlineTokens(match[2]),
+                                text: text,
+                                href: href,
+                                title: title,
+                                tokens: this.lexer.inlineTokens(text),
                             };
                         },
                     },

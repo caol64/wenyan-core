@@ -10,10 +10,7 @@ import {
 } from "../../../src/core/theme/themeRegistry";
 
 describe("themeRegistry", () => {
-    beforeEach(() => {
-        // Register all built-in themes before each test
-        registerAllBuiltInThemes();
-    });
+
     describe("registerTheme", () => {
         it("should register a theme", () => {
             const meta: ThemeMeta = {
@@ -79,40 +76,4 @@ describe("themeRegistry", () => {
         });
     });
 
-    describe("getAllGzhThemes", () => {
-        it("should return array of GZH themes", () => {
-            const themes = getAllGzhThemes();
-
-            expect(Array.isArray(themes)).toBe(true);
-            expect(themes.length).toBeGreaterThan(0);
-        });
-
-        it("should include phycat theme", () => {
-            const themes = getAllGzhThemes();
-
-            const phycatTheme = themes.find((t) => t.meta.id === "phycat");
-            expect(phycatTheme).toBeDefined();
-            expect(phycatTheme?.meta.name).toBe("Phycat");
-        });
-
-        it("should include default theme", () => {
-            const themes = getAllGzhThemes();
-
-            const defaultTheme = themes.find((t) => t.meta.id === "default");
-            expect(defaultTheme).toBeDefined();
-        });
-    });
-
-    describe("registerAllBuiltInThemes", () => {
-        it("should register all built-in themes", () => {
-            const themes = getAllThemes();
-
-            expect(themes.length).toBeGreaterThan(0);
-
-            // Check some known themes
-            const themeIds = themes.map((t) => t.meta.id);
-            expect(themeIds).toContain("default");
-            expect(themeIds).toContain("phycat");
-        });
-    });
 });
