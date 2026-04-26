@@ -37,7 +37,7 @@ export async function replaceMermaidCodeBlocks(
 
     const ownerDocument = getOwnerDocument(root);
 
-    for (const [index, codeBlock] of codeBlocks.entries()) {
+    for (const [_, codeBlock] of codeBlocks.entries()) {
         const pre = codeBlock.parentElement;
         const parent = pre?.parentElement;
 
@@ -47,7 +47,7 @@ export async function replaceMermaidCodeBlocks(
 
         const code = codeBlock.textContent ?? "";
         const svg = await renderDiagram({
-            id: `wenyan-mermaid-${index + 1}`,
+            id: `wenyan-mermaid-${crypto.randomUUID()}`,
             code,
         });
         const figure = ownerDocument.createElement("figure");
@@ -76,8 +76,6 @@ export function createBrowserMermaidRenderer(
             const root = document.body;
             const mermaid = await getMermaidModule();
 
-            mermaid.initialize(createMermaidConfig(options.mermaidConfig));
-
             try {
                 await replaceMermaidCodeBlocks(root, async ({ id, code }) => {
                     const { svg } = await mermaid.render(id, code);
@@ -97,7 +95,9 @@ export function createBrowserMermaidRenderer(
         }
 
         const module = await mermaidModulePromise;
-        return module.default;
+        const mermaid =  module.default;
+        mermaid.initialize(createMermaidConfig(options.mermaidConfig));
+        return mermaid;
     }
 }
 
