@@ -1,5 +1,10 @@
+export interface WechatCredentialItem {
+    appSecret: string;
+    alias?: string;
+}
+
 export interface WenyanCredential {
-    wechat?: Record<string, string>;
+    wechat?: Record<string, WechatCredentialItem>;
 }
 
 export const defaultCredential: WenyanCredential = {};
@@ -18,13 +23,14 @@ export class CredentialStore {
     constructor(adapter: CredentialStorageAdapter) {
         this.adapter = adapter;
         this.initPromise = this.load();
+        this.initPromise.catch(() => {});
     }
 
     private async load() {
         try {
             const loadedData = await this.adapter.loadCredential();
             if (loadedData) {
-                this.credential = loadedData;
+                this.credential = { ...defaultCredential, ...loadedData };
             }
         } catch (error) {
             throw new Error(`无法加载凭据: ${error instanceof Error ? error.message : String(error)}`);
@@ -39,30 +45,61 @@ export class CredentialStore {
         }
     }
 
-    private async _getWechatCredential(): Promise<Record<string, string>> {
+    /**
+     * 获取微信凭据 (通过 appId 或 alias)
+     */
+    async getWechatCredential(appIdOrAlias: string): Promise<{ appId: string; appSecret: string; alias?: string } | null> {
         await this.initPromise;
-        return this.credential.wechat ?? {};
+        const wechat = this.credential.wechat ?? {};
+
+        // 1. 优先作为 appId 精确查找
+        if (wechat[appIdOrAlias]) {
+            return {
+                appId: appIdOrAlias,
+                ...wechat[appIdOrAlias]
+            };
+        }
+
+        // 2. 作为 alias 遍历查找
+        const entry = Object.entries(wechat).find(([_, item]) => item.alias === appIdOrAlias);
+        if (entry) {
+            return {
+                appId: entry[0],
+                ...entry[1]
+            };
+        }
+
+        return null;
     }
 
-    async getWechatCredential(appId: string): Promise<{ appId: string; appSecret: string } | null> {
-        const wechat = await this._getWechatCredential();
-        if (!wechat) return null;
-        const appSecret = wechat[appId];
-        if (!appSecret) return null;
-        return { appId, appSecret };
-    }
-
-    async saveWechatCredential(appId: string, appSecret: string): Promise<void> {
+    /**
+     * 保存或更新微信凭据
+     */
+    async saveWechatCredential(appId: string, appSecret: string, alias?: string | null): Promise<void> {
         await this.initPromise;
         this.credential.wechat ??= {};
-        this.credential.wechat[appId] = appSecret;
+
+        // 组装对象数据
+        const item: WechatCredentialItem = { appSecret };
+        if (alias) {
+            item.alias = alias;
+        }
+
+        // 直接按 appId 赋值（如果存在旧的 appId，直接原地覆盖）
+        this.credential.wechat[appId] = item;
+
         await this.save();
     }
 
-    async deleteWechatCredential(appId: string): Promise<void> {
-        await this.initPromise;
-        if (this.credential.wechat) {
-            delete this.credential.wechat[appId];
+    /**
+     * 删除微信凭据 (通过 appId 或 alias)
+     */
+    async deleteWechatCredential(appIdOrAlias: string): Promise<void> {
+        // 复用 getWechatCredential 找到真实的 appId
+        const target = await this.getWechatCredential(appIdOrAlias);
+
+        if (target && this.credential.wechat) {
+            delete this.credential.wechat[target.appId];
             await this.save();
         }
     }

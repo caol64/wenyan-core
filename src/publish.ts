@@ -48,7 +48,7 @@ export class WechatPublisher {
             const result = await this.fetchAccessToken(appId, appSecret);
             return result.access_token;
         }
-        const cached = this.tokenStore.getToken(appId);
+        const cached = await this.tokenStore.getToken(appId);
         if (cached) {
             return cached;
         }
@@ -90,6 +90,12 @@ export class WechatPublisher {
         }
         if (this.uploadCacheStore) {
             await this.uploadCacheStore.clear();
+        }
+    }
+
+    public async setExternalToken(appid: string, accessToken: string): Promise<void> {
+        if (this.tokenStore) {
+            await this.tokenStore.setExternalToken(appid, accessToken);
         }
     }
 }
