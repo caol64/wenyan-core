@@ -98,4 +98,45 @@ describe("core/marked/client", () => {
         expect(html).toContain('alt="图片文字"');
         expect(html).toContain('title="标题"');
     });
+
+    // ----------------------------------------------------
+    // 7. Obsidian WikiLinks 图片语法 ![[...]]
+    // ----------------------------------------------------
+    it("WikiLinks 基础图片 ![[filename]] 正常渲染", async () => {
+        const html = await client.parse("![[image.png]]");
+        expect(html).toContain('src="image.png"');
+        expect(html).not.toContain("alt=");
+        expect(html).not.toContain("style=");
+    });
+
+    it("WikiLinks 图片带 alt ![[filename|alt text]]", async () => {
+        const html = await client.parse("![[photo.jpg|我的照片]]");
+        expect(html).toContain('src="photo.jpg"');
+        expect(html).toContain('alt="我的照片"');
+        expect(html).toContain('title="我的照片"');
+    });
+
+    it("WikiLinks 图片带宽度 ![[filename|200]]", async () => {
+        const html = await client.parse("![[banner.png|200]]");
+        expect(html).toContain('src="banner.png"');
+        expect(html).toContain('style="width:200px"');
+        expect(html).not.toContain("alt=");
+    });
+
+    it("WikiLinks 图片带宽高 ![[filename|200x300]]", async () => {
+        const html = await client.parse("![[cover.jpg|200x300]]");
+        expect(html).toContain('src="cover.jpg"');
+        expect(html).toContain('style="width:200px; height:300px"');
+    });
+
+    it("WikiLinks 图片路径中含空格正常编码", async () => {
+        const html = await client.parse("![[my image.png]]");
+        expect(html).toContain("my%20image.png");
+    });
+
+    it("WikiLinks 仅宽度 modifier 不作为 alt 输出", async () => {
+        const html = await client.parse("![[logo.svg|150]]");
+        expect(html).not.toContain('alt="150"');
+        expect(html).toContain('style="width:150px"');
+    });
 });

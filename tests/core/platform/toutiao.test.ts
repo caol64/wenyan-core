@@ -82,5 +82,70 @@ describe("platform/toutiao", () => {
             const result = getContentForToutiao(root);
             expect(result).toContain("正常内容，无需处理");
         });
+
+        it("应该将 Mermaid 图转换为图片", () => {
+            const root = document.getElementById("root")!;
+            const dataPoints = Buffer.from(
+                JSON.stringify([
+                    { x: 10, y: 10 },
+                    { x: 10, y: 40 },
+                ]),
+                "utf8",
+            ).toString("base64");
+            root.innerHTML = `
+                <figure data-wenyan-diagram="mermaid">
+                    <svg id="wenyan-mermaid-1" xmlns="http://www.w3.org/2000/svg">
+                        <style>
+                            #wenyan-mermaid-1 { fill: #333; }
+                            #wenyan-mermaid-1 .node rect { stroke: #9370DB; }
+                        </style>
+                        <g class="node"><rect></rect></g>
+                        <g>
+                            <marker id="arrow-end" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                                <path d="M 0 0 L 10 5 L 0 10 z"></path>
+                            </marker>
+                            <path d="M10,10L10,40" data-points="${dataPoints}" marker-end="url(#arrow-end)"></path>
+                        </g>
+                    </svg>
+                </figure>
+            `;
+
+            const result = getContentForToutiao(root);
+
+            const tempContainer = document.createElement("div");
+            tempContainer.innerHTML = result;
+
+            const img = tempContainer.querySelector("img");
+
+            expect(result).toContain("<img");
+            expect(result).toContain('src="data:image/svg+xml');
+
+            expect(tempContainer.querySelector("svg")).toBeNull();
+            expect(tempContainer.querySelector("figure")).toBeNull();
+
+            expect(img).not.toBeNull();
+            expect(img?.getAttribute("style")).toContain("max-width: 100%");
+            expect(img?.getAttribute("style")).toContain("height: auto");
+
+            // 💡 核心修复：正确解析 Base64 或 URL 编码的 Data URI
+            const src = img?.getAttribute("src") || "";
+            let decodedSrc = "";
+
+            if (src.includes(";base64,")) {
+                // 如果是 Base64 编码
+                const base64Data = src.split(";base64,")[1];
+                decodedSrc = Buffer.from(base64Data, "base64").toString("utf8");
+            } else {
+                // 如果是普通的 URL 编码
+                decodedSrc = decodeURIComponent(src.replace(/^data:image\/svg\+xml,/, ""));
+            }
+
+            // 进行内容断言
+            expect(decodedSrc).toContain("stroke: #9370DB");
+            expect(decodedSrc).not.toContain("<style>");
+            expect(decodedSrc).not.toContain("marker-end=");
+            expect(decodedSrc).not.toContain("<marker");
+            expect(decodedSrc).toContain('data-wenyan-marker="end"');
+        });
     });
 });

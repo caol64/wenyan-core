@@ -18,10 +18,17 @@ export interface MermaidRendererFactoryOptions {
     mermaidConfig?: Record<string, unknown>;
 }
 
+const DEFAULT_MERMAID_FONT_FAMILY =
+    "'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC', Arial, sans-serif";
+
 const DEFAULT_MERMAID_CONFIG: Record<string, unknown> = {
+    fontFamily: DEFAULT_MERMAID_FONT_FAMILY,
     htmlLabels: false,
     flowchart: {
         htmlLabels: false,
+    },
+    themeVariables: {
+        fontFamily: DEFAULT_MERMAID_FONT_FAMILY,
     },
 };
 
@@ -108,6 +115,7 @@ export function createMermaidRenderError(error: unknown): Error {
 
 export function createMermaidConfig(overrides: Record<string, unknown> = {}): Record<string, unknown> {
     const flowchartOverrides = getRecord(overrides.flowchart);
+    const themeVariablesOverrides = getRecord(overrides.themeVariables);
 
     return {
         ...DEFAULT_MERMAID_CONFIG,
@@ -117,6 +125,10 @@ export function createMermaidConfig(overrides: Record<string, unknown> = {}): Re
         flowchart: {
             ...getRecord(DEFAULT_MERMAID_CONFIG.flowchart),
             ...flowchartOverrides,
+        },
+        themeVariables: {
+            ...getRecord(DEFAULT_MERMAID_CONFIG.themeVariables),
+            ...themeVariablesOverrides,
         },
     };
 }

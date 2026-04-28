@@ -62,4 +62,20 @@ describe("node Mermaid renderer", () => {
             "Mermaid 图表渲染失败",
         );
     });
+
+    it("should reserve more width for CJK labels", async () => {
+        const renderer = createNodeMermaidRenderer();
+
+        const result = await renderer.renderHtml(
+            "<pre><code class=\"hljs language-mermaid\">graph LR\nA[中文节点] --> B[第二个节点]\n</code></pre>",
+        );
+
+        const widths = Array.from(
+            result.matchAll(/<rect class="basic label-container"[^>]* width="([^"]+)"/g),
+            (match) => Number.parseFloat(match[1]),
+        );
+
+        expect(widths[0]).toBeGreaterThan(110);
+        expect(widths[1]).toBeGreaterThan(125);
+    });
 });

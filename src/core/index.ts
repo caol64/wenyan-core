@@ -42,12 +42,15 @@ export async function createWenyanCore(options: WenyanOptions = {}) {
         async handleFrontMatter(markdown: string): Promise<FrontMatterResult> {
             return await handleFrontMatter(markdown);
         },
-        async renderMarkdown(markdown: string): Promise<string> {
+        async renderMarkdown(markdown: string, disableMermaid: boolean = false): Promise<string> {
             let html = await markedClient.parse(markdown);
             if (isConvertMathJax) {
                 html = mathJaxParser.parser(html);
             }
-            return await mermaidParser.parser(html);
+            if (!disableMermaid) {
+                html = await mermaidParser.parser(html);
+            }
+            return html;
         },
         async applyStylesWithTheme(wenyanElement: HTMLElement, options: ApplyStylesOptions = {}): Promise<string> {
             const {

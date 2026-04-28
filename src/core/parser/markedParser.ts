@@ -67,6 +67,49 @@ export function createMarkedClient() {
                             };
                         },
                     },
+                    // Obsidian WikiLinks 图片语法扩展 ![[filename]] / ![[filename|alt]] / ![[filename|width]] / ![[filename|widthxheight]]
+                    {
+                        name: "wikiImage",
+                        level: "inline",
+                        start(src) {
+                            return src.match(/!\[\[/)?.index;
+                        },
+                        tokenizer(src) {
+                            const rule = /^!\[\[([^\]|]+?)(?:\|([^\]]*))?\]\]/;
+                            const match = rule.exec(src);
+                            if (!match) return;
+
+                            const href = match[1].trim();
+                            const modifier = match[2]?.trim() ?? "";
+
+                            // modifier 可能是: "" | "alt text" | "200" | "200x300"
+                            const dimOnly = /^(\d+)(?:x(\d+))?$/.exec(modifier);
+                            const alt = dimOnly ? "" : modifier;
+                            const width = dimOnly ? dimOnly[1] : "";
+                            const height = dimOnly ? (dimOnly[2] ?? "") : "";
+
+                            return {
+                                type: "wikiImage",
+                                raw: match[0],
+                                href,
+                                alt,
+                                width,
+                                height,
+                                tokens: [],
+                            };
+                        },
+                        renderer(token) {
+                            const href = normalizeHref(token.href);
+                            const altAttr = token.alt ? ` alt="${token.alt}"` : "";
+                            const titleAttr = token.alt ? ` title="${token.alt}"` : "";
+                            const styleParts: string[] = [];
+                            if (token.width) styleParts.push(`width:${token.width}px`);
+                            if (token.height) styleParts.push(`height:${token.height}px`);
+                            const styleAttr = styleParts.length ? ` style="${styleParts.join("; ")}"` : "";
+                            return `<img src="${href}"${altAttr}${titleAttr}${styleAttr}>`;
+                        },
+                    },
+
                     // 自定义图片语法扩展 ![](){...}
                     {
                         name: "attributeImage",

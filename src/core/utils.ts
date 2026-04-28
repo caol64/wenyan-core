@@ -153,3 +153,11 @@ export async function loadCssBySource(source: CssSource): Promise<string> {
             throw new Error("Unknown source type");
     }
 }
+
+export function createSvgDataUrl(svg: SVGSVGElement): string {
+    if (!svg.hasAttribute("xmlns")) {
+        svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    }
+
+    return `data:image/svg+xml,${encodeURIComponent(svg.outerHTML)}`;
+}

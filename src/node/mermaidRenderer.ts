@@ -114,11 +114,11 @@ function ensureSvgPolyfills(window: MermaidRuntimeWindow): void {
 
                 // 1. 文本元素：按字数估算宽高
                 if (tagName === "text" || tagName === "tspan") {
-                    const text = this.textContent ?? "";
-                    const width = Math.max(text.length * 8, 16);
+                    const width = getEstimatedTextWidth(this);
+                    const height = getEstimatedFontSize(this);
                     return {
-                        x: 0, y: -16, width, height: 16,
-                        top: -16, right: width, bottom: 0, left: 0,
+                        x: 0, y: -height, width, height,
+                        top: -height, right: width, bottom: 0, left: 0,
                         toJSON() { return this; },
                     } satisfies DOMRect;
                 }
@@ -184,9 +184,46 @@ function ensureSvgPolyfills(window: MermaidRuntimeWindow): void {
             configurable: true,
             writable: true,
             value(this: SVGElement) {
-                const text = this.textContent ?? "";
-                return Math.max(text.length * 8, 16);
+                return getEstimatedTextWidth(this);
             },
         });
     }
+}
+
+function getEstimatedTextWidth(element: SVGElement): number {
+    const text = element.textContent ?? "";
+    const fontSize = getEstimatedFontSize(element);
+    const visualLength = Array.from(text).reduce((length, character) => {
+        return length + (isWideCharacter(character) ? 2 : 1);
+    }, 0);
+
+    return Math.max(visualLength * (fontSize / 2), fontSize);
+}
+
+function getEstimatedFontSize(element: SVGElement): number {
+    const inlineFontSize = element.getAttribute("font-size");
+
+    if (inlineFontSize) {
+        const parsed = Number.parseFloat(inlineFontSize);
+
+        if (Number.isFinite(parsed)) {
+            return parsed;
+        }
+    }
+
+    const computedFontSize = element.ownerDocument.defaultView?.getComputedStyle(element).fontSize;
+
+    if (computedFontSize) {
+        const parsed = Number.parseFloat(computedFontSize);
+
+        if (Number.isFinite(parsed)) {
+            return parsed;
+        }
+    }
+
+    return 16;
+}
+
+function isWideCharacter(character: string): boolean {
+    return character.codePointAt(0)! > 0xff;
 }

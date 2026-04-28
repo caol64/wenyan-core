@@ -6,28 +6,31 @@ import { JSDOM } from "jsdom";
 import { createNodeMermaidRenderer } from "./mermaidRenderer.js";
 
 /**
- * 从正文中提取图片路径并清理图片引用。
- * 支持标准 Markdown 图片 ![](path) 和 Obsidian 嵌入 ![[file.png|desc]]。
+ * 将 Markdown 正文渲染为 HTML，通过 JSDOM 提取所有 <img> 的 src 路径，
+ * 然后从 DOM 中移除图片节点（若父 <p> 因此变空则一并移除），返回清理后的 HTML。
+ * 支持标准 Markdown 图片和 Obsidian WikiLinks 图片（![[...]]），两者均由 markedParser 统一转换为 <img>。
  */
-function extractAndCleanImages(body: string): { imagePaths: string[]; cleanedBody: string } {
-    const imagePaths: string[] = [];
+async function extractAndCleanImages(body: string): Promise<{ imagePaths: string[]; cleanedHtml: string }> {
+    const html = await wenyanCoreInstance.renderMarkdown(body);
+    const dom = new JSDOM(`<body><section id="wenyan">${html}</section></body>`);
+    const document = dom.window.document;
+    const wenyan = document.getElementById("wenyan");
 
-    const mdImageRe = /!\[[^\]]*\]\(([^)]+)\)/g;
-    const obsidianImageRe = /!\[\[([^\]|]+)(?:\|[^\]]*)?\]\]/g;
+    const images = Array.from(wenyan!.querySelectorAll("img"));
+    const imagePaths = images
+        .map((img) => img.getAttribute("src"))
+        .filter((src): src is string => !!src)
+        .map((src) => { try { return decodeURI(src); } catch { return src; } });
 
-    let match: RegExpExecArray | null;
-    while ((match = mdImageRe.exec(body)) !== null) {
-        imagePaths.push(match[1]);
+    for (const img of images) {
+        const parent = img.parentElement;
+        img.remove();
+        if (parent && parent.tagName === "P" && parent.textContent?.trim() === "") {
+            parent.remove();
+        }
     }
-    while ((match = obsidianImageRe.exec(body)) !== null) {
-        imagePaths.push(match[1].trim());
-    }
 
-    const cleanedBody = body
-        .replace(/!\[[^\]]*\]\([^)]+\)\s*/g, "")
-        .replace(/!\[\[[^\]]+\]\]\s*/g, "");
-
-    return { imagePaths, cleanedBody };
+    return { imagePaths, cleanedHtml: wenyan!.outerHTML };
 }
 
 const nodeMermaidRenderer = createNodeMermaidRenderer();
@@ -96,10 +99,10 @@ export async function prepareRenderContext(
     const preHandlerContent = await wenyanCoreInstance.handleFrontMatter(content);
     // type: image 小绿书模式：自动从正文提取图片注入 image_list，并清理正文中的图片引用
     if (preHandlerContent.type === "image" && !preHandlerContent.image_list) {
-        const { imagePaths, cleanedBody } = extractAndCleanImages(preHandlerContent.content);
+        const { imagePaths, cleanedHtml } = await extractAndCleanImages(preHandlerContent.content);
         if (imagePaths.length > 0) {
             preHandlerContent.image_list = imagePaths;
-            preHandlerContent.content = cleanedBody;
+            preHandlerContent.content = cleanedHtml;
         }
     }
     if (preHandlerContent.image_list && preHandlerContent.image_list.length > 0) {

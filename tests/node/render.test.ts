@@ -145,6 +145,38 @@ describe("render.ts tests", () => {
                 expect(result.gzhContent.content).toContain("Text between images.");
             });
 
+            it("should extract WikiLinks image with pixel width as src (not alt)", async () => {
+                const getInputContent = vi.fn().mockResolvedValue({
+                    content: "---\ntitle: WikiLinks Width\ntype: image\n---\n\n![[banner.png|300]]\n\nCaption.",
+                    absoluteDirPath: "/test/path",
+                });
+
+                const result = await prepareRenderContext(
+                    undefined,
+                    { theme: "phycat", highlight: "solarized-light", macStyle: false, footnote: false },
+                    getInputContent,
+                );
+
+                expect(result.gzhContent.image_list).toEqual(["banner.png"]);
+                expect(result.gzhContent.image_list).not.toContain("300");
+                expect(result.gzhContent.content).toContain("Caption.");
+            });
+
+            it("should decode URL-encoded spaces in image src", async () => {
+                const getInputContent = vi.fn().mockResolvedValue({
+                    content: "---\ntitle: Spaces\ntype: image\n---\n\n![[my photo.png]]\n\nCaption.",
+                    absoluteDirPath: "/test/path",
+                });
+
+                const result = await prepareRenderContext(
+                    undefined,
+                    { theme: "phycat", highlight: "solarized-light", macStyle: false, footnote: false },
+                    getInputContent,
+                );
+
+                expect(result.gzhContent.image_list).toEqual(["my photo.png"]);
+            });
+
             it("should extract mixed markdown and Obsidian images", async () => {
                 const getInputContent = vi.fn().mockResolvedValue({
                     content: "---\ntitle: Mixed Images\ntype: image\n---\n![](md.jpg)\n![[obsidian.png]]\nText.",
