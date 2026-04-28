@@ -108,8 +108,8 @@ Content`;
         });
     });
 
-    describe("type: image transformation", () => {
-        it("should extract markdown images from body and inject image_list", async () => {
+    describe("type field passthrough", () => {
+        it("should pass through type field", async () => {
             const markdown = `---
 title: Photo Post
 type: image
@@ -118,100 +118,26 @@ Some text before.
 
 ![alt1](photo1.jpg)
 
-![alt2](photo2.png)
-
 Some text after.`;
 
             const result = await handleFrontMatter(markdown);
 
             expect(result.title).toBe("Photo Post");
-            expect(result.image_list).toEqual(["photo1.jpg", "photo2.png"]);
-            expect(result.content).not.toContain("![");
-            expect(result.content).toContain("Some text before.");
-            expect(result.content).toContain("Some text after.");
+            expect(result.type).toBe("image");
+            // handleFrontMatter 不做图片提取，正文保持原样
+            expect(result.image_list).toBeUndefined();
+            expect(result.content).toContain("![");
         });
 
-        it("should extract Obsidian embed images from body", async () => {
-            const markdown = `---
-title: Obsidian Photos
-type: image
----
-![[image1.png]]
-![[image2.jpg|description]]
-Text between images.`;
-
-            const result = await handleFrontMatter(markdown);
-
-            expect(result.image_list).toEqual(["image1.png", "image2.jpg"]);
-            expect(result.content).not.toContain("![[");
-            expect(result.content).toContain("Text between images.");
-        });
-
-        it("should extract mixed markdown and Obsidian images", async () => {
-            const markdown = `---
-title: Mixed Images
-type: image
----
-![](md.jpg)
-![[obsidian.png]]
-Text.`;
-
-            const result = await handleFrontMatter(markdown);
-
-            expect(result.image_list).toEqual(["md.jpg", "obsidian.png"]);
-        });
-
-        it("should not transform when type is not image", async () => {
+        it("should not set type when absent", async () => {
             const markdown = `---
 title: Normal Post
-type: article
 ---
-![](photo.jpg)
-Text.`;
+Just text.`;
 
             const result = await handleFrontMatter(markdown);
 
-            expect(result.image_list).toBeUndefined();
-            expect(result.content).toContain("![");
-        });
-
-        it("should not transform when image_list already exists in frontmatter", async () => {
-            const markdown = `---
-title: Manual Image List
-type: image
-image_list:
-  - custom1.jpg
-  - custom2.jpg
----
-![](photo.jpg)
-Text.`;
-
-            const result = await handleFrontMatter(markdown);
-
-            expect(result.image_list).toEqual(["custom1.jpg", "custom2.jpg"]);
-            expect(result.content).toContain("![");
-        });
-
-        it("should not transform when body has no images", async () => {
-            const markdown = `---
-title: No Images
-type: image
----
-Just text, no images.`;
-
-            const result = await handleFrontMatter(markdown);
-
-            expect(result.image_list).toBeUndefined();
-            expect(result.content).toContain("Just text, no images.");
-        });
-
-        it("should not transform when frontmatter is absent", async () => {
-            const markdown = "![](photo.jpg)\nJust text.";
-
-            const result = await handleFrontMatter(markdown);
-
-            expect(result.image_list).toBeUndefined();
-            expect(result.content).toContain("![");
+            expect(result.type).toBeUndefined();
         });
     });
 });

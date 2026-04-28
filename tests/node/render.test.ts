@@ -108,5 +108,118 @@ describe("render.ts tests", () => {
 
             expect(result.gzhContent.title).toBe("Direct Content");
         });
+
+        describe("type: image transformation", () => {
+            it("should extract markdown images and inject image_list", async () => {
+                const getInputContent = vi.fn().mockResolvedValue({
+                    content: "---\ntitle: Photo Post\ntype: image\n---\nSome text before.\n\n![alt1](photo1.jpg)\n\n![alt2](photo2.png)\n\nSome text after.",
+                    absoluteDirPath: "/test/path",
+                });
+
+                const result = await prepareRenderContext(
+                    undefined,
+                    { theme: "phycat", highlight: "solarized-light", macStyle: false, footnote: false },
+                    getInputContent,
+                );
+
+                expect(result.gzhContent.image_list).toEqual(["photo1.jpg", "photo2.png"]);
+                expect(result.gzhContent.content).not.toContain("![");
+                expect(result.gzhContent.content).toContain("Some text before.");
+                expect(result.gzhContent.content).toContain("Some text after.");
+            });
+
+            it("should extract Obsidian embed images", async () => {
+                const getInputContent = vi.fn().mockResolvedValue({
+                    content: "---\ntitle: Obsidian Photos\ntype: image\n---\n![[image1.png]]\n![[image2.jpg|description]]\nText between images.",
+                    absoluteDirPath: "/test/path",
+                });
+
+                const result = await prepareRenderContext(
+                    undefined,
+                    { theme: "phycat", highlight: "solarized-light", macStyle: false, footnote: false },
+                    getInputContent,
+                );
+
+                expect(result.gzhContent.image_list).toEqual(["image1.png", "image2.jpg"]);
+                expect(result.gzhContent.content).not.toContain("![[");
+                expect(result.gzhContent.content).toContain("Text between images.");
+            });
+
+            it("should extract mixed markdown and Obsidian images", async () => {
+                const getInputContent = vi.fn().mockResolvedValue({
+                    content: "---\ntitle: Mixed Images\ntype: image\n---\n![](md.jpg)\n![[obsidian.png]]\nText.",
+                    absoluteDirPath: "/test/path",
+                });
+
+                const result = await prepareRenderContext(
+                    undefined,
+                    { theme: "phycat", highlight: "solarized-light", macStyle: false, footnote: false },
+                    getInputContent,
+                );
+
+                expect(result.gzhContent.image_list).toEqual(["md.jpg", "obsidian.png"]);
+            });
+
+            it("should not transform when type is not image", async () => {
+                const getInputContent = vi.fn().mockResolvedValue({
+                    content: "---\ntitle: Normal Post\ntype: article\n---\n![](photo.jpg)\nText.",
+                    absoluteDirPath: "/test/path",
+                });
+
+                const result = await prepareRenderContext(
+                    undefined,
+                    { theme: "phycat", highlight: "solarized-light", macStyle: false, footnote: false },
+                    getInputContent,
+                );
+
+                expect(result.gzhContent.image_list).toBeUndefined();
+            });
+
+            it("should not transform when image_list already exists in frontmatter", async () => {
+                const getInputContent = vi.fn().mockResolvedValue({
+                    content: "---\ntitle: Manual Image List\ntype: image\nimage_list:\n  - custom1.jpg\n  - custom2.jpg\n---\n![](photo.jpg)\nText.",
+                    absoluteDirPath: "/test/path",
+                });
+
+                const result = await prepareRenderContext(
+                    undefined,
+                    { theme: "phycat", highlight: "solarized-light", macStyle: false, footnote: false },
+                    getInputContent,
+                );
+
+                expect(result.gzhContent.image_list).toEqual(["custom1.jpg", "custom2.jpg"]);
+            });
+
+            it("should not transform when body has no images", async () => {
+                const getInputContent = vi.fn().mockResolvedValue({
+                    content: "---\ntitle: No Images\ntype: image\n---\nJust text, no images.",
+                    absoluteDirPath: "/test/path",
+                });
+
+                const result = await prepareRenderContext(
+                    undefined,
+                    { theme: "phycat", highlight: "solarized-light", macStyle: false, footnote: false },
+                    getInputContent,
+                );
+
+                expect(result.gzhContent.image_list).toBeUndefined();
+                expect(result.gzhContent.content).toContain("Just text, no images.");
+            });
+
+            it("should not transform when frontmatter is absent", async () => {
+                const getInputContent = vi.fn().mockResolvedValue({
+                    content: "![](photo.jpg)\nJust text.",
+                    absoluteDirPath: "/test/path",
+                });
+
+                const result = await prepareRenderContext(
+                    undefined,
+                    { theme: "phycat", highlight: "solarized-light", macStyle: false, footnote: false },
+                    getInputContent,
+                );
+
+                expect(result.gzhContent.image_list).toBeUndefined();
+            });
+        });
     });
 });
