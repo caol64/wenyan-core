@@ -70,7 +70,7 @@ interface WenyanOptions {
 ### handleFrontMatter
 
 ```ts
-handleFrontMatter(markdown: string): Promise<StyledContent>
+handleFrontMatter(markdown: string): Promise<FrontMatterResult>
 ```
 
 解析 Markdown 中的 Front Matter（YAML 头信息）。
@@ -98,8 +98,26 @@ interface FrontMatterResult {
   need_open_comment?: boolean;
   only_fans_can_comment?: boolean;
   image_list?: string[];
+  type?: string;
 }
 ```
+
+| 字段                     | 说明                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| content                | 解析后的 Markdown 正文                                                                    |
+| title                  | 文章标题                                                                                 |
+| description            | 文章描述                                                                                 |
+| cover                  | 封面图片路径                                                                               |
+| author                 | 作者                                                                                   |
+| source_url             | 原文链接                                                                                 |
+| need_open_comment      | 是否打开评论                                                                               |
+| only_fans_can_comment  | 是否仅粉丝可评论                                                                             |
+| image_list             | 图片路径列表，用于图片消息（小绿书）发布。最多 20 张，第一张为封面                                                  |
+| type                   | 文章类型。设为 `"image"` 时，Node 环境下会自动从正文提取图片路径注入 `image_list`，并从正文中移除图片引用（详见 Node 文档） |
+
+> [!NOTE]
+>
+> `type: image` 的自动提取逻辑仅在 Node 环境的 `prepareRenderContext` 中执行（浏览器环境仅解析 frontmatter，不自动提取图片）。
 
 ### renderMarkdown
 
@@ -277,3 +295,4 @@ applyStylesWithTheme
 * macOS SwiftUI（WebView）
 * Server-side 预渲染
 * Markdown → 微信公众号文章
+* 图片消息（小绿书）发布
