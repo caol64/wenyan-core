@@ -107,4 +107,37 @@ Content`;
             content: "",
         });
     });
+
+    describe("type field passthrough", () => {
+        it("should pass through type field", async () => {
+            const markdown = `---
+title: Photo Post
+type: image
+---
+Some text before.
+
+![alt1](photo1.jpg)
+
+Some text after.`;
+
+            const result = await handleFrontMatter(markdown);
+
+            expect(result.title).toBe("Photo Post");
+            expect(result.type).toBe("image");
+            // handleFrontMatter 不做图片提取，正文保持原样
+            expect(result.image_list).toBeUndefined();
+            expect(result.content).toContain("![");
+        });
+
+        it("should not set type when absent", async () => {
+            const markdown = `---
+title: Normal Post
+---
+Just text.`;
+
+            const result = await handleFrontMatter(markdown);
+
+            expect(result.type).toBeUndefined();
+        });
+    });
 });
