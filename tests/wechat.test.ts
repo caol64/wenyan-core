@@ -51,6 +51,21 @@ describe("wechat.ts tests", () => {
         );
     });
 
+    it("should include friendly hint for known error code 45166", async () => {
+        fetch.mockResolvedValue(
+            new Response(JSON.stringify({
+                errcode: 45166,
+                errmsg: "content too long",
+            })),
+        );
+
+        const client = createWechatClient(httpAdapter);
+
+        await expect(client.fetchAccessToken("app-id", "app-secret")).rejects.toThrow(
+            "45166: 内容超长",
+        );
+    });
+
     it("should upload material with multipart request and normalize returned url", async () => {
         const file = new Blob(["mock image content"], { type: "image/png" });
         const multipart: MultipartBody = {
