@@ -111,9 +111,14 @@ export function createWechatClient(httpAdapter: HttpAdapter) {
     };
 }
 
+const WECHAT_ERROR_HINTS: Record<number, string> = {
+    45166: "内容超长。小绿书模式有内容长度限制，请精简正文后重试。",
+};
+
 function assertWechatSuccess<T extends object>(data: T | WechatErrorResponse): asserts data is T {
     if ("errcode" in data) {
-        throw new Error(`${data.errcode}: ${data.errmsg}`);
+        const hint = WECHAT_ERROR_HINTS[data.errcode];
+        throw new Error(hint ? `${data.errcode}: ${hint} (${data.errmsg})` : `${data.errcode}: ${data.errmsg}`);
     }
 }
 
