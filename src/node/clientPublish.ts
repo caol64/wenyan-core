@@ -199,7 +199,8 @@ async function uploadLocalImage(
     headers: Record<string, string>,
     relativePath?: string,
 ): Promise<string | null> {
-    const imagePath = RuntimeEnv.resolveLocalPath(originalUrl, relativePath);
+    const decodedUrl = decodeURIComponent(originalUrl);
+    const imagePath = RuntimeEnv.resolveLocalPath(decodedUrl, relativePath);
     let fileBuffer: Buffer;
     try {
         fileBuffer = await readBinaryFile(imagePath);
