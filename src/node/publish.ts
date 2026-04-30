@@ -54,7 +54,8 @@ async function uploadImage(
         fileData = new Blob([arrayBuffer], { type: contentType });
     } else {
         // 本地路径
-        const resolvedPath = RuntimeEnv.resolveLocalPath(imageUrl, relativePath);
+        const decodedUrl = decodeURIComponent(imageUrl);
+        const resolvedPath = RuntimeEnv.resolveLocalPath(decodedUrl, relativePath);
         const stats = await stat(resolvedPath);
         if (stats.size === 0) {
             throw new Error(`本地图片大小为0，无法上传: ${resolvedPath}`);

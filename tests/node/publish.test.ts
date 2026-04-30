@@ -152,4 +152,11 @@ describe("publish.ts tests", () => {
             publishToDraft("无图测试", "<p>只有文字</p>")
         ).rejects.toThrow("你必须指定一张封面图或者在正文中至少出现一张图片。");
     });
+
+    it("should handle URL-encoded image paths with spaces", async () => {
+        const imgPath = path.join(__dirname, "../wenyan.jpg");
+        const encodedPath = encodeURIComponent(imgPath);
+        const result = await publishToDraft("编码路径测试", "<p>正文</p>", encodedPath);
+        expect(result).toHaveProperty("media_id", "mock_article_media_id");
+    });
 });
