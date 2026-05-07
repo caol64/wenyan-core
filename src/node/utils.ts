@@ -1,6 +1,17 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
+import os from "node:os";
+
+export const configDir = (() => {
+    if (process.env.XDG_CONFIG_HOME) {
+        return path.join(process.env.XDG_CONFIG_HOME, "wenyan-md");
+    }
+    if (process.env.APPDATA) {
+        return path.join(process.env.APPDATA, "wenyan-md");
+    }
+    return path.join(os.homedir(), ".config", "wenyan-md");
+})();
 
 export async function readFileContent(filePath: string): Promise<string> {
     return await fs.readFile(filePath, "utf-8");

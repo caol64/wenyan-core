@@ -31,7 +31,7 @@ export class TokenStore {
         try {
             const loadedData = await this.adapter.loadToken();
             if (loadedData) {
-                this.cache = loadedData;
+                this.cache = { ...defaultTokenCache, ...loadedData };
             }
         } catch (error) {
             throw new Error(`无法加载 token: ${error instanceof Error ? error.message : String(error)}`);
@@ -50,17 +50,20 @@ export class TokenStore {
         await this.initPromise;
     }
 
-    public isValid(appid: string): boolean {
+    public async isValid(appid: string): Promise<boolean> {
+        await this.initPromise;
         const currentTime = Math.floor(Date.now() / 1000); // 当前时间（秒）
         const bufferTime = 600; // 10 分钟缓冲，避免过期前瞬间失效
         const isAppidMatch = this.cache.appid === appid;
-        const isNotExpired = this.cache.expireAt > currentTime + bufferTime;
+        // 如果 expireAt < 0，则视为永久有效（isNotExpired 始终为 true）
+        // 否则，按照时间戳进行正常校验
+        const isNotExpired = this.cache.expireAt < 0 ? true : this.cache.expireAt > currentTime + bufferTime;
 
         return isAppidMatch && isNotExpired;
     }
 
-    public getToken(appid: string): string | null {
-        return this.isValid(appid) ? this.cache.accessToken : null;
+    public async getToken(appid: string): Promise<string | null> {
+        return (await this.isValid(appid)) ? this.cache.accessToken : null;
     }
 
     public async setToken(appid: string, accessToken: string, expiresIn: number): Promise<void> {
@@ -73,6 +76,16 @@ export class TokenStore {
             expireAt: Math.floor(Date.now() / 1000) + expiresIn,
         };
 
+        await this.save();
+    }
+
+    public async setExternalToken(appid: string, accessToken: string): Promise<void> {
+        await this.initPromise;
+        this.cache = {
+            appid,
+            accessToken,
+            expireAt: -1, // 标记为外部托管，永不校验过期
+        };
         await this.save();
     }
 

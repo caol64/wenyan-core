@@ -1,21 +1,24 @@
 import { monospace, resolveCssContent, sansSerif } from "./utils.js";
 import { registerBuiltInHlThemes, getHlTheme, getAllHlThemes } from "./theme/hlThemeRegistry.js";
 import { addFootnotes } from "./renderer/footnotesRender.js";
-import { FrontMatterResult, handleFrontMatter } from "./parser/frontMatterParser.js";
+import { handleFrontMatter, type FrontMatterResult } from "./parser/frontMatterParser.js";
 import { renderHighlightTheme } from "./renderer/highlightApplyRender.js";
 import { renderMacStyle } from "./renderer/macStyleRender.js";
 import { createMarkedClient } from "./parser/markedParser.js";
 import { createMathJaxParser } from "./parser/mathjaxParser.js";
+import { createMermaidParser } from "./parser/mermaidParser.js";
 import { wechatPostRender } from "./renderer/wechatPostRender.js";
 import { renderTheme } from "./renderer/themeApplyRender.js";
 import { registerAllBuiltInThemes, getTheme, getAllGzhThemes } from "./theme/themeRegistry.js";
 import { applyPseudoElements } from "./renderer/pseudoApplyRender.js";
 import { createCssModifier, CssUpdateMap } from "./parser/cssParser.js";
 import { registerBuiltInMacStyle } from "./theme/macStyleRegistry.js";
+import type { MermaidOptions } from "./mermaid.js";
 
 export interface WenyanOptions {
     isConvertMathJax?: boolean;
     isWechat?: boolean;
+    mermaid?: boolean | MermaidOptions;
 }
 
 export interface ApplyStylesOptions {
@@ -28,9 +31,10 @@ export interface ApplyStylesOptions {
 }
 
 export async function createWenyanCore(options: WenyanOptions = {}) {
-    const { isConvertMathJax = true, isWechat = true } = options;
+    const { isConvertMathJax = true, isWechat = true, mermaid } = options;
     const markedClient = createMarkedClient();
     const mathJaxParser = createMathJaxParser();
+    const mermaidParser = createMermaidParser(mermaid);
     registerAllBuiltInThemes();
     registerBuiltInHlThemes();
     registerBuiltInMacStyle();
@@ -38,10 +42,13 @@ export async function createWenyanCore(options: WenyanOptions = {}) {
         async handleFrontMatter(markdown: string): Promise<FrontMatterResult> {
             return await handleFrontMatter(markdown);
         },
-        async renderMarkdown(markdown: string): Promise<string> {
-            const html = await markedClient.parse(markdown);
+        async renderMarkdown(markdown: string, disableMermaid: boolean = false): Promise<string> {
+            let html = await markedClient.parse(markdown);
             if (isConvertMathJax) {
-                return mathJaxParser.parser(html);
+                html = mathJaxParser.parser(html);
+            }
+            if (!disableMermaid) {
+                html = await mermaidParser.parser(html);
             }
             return html;
         },
@@ -112,7 +119,7 @@ export async function createWenyanCore(options: WenyanOptions = {}) {
                 return `${wenyanElement.outerHTML
                     .replace(/class="mjx-solid"/g, 'fill="none" stroke-width="70"')
                     .replace(/\n<li/g, "<li")
-                    .replace(/<\/li>\n/g, "<\/li>")}`;
+                    .replace(/<\/li>\n/g, "</li>")}`;
             }
             return wenyanElement.outerHTML;
         },
@@ -166,3 +173,6 @@ export * from "./platform/medium.js";
 export * from "./platform/zhihu.js";
 export * from "./platform/toutiao.js";
 export { addFootnotes } from "./renderer/footnotesRender.js";
+export * from "./mermaid.js";
+export type WenyanCoreInstance = Awaited<ReturnType<typeof createWenyanCore>>;
+export type { FrontMatterResult } from "./parser/frontMatterParser.js";

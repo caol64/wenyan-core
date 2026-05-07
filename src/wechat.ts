@@ -4,12 +4,33 @@ const tokenUrl = "https://api.weixin.qq.com/cgi-bin/token";
 const publishUrl = "https://api.weixin.qq.com/cgi-bin/draft/add";
 const uploadUrl = "https://api.weixin.qq.com/cgi-bin/material/add_material";
 
+export interface ImageCropPercent {
+    ratio: string;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+}
+
+export interface ImageListItem {
+    image_media_id: string;
+    crop_percent_list?: ImageCropPercent[];
+}
+
+export interface ImageInfo {
+    image_list: ImageListItem[];
+}
+
 export interface WechatPublishOptions {
     title: string;
     author?: string;
     content: string;
     thumb_media_id: string;
     content_source_url?: string;
+    article_type?: "news" | "newspic";
+    image_info?: ImageInfo;
+    need_open_comment?: 0 | 1;
+    only_fans_can_comment?: 0 | 1;
 }
 
 export interface WechatErrorResponse {
@@ -90,9 +111,14 @@ export function createWechatClient(httpAdapter: HttpAdapter) {
     };
 }
 
+const WECHAT_ERROR_HINTS: Record<number, string> = {
+    45166: "内容超长。小绿书模式有内容长度限制，请精简正文后重试。",
+};
+
 function assertWechatSuccess<T extends object>(data: T | WechatErrorResponse): asserts data is T {
     if ("errcode" in data) {
-        throw new Error(`${data.errcode}: ${data.errmsg}`);
+        const hint = WECHAT_ERROR_HINTS[data.errcode];
+        throw new Error(hint ? `${data.errcode}: ${hint} (${data.errmsg})` : `${data.errcode}: ${data.errmsg}`);
     }
 }
 

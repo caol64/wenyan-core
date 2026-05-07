@@ -28,9 +28,9 @@ export function stringToMap(str: string): Map<string, string> {
 
 export function replaceCSSVariables(css: string): string {
     // 正则表达式用于匹配变量定义
-    const variablePattern: RegExp = /--([a-zA-Z0-9\-]+):\s*([^;()]*\((?:[^()]*|\([^()]*\))*\)[^;()]*|[^;]+);/g;
+    const variablePattern: RegExp = /--([a-zA-Z0-9-]+):\s*([^;()]*\((?:[^()]*|\([^()]*\))*\)[^;()]*|[^;]+);/g;
     // 正则表达式用于匹配使用 var() 的地方
-    const varPattern: RegExp = /var\(--([a-zA-Z0-9\-]+)\)/g;
+    const varPattern: RegExp = /var\(--([a-zA-Z0-9-]+)\)/g;
 
     // 使用 Record<string, string> 定义键值对对象
     const cssVariables: Record<string, string> = {};
@@ -69,7 +69,7 @@ export function replaceCSSVariables(css: string): string {
         // 使用 replace 回调处理当前值中嵌套的 var(...)
         // 这里为了处理像 border: 1px solid var(--color); 这种复合值
         // 我们创建一个新的正则实例避免 lastIndex 状态干扰，或者直接使用 matchAll/replace
-        const innerVarPattern = /var\(--([a-zA-Z0-9\-]+)\)/g;
+        const innerVarPattern = /var\(--([a-zA-Z0-9-]+)\)/g;
 
         resolvedValue = resolvedValue.replace(innerVarPattern, (match, varName) => {
             if (variables[varName]) {
@@ -90,7 +90,7 @@ export function replaceCSSVariables(css: string): string {
 
     // 4. 替换 CSS 正文中的 var() 引用
     // 使用 replace 的回调函数模式通常比 while(exec) 更高效且安全
-    let modifiedCSS: string = css.replace(varPattern, (match, varName) => {
+    const modifiedCSS: string = css.replace(varPattern, (match, varName) => {
         if (cssVariables[varName]) {
             return cssVariables[varName];
         }
@@ -152,4 +152,12 @@ export async function loadCssBySource(source: CssSource): Promise<string> {
         default:
             throw new Error("Unknown source type");
     }
+}
+
+export function createSvgDataUrl(svg: SVGSVGElement): string {
+    if (!svg.hasAttribute("xmlns")) {
+        svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    }
+
+    return `data:image/svg+xml,${encodeURIComponent(svg.outerHTML)}`;
 }

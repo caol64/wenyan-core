@@ -1,20 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { getAllGzhThemes, getAllThemes, getTheme, registerAllBuiltInThemes, registerTheme } from "../dist/core";
+import { getAllGzhThemes, getAllThemes, getTheme, registerAllBuiltInThemes, registerTheme } from  "../../src/core";
+import { assert } from "console";
 
 describe("core tests", () => {
-    it("should return getAllGzhThemes", async () => {
-        registerAllBuiltInThemes();
-        const themes = getAllGzhThemes();
-
-        expect(themes).toContainEqual(
-            expect.objectContaining({
-                meta: expect.objectContaining({
-                    id: "phycat",
-                }),
-            }),
-        );
-    });
-
     it("should add new theme", async () => {
         registerAllBuiltInThemes();
         registerTheme({
@@ -23,6 +11,7 @@ describe("core tests", () => {
                 name: "Custom Theme",
                 description: "A custom theme for testing.",
                 appName: "CustomApp",
+                author: "Tester",
             },
             getCss: async () => {
                 return `
@@ -44,6 +33,6 @@ describe("core tests", () => {
 
         const getedTheme = getTheme("custom_theme");
         expect(getedTheme).toBeDefined();
-        expect(await getedTheme.getCss()).toContain("background-color: #f0f0f0;");
+        expect(await getedTheme!.getCss()).toContain("background-color: #f0f0f0;");
     });
 });

@@ -1,3 +1,5 @@
+import { postRenderMermaidDiagrams } from "./mermaidPostRender.js";
+
 export function wechatPostRender(element: HTMLElement): void {
     // 1. 处理公式
     const mathElements = element.querySelectorAll<HTMLElement>("mjx-container");
@@ -29,7 +31,10 @@ export function wechatPostRender(element: HTMLElement): void {
         }
     });
 
-    // 2. 处理代码块
+    // 2. 处理 Mermaid SVG
+    postRenderMermaidDiagrams(element);
+
+    // 3. 处理代码块
     const codeElements = element.querySelectorAll<HTMLElement>("pre code");
 
     codeElements.forEach((codeEl) => {
@@ -38,7 +43,7 @@ export function wechatPostRender(element: HTMLElement): void {
             .replace(/(>[^<]+)|(^[^<]+)/g, (str: string) => str.replace(/\s/g, "&nbsp;"));
     });
 
-    // 3. 列表 section 包裹
+    // 4. 列表 section 包裹
     const listElements = element.querySelectorAll<HTMLLIElement>("li");
 
     listElements.forEach((li) => {
@@ -52,7 +57,7 @@ export function wechatPostRender(element: HTMLElement): void {
         li.appendChild(section);
     });
 
-    // 4. 提升嵌套列表（微信兼容）
+    // 5. 提升嵌套列表（微信兼容）
     // 微信公众号编辑器无法正确渲染 <li> 内嵌套的 <ul>/<ol>，
     // 需要将嵌套列表从 <li> 中提出，变为同级元素。
     // 参考: https://github.com/doocs/md
@@ -66,4 +71,8 @@ export function wechatPostRender(element: HTMLElement): void {
             li.insertAdjacentElement("afterend", nestedList);
         }
     });
+
+    // 6. 设置字体颜色为黑色，防止黑暗模式影响
+    element.style.color = "rgb(0, 0, 0)";
+    element.style.caretColor = "rgb(0, 0, 0)";
 }

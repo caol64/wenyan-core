@@ -52,8 +52,8 @@ function buildPseudoElement(originalResults: PseudoStyleMap, document: Document)
         if (v.includes("url(")) {
             // RegExpMatchArray | null
             const svgMatch = v.match(/data:image\/svg\+xml;utf8,(.*<\/svg>)/);
-            const base64SvgMatch = v.match(/data:image\/svg\+xml;base64,([^"'\)]*)["']?\)/);
-            const httpMatch = v.match(/(?:"|')?(https?[^"'\)]*)(?:"|')?\)/);
+            const base64SvgMatch = v.match(/data:image\/svg\+xml;base64,([^"')]*)["']?\)/);
+            const httpMatch = v.match(/(?:"|')?(https?[^"')]*)(?:"|')?\)/);
 
             if (svgMatch) {
                 const svgCode = decodeURIComponent(svgMatch[1]);

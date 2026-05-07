@@ -1,17 +1,18 @@
 # Wenyan Core API 文档
 
-> Wenyan Core 是一个 **Markdown → HTML → 样式渲染** 的核心引擎，支持主题、代码高亮、数学公式（MathJax）、微信公众号渲染等能力。
+> Wenyan Core 是一个 **Markdown → HTML → 样式渲染** 的核心引擎，支持主题、代码高亮、数学公式（MathJax）、Mermaid 图表、微信公众号渲染等能力。
 >
 > 本文档介绍 Wenyan Core 的核心 API 及其使用方式。
 
 ## 快速开始（Quick Start）
 
 ```ts
-import { createWenyanCore } from "@wenyan-md/core";
+import { createWenyanCore, createBrowserMermaidRenderer } from "@wenyan-md/core";
 
 const wenyan = await createWenyanCore({
   isConvertMathJax: true,
   isWechat: true,
+  mermaid: { enabled: true, renderer: createBrowserMermaidRenderer() },
 });
 
 // 1. Markdown → HTML
@@ -44,6 +45,9 @@ interface WenyanOptions {
 
   /** 是否启用微信公众号专用后处理 */
   isWechat?: boolean;
+
+  /** 是否将 Mermaid 转换为 SVG / HTML */
+  mermaid?: boolean | MermaidOptions;
 }
 ```
 
@@ -51,6 +55,7 @@ interface WenyanOptions {
 | ---------------- | ------ | --------------- |
 | isConvertMathJax | `true` | 是否解析并渲染 MathJax |
 | isWechat         | `true` | 是否执行微信文章兼容处理    |
+| mermaid         | `undefined` | 是否解析并渲染 Mermaid    |
 
 > [!NOTE]
 >
@@ -76,7 +81,7 @@ handleFrontMatter(markdown: string): Promise<FrontMatterResult>
 const result = await wenyan.handleFrontMatter(markdown);
 
 console.log(result.title);
-console.log(result.body);
+console.log(result.content);
 console.log(result.cover);
 ```
 
@@ -84,12 +89,35 @@ console.log(result.cover);
 
 ```ts
 interface FrontMatterResult {
-  body: string;
+  content: string;
   title?: string;
   description?: string;
   cover?: string;
+  author?: string;
+  source_url?: string;
+  need_open_comment?: boolean;
+  only_fans_can_comment?: boolean;
+  image_list?: string[];
+  type?: string;
 }
 ```
+
+| 字段                     | 说明                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| content                | 解析后的 Markdown 正文                                                                    |
+| title                  | 文章标题                                                                                 |
+| description            | 文章描述                                                                                 |
+| cover                  | 封面图片路径                                                                               |
+| author                 | 作者                                                                                   |
+| source_url             | 原文链接                                                                                 |
+| need_open_comment      | 是否打开评论                                                                               |
+| only_fans_can_comment  | 是否仅粉丝可评论                                                                             |
+| image_list             | 图片路径列表，用于图片消息（小绿书）发布。最多 20 张，第一张为封面                                                  |
+| type                   | 文章类型。设为 `"image"` 时，Node 环境下会自动从正文提取图片路径注入 `image_list`，并从正文中移除图片引用（详见 Node 文档） |
+
+> [!NOTE]
+>
+> `type: image` 的自动提取逻辑仅在 Node 环境的 `prepareRenderContext` 中执行（浏览器环境仅解析 frontmatter，不自动提取图片）。
 
 ### renderMarkdown
 
@@ -267,3 +295,4 @@ applyStylesWithTheme
 * macOS SwiftUI（WebView）
 * Server-side 预渲染
 * Markdown → 微信公众号文章
+* 图片消息（小绿书）发布

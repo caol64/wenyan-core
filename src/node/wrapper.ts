@@ -1,32 +1,18 @@
+import { WechatPublishResponse } from "../wechat.js";
 import {
     getHeaders,
     getServerUrl,
     healthCheck,
     requestServerPublish,
     uploadCover,
+    uploadImageList,
     uploadLocalImages,
     uploadStyledContent,
     verifyAuth,
 } from "./clientPublish.js";
-import { publishToWechatDraft } from "./publish.js";
-import { prepareRenderContext, renderStyledContent } from "./render.js";
-import { ClientPublishOptions, GetInputContentFn, PublishOptions, StyledContent } from "./types.js";
-
-// 兼容旧版本
-export async function getGzhContent(
-    content: string,
-    themeId: string,
-    hlThemeId: string,
-    isMacStyle: boolean = true,
-    isAddFootnote: boolean = true,
-): Promise<StyledContent> {
-    return await renderStyledContent(content, {
-        themeId,
-        hlThemeId,
-        isMacStyle,
-        isAddFootnote,
-    });
-}
+import { publishToWechatDraft, publishImageTextToWechatDraft } from "./publish.js";
+import { prepareRenderContext } from "./render.js";
+import { ClientPublishOptions, GetInputContentFn, PublishOptions } from "./types.js";
 
 export async function renderAndPublish(
     inputContent: string | undefined,
@@ -42,18 +28,33 @@ export async function renderAndPublish(
     // ==========================================
     // 2. 处理图片、封面图，上传到微信服务器获取 media_id，并发布到公众号草稿箱
     // ==========================================
-    const data = await publishToWechatDraft(
-        {
-            title: gzhContent.title,
-            content: gzhContent.content,
-            cover: gzhContent.cover,
-            author: gzhContent.author,
-            source_url: gzhContent.source_url,
-        },
-        {
-            relativePath: absoluteDirPath,
-        },
-    );
+    let data: WechatPublishResponse;
+    if (gzhContent.image_list && gzhContent.image_list.length > 0) {
+        // 图片文章（小绿书）
+        data = await publishImageTextToWechatDraft(
+            {
+                ...gzhContent,
+                title: gzhContent.title!,
+                images: gzhContent.image_list,
+            },
+            {
+                appId: options.appId,
+                relativePath: absoluteDirPath,
+            },
+        );
+    } else {
+        // 普通图文文章
+        data = await publishToWechatDraft(
+            {
+                ...gzhContent,
+                title: gzhContent.title!,
+            },
+            {
+                appId: options.appId,
+                relativePath: absoluteDirPath,
+            },
+        );
+    }
 
     if (data.media_id) {
         return data.media_id;
@@ -82,10 +83,20 @@ export async function renderAndPublishToServer(
     const { gzhContent, absoluteDirPath } = await prepareRenderContext(inputContent, options, getInputContent);
     if (!gzhContent.title) throw new Error("未能找到文章标题");
 
-    // ==========================================
-    // 2. 解析 HTML 中的所有本地图片上传并替换为服务器可访问的 URL
-    // ==========================================
-    gzhContent.content = await uploadLocalImages(gzhContent.content, serverUrl, headers, absoluteDirPath);
+    if (gzhContent.image_list && gzhContent.image_list.length > 0) {
+        // 图片文章（小绿书）
+        // 不处理正文中的图片
+        // ==========================================
+        // 2. 解析 image_list 中的所有本地图片上传并替换为服务器可访问的 URL
+        // ==========================================
+        gzhContent.image_list = await uploadImageList(serverUrl, headers, gzhContent.image_list, absoluteDirPath);
+    } else {
+        // 普通图文文章
+        // ==========================================
+        // 2. 解析 HTML 中的所有本地图片上传并替换为服务器可访问的 URL
+        // ==========================================
+        gzhContent.content = await uploadLocalImages(gzhContent.content, serverUrl, headers, absoluteDirPath);
+    }
 
     // ==========================================
     // 3. 处理封面图片，同2

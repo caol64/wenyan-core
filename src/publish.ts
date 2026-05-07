@@ -15,6 +15,12 @@ export interface ArticleOptions {
     cover?: string;
     author?: string;
     source_url?: string;
+    need_open_comment?: boolean;
+    only_fans_can_comment?: boolean;
+}
+
+export interface ImageTextArticleOptions extends ArticleOptions {
+    images: string[];
 }
 
 export class WechatPublisher {
@@ -42,7 +48,7 @@ export class WechatPublisher {
             const result = await this.fetchAccessToken(appId, appSecret);
             return result.access_token;
         }
-        const cached = this.tokenStore.getToken(appId);
+        const cached = await this.tokenStore.getToken(appId);
         if (cached) {
             return cached;
         }
@@ -51,12 +57,13 @@ export class WechatPublisher {
         return result.access_token;
     }
 
-    public async uploadImage(file: Blob, filename: string, accessToken: string): Promise<WechatUploadResponse> {
+    public async uploadImage(file: Blob, filename: string, accessToken: string, appId?: string): Promise<WechatUploadResponse> {
         let hash: string | undefined;
         if (this.uploadCacheStore) {
             const arrayBuffer = await file.arrayBuffer();
             hash = await this.uploadCacheStore.calcHash(arrayBuffer);
-            const cached = await this.uploadCacheStore.get(hash);
+            const cacheKey = appId ? `${hash}:${appId}` : hash;
+            const cached = await this.uploadCacheStore.get(cacheKey);
             if (cached) {
                 return {
                     media_id: cached.media_id,
@@ -66,7 +73,8 @@ export class WechatPublisher {
         }
         const data = await this.uploadMaterial("image", file, filename, accessToken);
         if (this.uploadCacheStore && hash) {
-            await this.uploadCacheStore.set(hash, data.media_id, data.url);
+            const cacheKey = appId ? `${hash}:${appId}` : hash;
+            await this.uploadCacheStore.set(cacheKey, data.media_id, data.url);
         }
 
         return data;
@@ -75,7 +83,23 @@ export class WechatPublisher {
     public async publishToDraft(accessToken: string, options: WechatPublishOptions): Promise<WechatPublishResponse> {
         return await this.publishArticle(accessToken, options);
     }
+
+    public async clearCache(): Promise<void> {
+        if (this.tokenStore) {
+            await this.tokenStore.clear();
+        }
+        if (this.uploadCacheStore) {
+            await this.uploadCacheStore.clear();
+        }
+    }
+
+    public async setExternalToken(appid: string, accessToken: string): Promise<void> {
+        if (this.tokenStore) {
+            await this.tokenStore.setExternalToken(appid, accessToken);
+        }
+    }
 }
 
 export * from "./tokenStore.js";
 export * from "./uploadCacheStore.js";
+export * from "./credentialStore.js";
