@@ -43,7 +43,7 @@ export function wechatPostRender(element: HTMLElement): void {
             .replace(/(>[^<]+)|(^[^<]+)/g, (str: string) => str.replace(/\s/g, "&nbsp;"));
     });
 
-    // 4. 列表
+    // 4. 列表 section 包裹
     const listElements = element.querySelectorAll<HTMLLIElement>("li");
 
     listElements.forEach((li) => {
@@ -57,7 +57,22 @@ export function wechatPostRender(element: HTMLElement): void {
         li.appendChild(section);
     });
 
-    // 5. 设置字体颜色为黑色，防止黑暗模式影响
+    // 5. 提升嵌套列表（微信兼容）
+    // 微信公众号编辑器无法正确渲染 <li> 内嵌套的 <ul>/<ol>，
+    // 需要将嵌套列表从 <li> 中提出，变为同级元素。
+    // 参考: https://github.com/doocs/md
+    const nestedLists = element.querySelectorAll<HTMLUListElement | HTMLOListElement>(
+        "li > section > ul, li > section > ol",
+    );
+
+    nestedLists.forEach((nestedList) => {
+        const li = nestedList.closest("li");
+        if (li) {
+            li.insertAdjacentElement("afterend", nestedList);
+        }
+    });
+
+    // 6. 设置字体颜色为黑色，防止黑暗模式影响
     element.style.color = "rgb(0, 0, 0)";
     element.style.caretColor = "rgb(0, 0, 0)";
 }
