@@ -3,6 +3,9 @@ import type { HttpAdapter } from "./http.js";
 const tokenUrl = "https://api.weixin.qq.com/cgi-bin/token";
 const publishUrl = "https://api.weixin.qq.com/cgi-bin/draft/add";
 const uploadUrl = "https://api.weixin.qq.com/cgi-bin/material/add_material";
+const draftListUrl = "https://api.weixin.qq.com/cgi-bin/draft/batchget";
+const draftGetUrl = "https://api.weixin.qq.com/cgi-bin/draft/get";
+const draftUpdateUrl = "https://api.weixin.qq.com/cgi-bin/draft/update";
 
 export interface ImageCropPercent {
     ratio: string;
@@ -50,6 +53,29 @@ export interface WechatTokenResponse {
 
 export interface WechatPublishResponse {
     media_id: string;
+}
+
+export interface WechatDraftListItem {
+    media_id: string;
+    content: {
+        news_item: WechatPublishOptions[];
+    };
+    update_time: number;
+}
+
+export interface WechatDraftListResponse {
+    total_count: number;
+    item_count: number;
+    item: WechatDraftListItem[];
+}
+
+export interface WechatDraftGetResponse {
+    news_item: WechatPublishOptions[];
+}
+
+export interface WechatDraftUpdateResponse {
+    errcode: number;
+    errmsg: string;
 }
 
 type UploadResult = WechatUploadResponse | WechatErrorResponse;
@@ -108,6 +134,42 @@ export function createWechatClient(httpAdapter: HttpAdapter) {
             assertWechatSuccess(data);
             return data;
         },
+
+        async listDrafts(accessToken: string, offset = 0, count = 20, noContent = 0): Promise<WechatDraftListResponse> {
+            const res = await httpAdapter.fetch(`${draftListUrl}?access_token=${accessToken}`, {
+                method: "POST",
+                body: JSON.stringify({ offset, count, no_content: noContent }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const data = await res.json();
+            assertWechatSuccess(data);
+            return data as WechatDraftListResponse;
+        },
+
+        async getDraft(accessToken: string, mediaId: string): Promise<WechatDraftGetResponse> {
+            const res = await httpAdapter.fetch(`${draftGetUrl}?access_token=${accessToken}`, {
+                method: "POST",
+                body: JSON.stringify({ media_id: mediaId }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const data = await res.json();
+            assertWechatSuccess(data);
+            return data as WechatDraftGetResponse;
+        },
+
+        async updateDraft(accessToken: string, mediaId: string, articleIndex: number, options: Partial<WechatPublishOptions>): Promise<void> {
+            const res = await httpAdapter.fetch(`${draftUpdateUrl}?access_token=${accessToken}`, {
+                method: "POST",
+                body: JSON.stringify({
+                    media_id: mediaId,
+                    index: articleIndex,
+                    articles: options,
+                }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const data = await res.json();
+            assertWechatSuccess(data);
+        },
     };
 }
 
@@ -116,7 +178,7 @@ const WECHAT_ERROR_HINTS: Record<number, string> = {
 };
 
 function assertWechatSuccess<T extends object>(data: T | WechatErrorResponse): asserts data is T {
-    if ("errcode" in data) {
+    if ("errcode" in data && data.errcode !== 0) {
         const hint = WECHAT_ERROR_HINTS[data.errcode];
         throw new Error(hint ? `${data.errcode}: ${hint} (${data.errmsg})` : `${data.errcode}: ${data.errmsg}`);
     }
