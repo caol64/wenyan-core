@@ -6,6 +6,8 @@ import {
     WechatPublishOptions,
     WechatPublishResponse,
     WechatUploadResponse,
+    WechatDraftListResponse,
+    WechatDraftGetResponse,
     type WechatClient,
 } from "./wechat.js";
 
@@ -28,6 +30,9 @@ export class WechatPublisher {
     private uploadCacheStore: UploadCacheStore | undefined;
     private uploadMaterial: WechatClient["uploadMaterial"];
     private publishArticle: WechatClient["publishArticle"];
+    private _listDraftsFn: WechatClient["listDrafts"];
+    private _getDraftFn: WechatClient["getDraft"];
+    private _updateDraftFn: WechatClient["updateDraft"];
     private fetchAccessToken: WechatClient["fetchAccessToken"];
 
     constructor(
@@ -35,10 +40,13 @@ export class WechatPublisher {
         tokenStoreAdapter?: TokenStorageAdapter,
         uploadCacheStoreAdapter?: UploadCacheStorageAdapter,
     ) {
-        const { uploadMaterial, publishArticle, fetchAccessToken } = createWechatClient(httpAdapter);
+        const { uploadMaterial, publishArticle, fetchAccessToken, listDrafts, getDraft, updateDraft } = createWechatClient(httpAdapter);
         this.uploadMaterial = uploadMaterial;
         this.publishArticle = publishArticle;
         this.fetchAccessToken = fetchAccessToken;
+        this._listDraftsFn = listDrafts;
+        this._getDraftFn = getDraft;
+        this._updateDraftFn = updateDraft;
         this.tokenStore = tokenStoreAdapter ? new TokenStore(tokenStoreAdapter) : undefined;
         this.uploadCacheStore = uploadCacheStoreAdapter ? new UploadCacheStore(uploadCacheStoreAdapter) : undefined;
     }
@@ -82,6 +90,18 @@ export class WechatPublisher {
 
     public async publishToDraft(accessToken: string, options: WechatPublishOptions): Promise<WechatPublishResponse> {
         return await this.publishArticle(accessToken, options);
+    }
+
+    public async listDrafts(accessToken: string, offset = 0, count = 20, noContent = 0): Promise<WechatDraftListResponse> {
+        return await this._listDraftsFn(accessToken, offset, count, noContent);
+    }
+
+    public async getDraft(accessToken: string, mediaId: string): Promise<WechatDraftGetResponse> {
+        return await this._getDraftFn(accessToken, mediaId);
+    }
+
+    public async updateDraft(accessToken: string, mediaId: string, articleIndex: number, options: Partial<WechatPublishOptions>): Promise<void> {
+        await this._updateDraftFn(accessToken, mediaId, articleIndex, options);
     }
 
     public async clearCache(): Promise<void> {
