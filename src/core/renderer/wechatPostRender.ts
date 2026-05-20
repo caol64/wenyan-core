@@ -57,20 +57,45 @@ export function wechatPostRender(element: HTMLElement): void {
         li.appendChild(section);
     });
 
-    // 5. 提升嵌套列表（微信兼容）
-    // 微信公众号编辑器无法正确渲染 <li> 内嵌套的 <ul>/<ol>，
-    // 需要将嵌套列表从 <li> 中提出，变为同级元素。
-    // 参考: https://github.com/doocs/md
-    const nestedLists = element.querySelectorAll<HTMLUListElement | HTMLOListElement>(
-        "li > section > ul, li > section > ol",
-    );
+    // 5. 转换嵌套列表（微信兼容）
+    // 微信公众号编辑器会将 <ul>/<ol> 直接嵌套在另一个 <ul>/<ol> 内时
+    // 添加额外的项目符号或编号。将嵌套列表转换为带文本标记的 <section>
+    // 元素，保留视觉层次但避免触发微信的列表渲染。
+    const flattenNestedLists = () => {
+        let nestedLists = element.querySelectorAll<HTMLUListElement | HTMLOListElement>(
+            "li > section > ul, li > section > ol",
+        );
 
-    nestedLists.forEach((nestedList) => {
-        const li = nestedList.closest("li");
-        if (li) {
-            li.insertAdjacentElement("afterend", nestedList);
+        while (nestedLists.length > 0) {
+            // 从最深层开始处理（querySelectorAll 按文档序返回，reverse 后最深的先处理）
+            Array.from(nestedLists).reverse().forEach((nestedList) => {
+                const isOrdered = nestedList.tagName === "OL";
+                const doc = element.ownerDocument;
+                const items = Array.from(nestedList.children).filter(
+                    (child) => child.tagName === "LI",
+                );
+
+                const wrapper = doc.createElement("section");
+                wrapper.style.marginLeft = "1em";
+
+                items.forEach((item, index) => {
+                    const content = item.querySelector("section");
+                    const sectionEl = doc.createElement("section");
+                    const marker = isOrdered ? `${index + 1}. ` : "• ";
+                    sectionEl.innerHTML = marker + (content?.innerHTML ?? item.innerHTML);
+                    wrapper.appendChild(sectionEl);
+                });
+
+                nestedList.replaceWith(wrapper);
+            });
+
+            nestedLists = element.querySelectorAll<HTMLUListElement | HTMLOListElement>(
+                "li > section > ul, li > section > ol",
+            );
         }
-    });
+    };
+
+    flattenNestedLists();
 
     // 6. 设置字体颜色为黑色，防止黑暗模式影响
     element.style.color = "rgb(0, 0, 0)";

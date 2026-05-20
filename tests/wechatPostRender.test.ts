@@ -18,33 +18,42 @@ describe("wechatPostRender", () => {
         expect(li.querySelector("section")!.textContent).toBe("item");
     });
 
-    it("should lift nested ul out of li for WeChat compatibility", () => {
+    it("should convert nested ul to styled section elements", () => {
         const element = createDom(
             "<ul><li>parent<ul><li>child</li></ul></li></ul>",
         );
         wechatPostRender(element);
 
-        // 嵌套的 <ul> 应该被移到 <li> 之后，成为同级元素
-        const parentLi = element.querySelectorAll("li")[0];
-        const nestedUl = parentLi.nextElementSibling;
+        // 嵌套的 <ul> 应该被转换为 <section>，保留在 <li> 内部
+        const parentLi = element.querySelector("li")!;
+        expect(parentLi.querySelector("ul")).toBeNull();
+        expect(parentLi.querySelector("ol")).toBeNull();
 
-        expect(nestedUl?.tagName).toBe("UL");
-        expect(nestedUl?.querySelector("li")?.textContent).toBe("child");
-        // <li> 内容只剩文本
-        expect(parentLi.querySelector("section")!.textContent).toBe("parent");
+        // 验证转换后的 section 结构
+        const wrapper = parentLi.querySelector("section > section")!;
+        expect(wrapper).not.toBeNull();
+        expect(wrapper.style.marginLeft).toBe("1em");
+
+        // 验证子项内容带有项目符号标记
+        const items = wrapper.querySelectorAll(":scope > section");
+        expect(items.length).toBe(1);
+        expect(items[0].textContent).toBe("• child");
     });
 
-    it("should lift nested ol out of li for WeChat compatibility", () => {
+    it("should convert nested ol to styled section elements with numbered markers", () => {
         const element = createDom(
-            "<ul><li>parent<ol><li>child</li></ol></li></ul>",
+            "<ul><li>parent<ol><li>first</li><li>second</li></ol></li></ul>",
         );
         wechatPostRender(element);
 
-        const parentLi = element.querySelectorAll("li")[0];
-        const nestedOl = parentLi.nextElementSibling;
+        const parentLi = element.querySelector("li")!;
+        expect(parentLi.querySelector("ol")).toBeNull();
 
-        expect(nestedOl?.tagName).toBe("OL");
-        expect(nestedOl?.querySelector("li")?.textContent).toBe("child");
+        const wrapper = parentLi.querySelector("section > section")!;
+        const items = wrapper.querySelectorAll(":scope > section");
+        expect(items.length).toBe(2);
+        expect(items[0].textContent).toBe("1. first");
+        expect(items[1].textContent).toBe("2. second");
     });
 
     it("should handle deeply nested lists", () => {
@@ -53,22 +62,29 @@ describe("wechatPostRender", () => {
         );
         wechatPostRender(element);
 
-        const lis = element.querySelectorAll("li");
-        const uls = element.querySelectorAll("ul");
+        // 不应该有任何 <ul>/<ol> 嵌套在 <li> 的 <section> 内
+        const allUls = element.querySelectorAll("ul");
+        const allOls = element.querySelectorAll("ol");
+        // Only the top-level <ul> should remain
+        expect(allUls.length).toBe(1);
+        expect(allOls.length).toBe(0);
 
-        // 所有列表项的文本内容应该正确
-        const texts = Array.from(lis).map((li) => li.textContent);
-        expect(texts).toContain("l1");
-        expect(texts).toContain("l2");
-        expect(texts).toContain("l3");
+        // 验证内容层级正确
+        const text = element.textContent!;
+        expect(text).toContain("l1");
+        expect(text).toContain("• l2");
+        expect(text).toContain("• l3");
+    });
 
-        // 不应该有任何 <ul> 嵌套在 <li> 的 <section> 内
-        element.querySelectorAll("li").forEach((li) => {
-            const section = li.querySelector("section");
-            if (section) {
-                expect(section.querySelector("ul")).toBeNull();
-                expect(section.querySelector("ol")).toBeNull();
-            }
-        });
+    it("should preserve HTML content inside nested list items", () => {
+        const element = createDom(
+            "<ul><li>parent<ul><li><strong>bold</strong> child</li></ul></li></ul>",
+        );
+        wechatPostRender(element);
+
+        const wrapper = element.querySelector("section > section")!;
+        const item = wrapper.querySelector(":scope > section")!;
+        expect(item.innerHTML).toContain("<strong>bold</strong>");
+        expect(item.textContent).toBe("• bold child");
     });
 });
