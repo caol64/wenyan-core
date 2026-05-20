@@ -30,7 +30,12 @@ async function extractAndCleanImages(body: string): Promise<{ imagePaths: string
         }
     }
 
-    return { imagePaths, cleanedHtml: wenyan!.outerHTML };
+    // 清理移除图片后残留的空元素（如 markdown 空行产生的空段落）
+    Array.from(wenyan!.children)
+        .filter(el => el.textContent?.trim() === "")
+        .forEach(el => el.remove());
+
+    return { imagePaths, cleanedHtml: wenyan!.innerHTML.trim() };
 }
 
 const nodeMermaidRenderer = createNodeMermaidRenderer();
