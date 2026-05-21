@@ -30,7 +30,28 @@ async function extractAndCleanImages(body: string): Promise<{ imagePaths: string
         }
     }
 
-    return { imagePaths, cleanedHtml: wenyan!.outerHTML };
+    // Remove remaining empty elements produced by blank lines between images
+    for (const child of Array.from(wenyan!.children)) {
+        if (!child.textContent?.trim()) {
+            child.remove();
+        }
+    }
+
+    // Collapse <p> tags to avoid double spacing in caption.
+    // Each <p> element contributes its own margin, creating visually doubled
+    // paragraph gaps in the WeChat image-text post caption. Unwrap <p> elements
+    // and insert <br> as paragraph separators instead.
+    const paragraphs = Array.from(wenyan!.querySelectorAll("p"));
+    for (const p of paragraphs) {
+        const frag = document.createDocumentFragment();
+        while (p.firstChild) {
+            frag.appendChild(p.firstChild);
+        }
+        frag.appendChild(document.createElement("br"));
+        p.parentNode?.replaceChild(frag, p);
+    }
+
+    return { imagePaths, cleanedHtml: wenyan!.innerHTML.trim() };
 }
 
 const nodeMermaidRenderer = createNodeMermaidRenderer();
