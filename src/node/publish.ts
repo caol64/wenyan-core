@@ -252,10 +252,50 @@ export async function publishImageTextToWechatDraft(
         throw new Error("未能获取封面图的 media_id");
     }
 
+    // 小绿书的 content 字段只支持纯文本，需要把 HTML/Markdown 转换成纯文本
+    // 并保留段落分隔（使用 \n\n）
+    let plainContent = content || "";
+    if (plainContent) {
+        // 如果是 HTML 格式（包含 <br>、<p> 等标签），转换成纯文本
+        if (plainContent.includes("<br") || plainContent.includes("<p")) {
+            // 先把 <br>\n 替换成 \n，避免双重换行
+            plainContent = plainContent.replace(/<br\s*\/?>\n/g, "\n");
+            const dom = new JSDOM(`<body>${plainContent}</body>`);
+            const document = dom.window.document;
+            // 把 <br> 标签替换成换行符
+            const brs = document.querySelectorAll("br");
+            for (const br of brs) {
+                br.replaceWith(document.createTextNode("\n"));
+            }
+            // 把 <p> 标签替换成换行符
+            const paragraphs = document.querySelectorAll("p");
+            for (const p of paragraphs) {
+                const text = document.createTextNode("\n" + p.textContent + "\n");
+                p.replaceWith(text);
+            }
+            plainContent = document.body.textContent?.trim() || "";
+        }
+        // 移除 Markdown 语法标记（如果有）
+        plainContent = plainContent
+            .replace(/^#{1,6}\s+/gm, "")  // 移除标题标记
+            .replace(/\*\*(.*?)\*\*/g, "$1")  // 移除加粗标记
+            .replace(/\*(.*?)\*/g, "$1")  // 移除斜体标记
+            .replace(/__(.*?)__/g, "$1")  // 移除加粗标记
+            .replace(/_(.*?)_/g, "$1")  // 移除斜体标记
+            .replace(/`{1,3}[^`]*`{1,3}/g, "")  // 移除代码标记
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")  // 移除链接标记，保留文字
+            .replace(/!\[([^\]]*)\]\([^)]+\)/g, "")  // 移除图片标记
+            .replace(/^\s*[-*+]\s+/gm, "")  // 移除列表标记
+            .replace(/^\s*\d+\.\s+/gm, "")  // 移除有序列表标记
+            .replace(/^\s*>\s+/gm, "")  // 移除引用标记
+            .replace(/\n{3,}/g, "\n\n")  // 合并多个空行
+            .trim();
+    }
+
     const data = await wechatPublisher.publishToDraft(
         accessToken, {
         title,
-        content,
+        content: plainContent,
         thumb_media_id: thumbMediaId,
         author,
         article_type: "newspic",
