@@ -88,4 +88,19 @@ describe("createWenyanCore", async () => {
         const result = await instance.renderMarkdown(md);
         expect(result).toContain('href="../0.asset/media/Pasted%20image%2020250712230833.md"');
     });
+
+    it("should not treat single tilde pairs as strikethrough", async () => {
+        // 中文技术写作中常见的数值范围写法：`0xF1`~`0xF9`、100~900
+        const md = "STmin 取值 0-127ms（也可通过 `0xF1`~`0xF9` 编码表示 100~900 μs）";
+        const result = await instance.renderMarkdown(md);
+        expect(result).toContain("<code>0xF1</code>~<code>0xF9</code>");
+        expect(result).toContain("100~900");
+        expect(result).not.toContain("<del>");
+    });
+
+    it("should render double tilde as strikethrough", async () => {
+        const result = await instance.renderMarkdown("~~删除线~~ 与 ~非删除线~");
+        expect(result).toContain("<del>删除线</del>");
+        expect(result).toContain("~非删除线~");
+    });
 });

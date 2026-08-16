@@ -146,6 +146,36 @@ export function createMarkedClient() {
                         },
                     },
 
+                    // 严格删除线：仅识别成对的 ~~，单个 ~ 保持字面文本。
+                    // 数值范围写法（如 100~900、`0xF1`~`0xF9`）在中文技术写作中很常见，
+                    // marked 内置规则 (~~?) 会把两个单独的 ~ 配对成 <del>，导致误渲染为删除线。
+                    {
+                        name: "strictDel",
+                        level: "inline",
+                        start(src: string) {
+                            return src.indexOf("~");
+                        },
+                        tokenizer(src: string) {
+                            // 由 marked 内置 del 规则派生，将分隔符 (~~?) 收紧为固定两个 ~
+                            const rule = /^(~~)(?=[^\s~])((?:\\.|[^\\])*?(?:\\.|[^\s~\\]))\1(?=[^~]|$)/;
+                            const match = rule.exec(src);
+                            if (match) {
+                                return {
+                                    type: "del",
+                                    raw: match[0],
+                                    text: match[2],
+                                    tokens: this.lexer.inlineTokens(match[2]),
+                                };
+                            }
+                            // 单个 ~ 不是删除线：主动消费为字面文本，防止落入 inlineText 的
+                            // 起始规则 [`~]+（~ 会与相邻的 ` 粘在一起，破坏后续行内代码解析）
+                            if (src.startsWith("~")) {
+                                return { type: "text", raw: "~", text: "~" };
+                            }
+                            return undefined;
+                        },
+                    },
+
                 ],
             });
 
