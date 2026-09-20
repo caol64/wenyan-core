@@ -89,16 +89,17 @@ console.log(result.cover);
 
 ```ts
 interface FrontMatterResult {
-  content: string;
-  title?: string;
-  description?: string;
-  cover?: string;
-  author?: string;
-  source_url?: string;
-  need_open_comment?: boolean;
-  only_fans_can_comment?: boolean;
-  image_list?: string[];
-  type?: string;
+    content: string;
+    title?: string;
+    description?: string;
+    cover?: string;
+    author?: string;
+    source_url?: string;
+    need_open_comment?: boolean;
+    only_fans_can_comment?: boolean;
+    image_list?: string[];
+    type?: string;
+    digest?: string;
 }
 ```
 
@@ -114,6 +115,7 @@ interface FrontMatterResult {
 | only_fans_can_comment  | 是否仅粉丝可评论                                                                             |
 | image_list             | 图片路径列表，用于图片消息（小绿书）发布。最多 20 张，第一张为封面                                                  |
 | type                   | 文章类型。设为 `"image"` 时，Node 环境下会自动从正文提取图片路径注入 `image_list`，并从正文中移除图片引用（详见 Node 文档） |
+| digest                   | 图文消息的摘要，透传给`draft_add`接口 |
 
 > [!NOTE]
 >

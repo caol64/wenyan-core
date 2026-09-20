@@ -21,6 +21,7 @@ export interface ArticleOptions {
     pic_crop_1_1?: string;
     need_open_comment?: boolean;
     only_fans_can_comment?: boolean;
+    digest?: string;
 }
 
 export interface ImageTextArticleOptions extends ArticleOptions {

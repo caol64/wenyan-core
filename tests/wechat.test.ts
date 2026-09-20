@@ -133,13 +133,16 @@ describe("wechat.ts tests", () => {
             thumb_media_id: "mock-thumb-media-id",
             content_source_url: "https://example.com/post",
             article_type: "news" as const,
-            image_info: [
-                {
-                    image_media_id: "mock-image-media-id",
-                },
-            ],
+            image_info: {
+                image_list: [
+                    {
+                        image_media_id: "mock-image-media-id",
+                    },
+                ],
+            },
             need_open_comment: 1 as const,
             only_fans_can_comment: 0 as const,
+            digest: "This is a short digest.",
         };
 
         const result = await client.publishArticle("mock-access-token", options);

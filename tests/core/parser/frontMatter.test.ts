@@ -19,6 +19,7 @@ image_list:
   - wenyan3.jpg
   - wenyan4.jpg
   - wenyan5.jpg
+digest: This is a short digest.
 ---
 # Main Content
 Here is the rest of the post.`;
@@ -44,6 +45,7 @@ Here is the rest of the post.`;
                 "wenyan4.jpg",
                 "wenyan5.jpg",
             ],
+            digest: "This is a short digest.",
         });
     });
 

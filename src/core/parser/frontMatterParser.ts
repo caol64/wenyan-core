@@ -13,6 +13,7 @@ export interface FrontMatterResult {
     only_fans_can_comment?: boolean;
     image_list?: string[];
     type?: string;
+    digest?: string;
 }
 
 export async function handleFrontMatter(markdown: string): Promise<FrontMatterResult> {
@@ -33,6 +34,7 @@ export async function handleFrontMatter(markdown: string): Promise<FrontMatterRe
         only_fans_can_comment,
         image_list,
         type,
+        digest,
     } = attributes;
     if (title) {
         result.title = title;
@@ -67,6 +69,9 @@ export async function handleFrontMatter(markdown: string): Promise<FrontMatterRe
     }
     if (type) {
         result.type = type;
+    }
+    if (digest) {
+        result.digest = digest;
     }
     if (head) {
         result.content = head + result.content;

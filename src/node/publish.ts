@@ -124,6 +124,7 @@ export async function publishToWechatDraft(
         pic_crop_1_1,
         need_open_comment,
         only_fans_can_comment,
+        digest,
     } = articleOptions;
     const { appId, appSecret, relativePath } = publishOptions;
 
@@ -174,6 +175,7 @@ export async function publishToWechatDraft(
         pic_crop_1_1,
         need_open_comment: need_open_comment ? 1 : 0,
         only_fans_can_comment: only_fans_can_comment ? 1 : 0,
+        digest,
     });
 
     if (data.media_id) {

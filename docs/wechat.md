@@ -41,6 +41,7 @@ export interface ArticleOptions {
   source_url?: string;
   need_open_comment?: boolean;
   only_fans_can_comment?: boolean;
+  digest?: string;
 }
 ```
 
@@ -53,6 +54,7 @@ export interface ArticleOptions {
 | source_url   | 原文地址       |
 | need_open_comment   | 是否打开评论       |
 | only_fans_can_comment   | 是否粉丝才可评论       |
+| digest   | 图文消息的摘要，透传给`draft_add`接口       |
 
 ### PublishOptions
 

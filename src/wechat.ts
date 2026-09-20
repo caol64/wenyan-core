@@ -36,6 +36,7 @@ export interface WechatPublishOptions {
     image_info?: ImageInfo;
     need_open_comment?: 0 | 1;
     only_fans_can_comment?: 0 | 1;
+    digest?: string;
 }
 
 export interface WechatErrorResponse {
